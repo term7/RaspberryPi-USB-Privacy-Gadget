@@ -1447,7 +1447,15 @@ Finally enable the service:<br>
 
 #### MESSAGE OF THE DAY
 
-We use a dynamic message of the day to display system information once we log into our Privacy Gadget via ssh. To set up dynamic *motd* run the following commands:
+We use a dynamic message of the day to display system information once we log into our Privacy Gadget via ssh.
+
+<p align="center">
+  <img src="/png/motd.png" title="motd">
+</p>
+
+
+
+To set up dynamic *motd* run the following commands:
 
 `sudo mkdir /etc/update-motd.d`<br>
 `cd /etc/update-motd.d`<br>
