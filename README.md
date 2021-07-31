@@ -349,8 +349,7 @@ ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.2",       NAM
 
 This ensures that the onboard wifi will always be called *wlan0* and any wifi adapter plugged into the upper USB3 port will be called *wlan1*.
 
-#### RESOURCES:
-
+#### RESOURCES:<br>
 [https://github.com/aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au)
 
 
