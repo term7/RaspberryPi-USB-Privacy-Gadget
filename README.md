@@ -562,12 +562,14 @@ Ok: We already configured our static IP!<br>
 </p>
 Select wlan1: it is configured to be our intert facing interface.<br>
 Ok
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_05.png" title="Custom DNS">
 </p>
 DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC<br>
-Ok<br><br>
+Ok
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_06.png" title="Upstream DNS Provider">
@@ -623,8 +625,9 @@ OK
 <p align="center">
   <img src="/png/Pi-hole_14.png" title="Admin Interface">
 </p>
-Select On
-OK<br>
+Select On<br>
+OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_15.png" title="web server">
