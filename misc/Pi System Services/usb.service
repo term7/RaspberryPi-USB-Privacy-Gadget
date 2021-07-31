@@ -1,0 +1,11 @@
+#USB Ethernet Gadget System Service
+
+[Unit]
+Description=USB Gadget
+After=network.target
+
+[Service]
+ExecStart=/bin/bash /root/usb.sh
+
+[Install]
+WantedBy=multi-user.target

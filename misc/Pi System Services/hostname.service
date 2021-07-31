@@ -1,0 +1,10 @@
+[Unit]
+Description=Random Hostname
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+ExecStart=/bin/bash /root/hostname.sh
+
+[Install]
+WantedBy=multi-user.target

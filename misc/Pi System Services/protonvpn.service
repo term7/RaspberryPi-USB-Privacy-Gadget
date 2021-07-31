@@ -1,0 +1,21 @@
+# ProtonVPN System Service:
+
+[Unit]
+Description=Proton VPN
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/protonvpn c --sc
+ExecStop=/usr/local/bin/protonvpn d
+ExecReload=/usr/local/bin/protonvpn c --sc
+Environment=SUDO_USER=baer
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+
+# Please Notice: Edit ExecStart according to your needs (i.e. c --fastest od  c --random)
+# c --sc (secure core) is only available for Plus Members!
