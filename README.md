@@ -7,7 +7,7 @@ This repository functions as a guide and as a step-by-step tutorial that will he
 
 When Apple made macOS BigSur publicly available in autumn 2020, we realized that our installation of Little Snitch (a host based firewall) partially stopped working. More specifically we noticed, that all Apple Processes were not filtered anymore. Strange. When we researched this problem online we came across a blog post by Jeffrey Paul ([Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)), a security researcher based in Berlin. We strongly recommend reading this article before you decide to setup your own Raspberry Pi Privacy Gadget!
 
-A very short summary: modern macOS operating systems have the capability to bypass internal firewalls and VPN's, a possibility that is built into the operating system. Furthermore, each Apple Computer constantly connects to both Apple Servers and 3rd parties (i.e. Akamai) to transmit hashes of apps that are being used - whenever they are being used. Apple uses these hashes to prevent any malicious apps (and other 'blacklisted apps') from launching, if the online certificate check fails. Apple claims that this is only a security feature to combat malicious apps. While this might be true, it also means that Apple always knows when you are online, where you are while you are online, for how long you use specific software, i.e. Photoshop, or whenever you start the Tor Browser. Over time this practice amounts to a tremendous amount of data that paints a pretty accurate picture of your digital life and habits, physical movements and activity patterns. All this data can potentially be correlated with other big data, collected by corporations like Google, Microsoft, Facebook, etc. As Jeffrey Paul correctly points out:
+A very short summary: modern macOS operating systems have the capability to bypass internal firewalls and VPN's, a possibility that is built into the operating system. Furthermore, each Apple Computer constantly connects to both Apple Servers and 3rd parties (i.e. Akamai) to transmit hashes of apps that are being used - whenever they are being used. Apple uses these hashes to prevent any malicious apps (and other *blacklisted apps*) from launching, if the online certificate check fails. Apple claims that this is only a security feature to combat malicious apps. While this might be true, it also means that Apple always knows when you are online, where you are while you are online, for how long you use specific software, i.e. Photoshop, or whenever you start the Tor Browser. Over time this practice amounts to a tremendous amount of data that paints a pretty accurate picture of your digital life and habits, physical movements and activity patterns. All this data can potentially be correlated with other big data, collected by corporations like Google, Microsoft, Facebook, etc. As Jeffrey Paul correctly points out:
 
 *Since October of 2012, Apple is a partner in the US military intelligence community’s PRISM spying program, which grants the US federal police and military unfettered access to this data without a warrant, any time they ask for it.*
 
@@ -50,7 +50,7 @@ Objective Development:<br/>
   <img src="/png/Privacy_Gadget.png" title="Privacy Gadget">
 </p>
 
-*One Pi to rule them all.*
+*Portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
 ## WHAT THIS RASPBERRY PI USB ETHERNET GADGET DOES:
 
@@ -154,13 +154,14 @@ Then edit */etc/default/locale*:<br>
 
 For British English, insert:
 
-`LANG=en_GB.UTF-8`<br>
-`LC_ALL=en_GB.UTF-8`<br>
-`LANGUAGE=en_GB.UTF-8`
+```
+LANG=en_GB.UTF-8
+LC_ALL=en_GB.UTF-8
+LANGUAGE=en_GB.UTF-8
+```
 
 To set your timezone, i.e.:<br>
 `sudo timedatectl set-timezone Europe/Berlin`
-
 
 
 # 02 - Setup new User and delete User Pi
