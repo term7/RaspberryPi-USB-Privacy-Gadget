@@ -1,6 +1,8 @@
 # RaspberryPi: Privacy Gadget
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
+This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers and spoofing its own device identity.
+
 ## INTRODUCTION
 
 When Apple made macOS BigSur publicly available in autumn 2020, we realized that our installation of Little Snitch (a host based firewall) partially stopped working. More specifically we noticed, that all Apple Processes were not filtered anymore. Strange. When we researched this problem online we came across a blog post by Jeffrey Paul ([Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)), a security researcher based in Berlin. We strongly recommend reading this article before you decide to setup your own Raspberry Pi Privacy Gadget!
@@ -63,7 +65,7 @@ FEATURES:
 5) Firewall: IP-tables. The optional [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script) by [Mike Kuketz](https://www.kuketz-blog.de/) and maloe can be used to block entire IP-Address ranges of known data collectors, such as Facebook.
 6) Rasndomized Device Identity: Any public Wifi you connect to, from now on will only log the MAC Address and the hostname of your Ethernet Gadget, instead of your Mac's MAC Address. We randomize its MAC-Address during each reboot to further enhance your privacy. Our USB Ethernet Gadget also picks a random hostname from a dictionary during each reboot.
 
-This proposed setup only works reliable if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you do a reboot).
+This proposed setup only works reliably if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you do a reboot).
 
 
 ## SETUP
