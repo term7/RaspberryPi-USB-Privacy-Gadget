@@ -553,26 +553,26 @@ Ok
 <p align="center">
   <img src="/png/Pi-hole_03.png" title="Static IP Needed">
 </p>
-Ok: We already configured our static IP!
+Ok: We already configured our static IP!<br>
 :-)
 <br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_04.png" title="Select Interface">
 </p>
-Select wlan1: it is configured to be our intert facing interface.
+Select wlan1: it is configured to be our intert facing interface.<br>
 Ok
 
 <p align="center">
   <img src="/png/Pi-hole_05.png" title="Custom DNS">
 </p>
-DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC
-Ok<br>
+DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC<br>
+Ok<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_06.png" title="Upstream DNS Provider">
 </p>
-Upstream DNS Provider: 193.17.47.1, 185.43.135.1
+Upstream DNS Provider: 193.17.47.1, 185.43.135.1<br>
 Ok
 <br><br>
 
@@ -585,7 +585,8 @@ Select Yes
 <p align="center">
   <img src="/png/Pi-hole_08.png" title="Blocklists">
 </p>
-OK: We will add more later!<br>
+OK: We will add more later!
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_09.png" title="Select Protocols">
@@ -602,13 +603,14 @@ Important: Select No
 <p align="center">
   <img src="/png/Pi-hole_11.png" title="Enter IPv4 Address">
 </p>
-Enter IPv4 Address: 192.168.77.1/24 *(This is the static IP we assigned to USB0)*
+Enter IPv4 Address: 192.168.77.1/24 *(This is the static IP we assigned to USB0)*<br>
 OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_12.png" title="Default Gateway">
 </p>
-Enter default gateway: 192.168.77.1
+Enter default gateway: 192.168.77.1<br>
 OK
 <br><br>
 
@@ -627,21 +629,21 @@ OK<br>
 <p align="center">
   <img src="/png/Pi-hole_15.png" title="web server">
 </p>
-Select On
+Select On<br>
 OK
 <br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_16.png" title="log queries">
 </p>
-Select On:  *(We want to see what addresses our Mac connects to!)*
+Select On: *(We want to see what addresses our Mac connects to!)*<br>
 OK
 <br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_17.png" title="privacy mode">
 </p>
-Select 0:  Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*
+Select 0: Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*<br>
 OK
 <br><br>
 
@@ -650,7 +652,7 @@ After a short installation period you will see this window:
 <p align="center">
   <img src="/png/Pi-hole_18.png" title="passwd">
 </p>
-Write down your password!
+Write down your password!<br>
 OK
 
 To enable your Pi-hole as your dhcp server, execute the following command:<br>
