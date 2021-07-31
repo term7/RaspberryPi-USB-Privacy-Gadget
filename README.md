@@ -541,18 +541,21 @@ Please enter the following information when prompted:
 <p align="center">
   <img src="/png/Pi-hole_01.png" title="Welcome">
 </p>
-Ok<br>
+Ok
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_02.png" title="About">
 </p>
-Ok<br>
+Ok
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_03.png" title="Static IP Needed">
 </p>
 Ok: We already configured our static IP!
-:-)<br>
+:-)
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_04.png" title="Select Interface">
@@ -570,12 +573,14 @@ Ok<br>
   <img src="/png/Pi-hole_06.png" title="Upstream DNS Provider">
 </p>
 Upstream DNS Provider: 193.17.47.1, 185.43.135.1
-Ok<br>
+Ok
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_07.png" title="Is DNS correct?">
 </p>
-Select Yes<br>
+Select Yes
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_08.png" title="Blocklists">
@@ -585,12 +590,14 @@ OK: We will add more later!<br>
 <p align="center">
   <img src="/png/Pi-hole_09.png" title="Select Protocols">
 </p>
-OK<br>
+OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_10.png" title="Use current settings?">
 </p>
-Important: Select No<br>
+Important: Select No
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_11.png" title="Enter IPv4 Address">
@@ -602,12 +609,14 @@ OK
   <img src="/png/Pi-hole_12.png" title="Default Gateway">
 </p>
 Enter default gateway: 192.168.77.1
-OK<br>
+OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_13.png" title="Settings Correct?">
 </p>
-OK<br>
+OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_14.png" title="Admin Interface">
@@ -616,22 +625,25 @@ Select On
 OK<br>
 
 <p align="center">
-  <img src="/png/Pi-hole_15.png" title=web server">
+  <img src="/png/Pi-hole_15.png" title="web server">
 </p>
 Select On
 OK
+<br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_16.png" title=log queries">
+  <img src="/png/Pi-hole_16.png" title="log queries">
 </p>
 Select On:  *(We want to see what addresses our Mac connects to!)*
-OK<br>
+OK
+<br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_17.png" title="privacy mode">
 </p>
 Select 0:  Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*
-OK<br>
+OK
+<br><br>
 
 After a short installation period you will see this window:
 
