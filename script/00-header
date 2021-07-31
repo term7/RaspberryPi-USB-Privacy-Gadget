@@ -1,0 +1,40 @@
+#!/bin/sh
+[ -r /etc/lsb-release ] ; /etc/lsb-release
+
+if [ -z "$DISTRIB_DESCRIPTION" ] ; [ -x /usr/bin/lsb_release ]; then
+        # Fall back to using the very slow lsb_release utility
+        DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+fi
+
+echo "--------------------------------------------------------------------------------"
+
+printf "\n"
+figlet $(hostname)
+printf "* %s (%s).\n" "$DISTRIB_DESCRIPTION" "$(uname -rm)"
+printf "\n"
+
+echo "--------------------------------------------------------------------------------
+
+                                                     ..
+                                     .ckdl'        .oKO;
+                                      .kWMMKxxkkkxkXMWd.
+                              .      .:OWMMMWNXKXXNMMW0l.
+                            ,k0d.    ;OWMNKkl;'....,cdKWWKo..'coo'
+                            ,0WWk. .dXMNx,.           .lKMWK0NMWXc
+                           .;kWMW0kXWW0:        .;cl;.  ,0MMWKd:.
+                  .'.   .lOXWMMMWWNKkc.        .xNMMWO'  :XMNl
+                 oXNKOxxXMWKxlc::;'.           'OWMMMK;  '0MWo
+                 'lx0XWMMXo.              ..    'oxkd,   ,KMWx.
+                    .cXMWo      .'.    .cOKKOl.         .xWMMNKkd;.
+                     ,KMNc     ,ONXo.  '0MMMMK,        'kWMXkk0XW0'
+                     .kWMO'    'xK0c    ,dkkd;       .lKMWO,  ..'.
+                      ,0MWKl.    ..                'oKWMXo.
+                    .:xXMMMWKxc,.             .':oONMMMMK;
+                   'OMWXOdokXWMNKOkdolllllooxOKNWMN0dlkWMK;
+                    ,c:.    .:o0WMMWWWMMMMMMMNKkdc,.  .dXXl
+                     '        .dWMKc,;;;l0WMM0;         ..
+                              ;KMNl      ,d0MWx.
+                              .ld:.        'ox:.
+
+
+--------------------------------------------------------------------------------"
