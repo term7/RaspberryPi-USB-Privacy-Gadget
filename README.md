@@ -541,18 +541,18 @@ Please enter the following information when prompted:
 <p align="center">
   <img src="/png/Pi-hole_01.png" title="Welcome">
 </p>
-Ok
+Ok<br>
 
 <p align="center">
   <img src="/png/Pi-hole_02.png" title="About">
 </p>
-Ok
+Ok<br>
 
 <p align="center">
   <img src="/png/Pi-hole_03.png" title="Static IP Needed">
 </p>
 Ok: We already configured our static IP!
-:-)
+:-)<br>
 
 <p align="center">
   <img src="/png/Pi-hole_04.png" title="Select Interface">
@@ -564,33 +564,33 @@ Ok
   <img src="/png/Pi-hole_05.png" title="Custom DNS">
 </p>
 DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC
-Ok
+Ok<br>
 
 <p align="center">
   <img src="/png/Pi-hole_06.png" title="Upstream DNS Provider">
 </p>
 Upstream DNS Provider: 193.17.47.1, 185.43.135.1
-Ok
+Ok<br>
 
 <p align="center">
   <img src="/png/Pi-hole_07.png" title="Is DNS correct?">
 </p>
-Select Yes
+Select Yes<br>
 
 <p align="center">
   <img src="/png/Pi-hole_08.png" title="Blocklists">
 </p>
-OK: We will add more later!
+OK: We will add more later!<br>
 
 <p align="center">
   <img src="/png/Pi-hole_09.png" title="Select Protocols">
 </p>
-OK
+OK<br>
 
 <p align="center">
   <img src="/png/Pi-hole_10.png" title="Use current settings?">
 </p>
-Important: Select No
+Important: Select No<br>
 
 <p align="center">
   <img src="/png/Pi-hole_11.png" title="Enter IPv4 Address">
@@ -602,18 +602,18 @@ OK
   <img src="/png/Pi-hole_12.png" title="Default Gateway">
 </p>
 Enter default gateway: 192.168.77.1
-OK
+OK<br>
 
 <p align="center">
   <img src="/png/Pi-hole_13.png" title="Settings Correct?">
 </p>
-OK
+OK<br>
 
 <p align="center">
   <img src="/png/Pi-hole_14.png" title="Admin Interface">
 </p>
 Select On
-OK
+OK<br>
 
 <p align="center">
   <img src="/png/Pi-hole_15.png" title=web server">
@@ -625,22 +625,21 @@ OK
   <img src="/png/Pi-hole_16.png" title=log queries">
 </p>
 Select On:  *(We want to see what addresses our Mac connects to!)*
-OK
+OK<br>
 
 <p align="center">
-  <img src="/png/Pi-hole_17.png" title=privacy mode">
+  <img src="/png/Pi-hole_17.png" title="privacy mode">
 </p>
 Select 0:  Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*
-OK
+OK<br>
 
 After a short installation period you will see this window:
 
 <p align="center">
-  <img src="/png/Pi-hole_18.png" title=passwd">
+  <img src="/png/Pi-hole_18.png" title="passwd">
 </p>
 Write down your password!
 OK
-
 
 To enable your Pi-hole as your dhcp server, execute the following command:<br>
 `sudo pihole -a enabledhcp "192.168.77.2" "192.168.77.21" "192.168.77.1" "24" "baer"`
