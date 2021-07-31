@@ -76,7 +76,7 @@ This proposed setup only works reliable if all internet connectios are routed th
 - [06 - Configure Encrypted DNS](#06---Configure-Encrypted-DNS)
 - [07 - Setup Blocklists](#07---Setup-Blocklists)
 - [08 - VPN](#08---VPN)
-- [09 - Hidden Wifi Access Point](#08---Wifi-Access-Point)
+- [09 - Hidden Wifi Access Point](#09---Wifi-Access-Point)
 - [10 - Firewall](#10---Firewall)
 - [11 - Randomized Device Identity](#11---Randomized-Device-Identity)
 - [12 - Optional Custom Login Information](#12---Optional-Custom-Login-Information)
