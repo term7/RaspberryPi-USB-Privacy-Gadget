@@ -1096,6 +1096,11 @@ Change the country code to your location and pick an ssid and wpa_passphrase of 
 In this setup your Wifi hotspot will be hidden. This means it will not automatically show up in your list of available networks. Instead you need to select *other* in your Mac's Network list and type both, *Network Name* and *Password* in order to connect.
 If you want your *Hidden Wifi Access Point* to be a *Visible Wifi Access Point*, change the parameter behind `ignore_broadcast_ssid` to `0`.
 
+#### RESOURCES:
+
+Official Raspberry Pi documentation:<br>
+[https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md](https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md)
+
 
 # 10 - Firewall
 
@@ -1264,14 +1269,14 @@ ip6tables -Z
 netfilter-persistent save
 ```
 
-Make all scripts executable:
-`sudo chmod +x Script/iptables/iptables.sh`
-`sudo chmod +x Script/iptables/ip6tables.sh`
-`sudo chmod +x Script/iptables/flush_iptables.sh`
+Make all scripts executable:<br>
+`sudo chmod +x Script/iptables/iptables.sh`<br>
+`sudo chmod +x Script/iptables/ip6tables.sh`<br>
+`sudo chmod +x Script/iptables/flush_iptables.sh`<br>
 `sudo chmod +x Script/iptables/flush_ip6tables.sh`
 
-Finally, to enable your firewall run these two commands:
-`sudo Script/iptables/iptables.sh`
+Finally, to enable your firewall run these two commands:<br>
+`sudo Script/iptables/iptables.sh`<br>
 `sudo Script/iptables/ip6tables.sh`
 
 #### OPTIONAL: ASN SCRIPT TO BLOCK ENTIRE IP-ADDRESS RANGES:
