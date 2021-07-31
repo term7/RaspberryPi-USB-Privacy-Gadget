@@ -1,7 +1,7 @@
 # RaspberryPi: Privacy Gadget
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
-This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers. It also spoofs its own device identity to make it harder to profile you via your devices MAC address.
+This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers and spoofing its own device identity.
 
 ## INTRODUCTION
 
@@ -65,7 +65,7 @@ FEATURES:
 5) Firewall: IP-tables. The optional [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script) by [Mike Kuketz](https://www.kuketz-blog.de/) and maloe can be used to block entire IP-Address ranges of known data collectors, such as Facebook.
 6) Rasndomized Device Identity: Any public Wifi you connect to, from now on will only log the MAC Address and the hostname of your Ethernet Gadget, instead of your Mac's MAC Address. We randomize its MAC-Address during each reboot to further enhance your privacy. Our USB Ethernet Gadget also picks a random hostname from a dictionary during each reboot.
 
-This proposed setup only works reliably if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you do a reboot).
+This proposed setup only works reliable if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you do a reboot).
 
 
 ## SETUP
@@ -349,6 +349,9 @@ ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.2",       NAM
 
 This ensures that the onboard wifi will always be called *wlan0* and any wifi adapter plugged into the upper USB3 port will be called *wlan1*.
 
+#### RESOURCES:
+
+[https://github.com/aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au)
 
 
 # 04 - Setup USB-Ethernet Gadget
@@ -669,6 +672,10 @@ You should now be able to log into your Privacy Gadget directly via SSH with eit
 `ssh baer@192.168.77.1`<br>
 `ssh baer@access.tardigrade`
 
+#### RESOURCES:
+
+A very big THANK YOU to the developers of the Pi-hole. This is a great project!
+[https://pi-hole.net/](https://pi-hole.net/)
 
 
 # 06 - Configure Encrypted DNS
@@ -1079,8 +1086,8 @@ If you want your *Hidden Wifi Access Point* to be a *Visible Wifi Access Point*,
 
 It is important to secure your Raspberry Pi. For that purpose we configure a firewall via iptables. To make it easier for you we set up iptable scripts that you can run at any moment to enable your firewall rules, and also to delete them if you run into connectivity problems. We cover some firewall rules we think are important. Feel free to edit and expand on these scripts. We provide a separate script for both IPv4 and IPv6 connections.
 
-`mkdir Script`
-`mkdir Script/iptables`
+`mkdir Script`<br>
+`mkdir Script/iptables`<br>
 `sudo nano Script/iptables/iptables.sh`
 
 Insert:
@@ -1308,6 +1315,13 @@ View current iptables rules:<br>
 #### TO DO:
 
 In future we will add a simple script here, that makes blocking IP-Address ranges in our setup easier (only one command).
+
+#### RESOURCES:
+
+In this part of our guide, we refer to the ASN IPFire Script by maloe and a blog post by Mike Kuketz:
+
+[ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script)
+[ASN-Skript: Datensammler haben ausgeschnüffelt – IPFire Teil3](https://www.kuketz-blog.de/asn-skript-datensammler-haben-ausgeschnueffelt-ipfire-teil3/)
 
 
 # 11 - Randomized Device Identity
