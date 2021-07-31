@@ -525,7 +525,7 @@ We would like to thank the Raspberry Pi Foundation and Ben Hardill for the great
 
 # 05 - Install Pi-hole
 
-*Pi-hole is a Linux network-level advertisement and Internet tracker blocking application which acts as a DNS sinkhole and in our configuration also as a DHCP server, intended for use on a private network. It is designed for low-power embedded devices with network capability, such as the Raspberry Pi.*
+*Pi-hole is a Linux network-level advertisement and Internet tracker blocking application which acts as a DNS sinkhole and in our configuration also as a DHCP server, intended for use on a private network. It is designed for low-power embedded devices with network capability, such as the Raspberry Pi.*<br>
 [Pi-hole](https://pi-hole.net/)
 
 #### INITIAL SETUP:
