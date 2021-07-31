@@ -1,7 +1,7 @@
 # RaspberryPi: Privacy Gadget
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
-This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers and spoofing its own device identity.
+This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers. It also spoofs its own device identity to make it harder to profile you via your devices MAC address.
 
 ## INTRODUCTION
 
