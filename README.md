@@ -47,7 +47,7 @@ Objective Development:<br/>
 <br/><br/>
 
 <p align="center">
-  <img src="/png/Privacy_Gadget.png" title=Privacy Gadget">
+  <img src="/png/Privacy_Gadget.png" title="Privacy Gadget">
 </p>
 
 *One Pi to rule them all.*
@@ -664,7 +664,7 @@ On your Mac, open System Preferences -> Network Settings
 After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet, even if your Mac's WI-FI is switched off.
 
 <p align="center">
-  <img src="/png/Network-Settings.png" title=Network-Settings">
+  <img src="/png/Network-Settings.png" title="Network-Settings">
 </p>
 
 You should now be able to log into your Privacy Gadget directly via SSH with either of these commands:
@@ -841,7 +841,7 @@ To log into your *Pi-hole*, open your Mac's web browser and enter this address i
 `http://192.168.77.1/admin/index.php?login`
 
 <p align="center">
-  <img src="/png/Pi-hole_Login.png" title=Pi-hole Login">
+  <img src="/png/Pi-hole_Login.png" title="Pi-hole Login">
 </p>
 
 To log in, enter the password that was generated at the final step of the *Pi-hole* installation process, unless you already changed your password earlier. If you did, use the password you have set up.
@@ -849,7 +849,7 @@ To log in, enter the password that was generated at the final step of the *Pi-ho
 Then, navigate to *Settings* and click on *DNS*.
 
 <p align="center">
-  <img src="/png/Pi-hole_DNS.png" title=Pi-hole DNS">
+  <img src="/png/Pi-hole_DNS.png" title="Pi-hole DNS">
 </p>
 
 Make sure all boxes for pre-configured DNS providers are unchecked!
@@ -859,7 +859,7 @@ Further, delete all Upstream DNS Servers. Then enter the local address of your *
 Since you are already checking your DNS settings, scroll down and make sure that your *Pi-hole* listens on all interfaces!
 
 <p align="center">
-  <img src="/png/Pi-hole_Interfaces.png" title=Pi-hole Interfaces">
+  <img src="/png/Pi-hole_Interfaces.png" title="Pi-hole Interfaces">
 </p>
 
 #### RESOURCES:
@@ -879,7 +879,7 @@ Further we recommend this malware and phishing blocklist by [Phishing Army](http
 [https://phishing.army/download/phishing_army_blocklist_extended.txt](https://phishing.army/download/phishing_army_blocklist_extended.txt)
 
 <p align="center">
-  <img src="/png/Pi-hole_Adlists.png" title=Pi-hole Adlists">
+  <img src="/png/Pi-hole_Adlists.png" title="Pi-hole Adlists">
 </p>
 
 Under *Blacklist Management* you can set your own custom blocklists. In this example we block ALL CONNECTIONS to apple servers and related 3rd parties.
@@ -888,7 +888,7 @@ We use RegEx filters for:
 *apple, icloud, akamai, mzstatic, aapling, oscp*
 
 <p align="center">
-  <img src="/png/Pi-hole_Blocklists.png" title=Pi-hole Blocklists">
+  <img src="/png/Pi-hole_Blocklists.png" title="Pi-hole Blocklists">
 </p>
 
 #### IMPORTANT - PLEASE NOTICE:
@@ -1320,7 +1320,7 @@ In future we will add a simple script here, that makes blocking IP-Address range
 
 In this part of our guide, we refer to the ASN IPFire Script by maloe and a blog post by Mike Kuketz:
 
-[ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script)
+[ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script)<br>
 [ASN-Skript: Datensammler haben ausgeschnüffelt – IPFire Teil3](https://www.kuketz-blog.de/asn-skript-datensammler-haben-ausgeschnueffelt-ipfire-teil3/)
 
 
