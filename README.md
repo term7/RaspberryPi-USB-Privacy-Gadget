@@ -183,7 +183,7 @@ Finally, to make absolutely sure your new user will be logged in on boot, run:
 
 `sudo raspi-config`
 
-Navigate to *1 System Options* and select *Boot / Auto login*. Make sure you select user *workstation* to automatically log into desktop.
+Navigate to *1 System Options* and select *Boot / Auto login*. Make sure you select user *baer* to automatically log into 'Console Autologin'.
 Please note that [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) is constantly being developed. The location of the required menu item might change! Then, reboot your Raspberry Pi.
 
 Finally delete user *pi*:
