@@ -98,7 +98,7 @@ A case for the Raspberry Pi and a cooling system. We can recommend the [Pibow Ca
 
 #### OPERATING SYSTEM:
 
-You will need a clean install of *Raspberry Pi OS - Lite* without desktop environment. Instructions how to install it on a micro SD-Card can be found [on this site](https://www.raspberrypi.org/software/). To complete this guide with a Raspberry Pi 4, we recommend you download the latest 64bit system [here](https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2021-05-28/2021-05-07-raspios-buster-arm64-lite.zip).
+You will need a clean install of *Raspberry Pi OS - Lite* without desktop environment. Instructions how to install it on a micro SD-Card can be found [on this site](https://www.raspberrypi.org/software/). To complete this guide with a Raspberry Pi 4, we recommend you download the latest 64bit system [here](https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64-lite.zip).
 
 #### CONNECT TO THE INTERNET AND UPDATE:
 
