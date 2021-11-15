@@ -1246,7 +1246,7 @@ netfilter-persistent save
 ```
 
 The same for IPv6:
-`sudo nano Script/iptables/flush_iptables.sh`
+`sudo nano Script/iptables/flush_ip6tables.sh`
 
 Insert:
 
