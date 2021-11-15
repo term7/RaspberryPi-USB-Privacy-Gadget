@@ -1389,7 +1389,7 @@ WantedBy=multi-user.target
 
 Now we enable the System Service to individually randomize the MAC Addresses of both Wifi-Cards:
 
-`sudo systemctl enable spoofmac@wlan0.service`
+`sudo systemctl enable spoofmac@wlan0.service`<br>
 `sudo systemctl enable spoofmac@wlan1.service`
 
 
