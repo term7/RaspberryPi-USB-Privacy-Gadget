@@ -781,15 +781,15 @@ forward-zone:
 
 Next, disable resolvconf for unbound:
 
-`sudo mv /etc/stubby/stubby.yml /etc/stubby/stubby_original.yml`<br>
-`sudo nano /etc/stubby/stubby.yml`
+`sudo systemctl disable unbound-resolvconf.service`<br>
+`sudo systemctl stop unbound-resolvconf.service`
 
 #### CONFIGURE STUBBY:
 
 Next we configure *stubby* to listen to requests made by *unbound* and to forward these DNS requests to [blahdns](https://blahdns.de/) and [CZ.NIC](https://www.nic.cz/odvr/):
 
-`sudo systemctl disable unbound-resolvconf.service`<br>
-`sudo systemctl stop unbound-resolvconf.service`
+`sudo mv /etc/stubby/stubby.yml /etc/stubby/stubby_original.yml`<br>
+`sudo nano /etc/stubby/stubby.yml`
 
 Insert:
 
