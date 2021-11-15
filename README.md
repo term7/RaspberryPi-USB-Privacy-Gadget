@@ -417,7 +417,7 @@ Edit:<br>
 Execute these commands to set the required iptables:
 
 `sudo iptables -t nat -A POSTROUTING -o wlan1 -j MASQUERADE`<br>
-`sudo netfilter-persistent save
+`sudo netfilter-persistent save`
 
 The Raspberry Pi is supposed to function similiar to a portable router. To achieve this we will use *dnsmasq* as a DNS forwarder and DHCP server. However, we have to keep in mind that we also want to use the *Pi-hole* (see next step) as an ad blocker and network filter. The *Pi-hole* comes bundled with its own version of *dnsmasq*, which will be in conflict with any other existing installation of *dnsmasq*. Thus, for now we will only set up our configuration files without installing *dnsmasq*:
 
