@@ -785,7 +785,8 @@ forward-zone:
 Next, disable resolvconf for unbound:
 
 `sudo systemctl disable unbound-resolvconf.service`<br>
-`sudo systemctl stop unbound-resolvconf.service`
+`sudo systemctl stop unbound-resolvconf.service`<br>
+`sudo rm /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf`                                                   
 
 #### CONFIGURE STUBBY:
 
