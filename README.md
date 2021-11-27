@@ -787,7 +787,7 @@ Next, disable resolvconf for unbound:
 
 `sudo systemctl disable unbound-resolvconf.service`<br>
 `sudo systemctl stop unbound-resolvconf.service`<br>
-`sudo rm /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf`                                                   
+`sudo rm /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf`                                      
 
 #### CONFIGURE STUBBY:
 
@@ -859,6 +859,21 @@ upstream_recursive_servers:
      tls_auth_name: "dot-fi.blahdns.com"
 ```
 
+Finally, make sure that your system uses 'Unbound' and 'Stubby' to prevent DNS leaks:
+
+`sudo nano /etc/dhcpcd.conf`
+
+Insert:
+
+```
+interface eth0
+    static domain_name_servers=127.0.0.1
+
+interface wlan1
+    static domain_name_servers=127.0.0.1
+ ```
+ 
+ 
 #### CONFIGURE PI-HOLE TO USE UNBOUND:
 
 To configure *Pi-hole* to use *unbound*, we log into the *pi-hole web interface*. Here you can also install additional blocklists, setup your own custom blocklists, view query logs, etc.
@@ -916,20 +931,6 @@ We use RegEx filters for:
 <p align="center">
   <img src="/png/Pi-hole_Blocklists.png" title="Pi-hole Blocklists">
 </p>
-
-Further you need to make sure that your Pi also uses 'Unbound' and 'Stubby' to prevent DNS leaks:
-
-`sudo nano /etc/dhcpcd.conf`
-
-Insert:
-
-```
-interface eth0
-    static domain_name_servers=127.0.0.1
-
-interface wlan1
-    static domain_name_servers=127.0.0.1
- ```
 
 #### IMPORTANT - PLEASE NOTICE:
 
