@@ -917,6 +917,20 @@ We use RegEx filters for:
   <img src="/png/Pi-hole_Blocklists.png" title="Pi-hole Blocklists">
 </p>
 
+Further you need to make sure that your Pi also uses 'Unbound' and 'Stubby' to prevent DNS leaks:
+
+`sudo nano /etc/dhcpcd.conf`
+
+Insert:
+
+```
+interface eth0
+    static domain_name_servers=127.0.0.1
+
+interface wlan1
+    static domain_name_servers=127.0.0.1
+ ```
+
 #### IMPORTANT - PLEASE NOTICE:
 
 If you block *apple, icloud, akamai, mzstatic, aapling, oscp* via RegEx, your Mac won't be able to check for Updates, download Updates, connect to iCloud or to  the App-Store. FaceTime, Messages and other native macOS Apps won't be able to connect. This may be exactly what you want, but probably not. It requires a lot of patience, work and effort to fine-tune your custom filters. I.e. check your Query Log reqularly when you try to check for updates, to see which connections are blocked. Then try to whitelist specific processes which are required to perform an update.
