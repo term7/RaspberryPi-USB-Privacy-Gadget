@@ -1255,7 +1255,7 @@ Finally, to enable your firewall run these two commands:<br>
 `sudo sh Script/iptables/iptables.sh`<br>
 `sudo sh Script/iptables/ip6tables.sh`
 
-#### USEFULL IPTABLES COMMANDS:
+#### USEFUL IPTABLES COMMANDS:
 
 View current iptables routing rules:<br>
 `sudo iptables -t nat -v -L -n --line-number`
