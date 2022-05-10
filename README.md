@@ -1366,29 +1366,6 @@ Finally enable the service:<br>
 
 # 12 - Optional Custom Login Information
 
-#### LOGIN WARNING BANNER
-
-A simple banner that warns against unauthorized access:<br>
-`sudo nano /etc/issue.net`
-
-Insert:
-
-```
-            / Unauthorized access to this machine is prohibited /
-
-################################################################################
-#                                                                              #
-#   Welcome...                                                                 #
-#           ...all connections to this machine are monitored and recorded...   #
-#                                                                              #
-#                     Disconnect IMMEDIATELY unless you are AUTHORIZED!        #
-#                                                                              #
-#                                                                              #
-################################################################################
-
-            / Unless authorized you will be disconnected shortly /
-```
-
 #### MESSAGE OF THE DAY
 
 We use a dynamic message of the day to display system information once we log into our Privacy Gadget via ssh.
@@ -1396,8 +1373,6 @@ We use a dynamic message of the day to display system information once we log in
 <p align="center">
   <img src="/png/motd.png" title="motd">
 </p>
-
-
 
 To set up dynamic *motd* run the following commands:
 
@@ -1553,6 +1528,30 @@ echo
 
 rm ~/.tmp
 ```
+
+#### LOGIN WARNING BANNER
+
+A simple banner that warns against unauthorized access:<br>
+`sudo nano /etc/issue.net`
+
+Insert:
+
+```
+            / Unauthorized access to this machine is prohibited /
+
+################################################################################
+#                                                                              #
+#   Welcome...                                                                 #
+#           ...all connections to this machine are monitored and recorded...   #
+#                                                                              #
+#                     Disconnect IMMEDIATELY unless you are AUTHORIZED!        #
+#                                                                              #
+#                                                                              #
+################################################################################
+
+            / Unless authorized you will be disconnected shortly /
+```
+
 
 # 13 - Disable Wifi on MacOS
 
