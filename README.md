@@ -1080,7 +1080,7 @@ To disable your Wifi Access Point from starting automatically run this command:<
 
 To switch it on and off manually:
 
-`sudo systemctl start hostapd.service`
+`sudo systemctl start hostapd.service`<br>
 `sudo systemctl start hostapd.service`
 
 #### RESOURCES:
