@@ -1,4 +1,4 @@
-# RaspberryPi: Privacy Gadget
+# RaspberryPi: Standalone Privacy Gadget
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
 This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers and spoofing its own device identity.
@@ -58,26 +58,26 @@ This Raspberry Pi Privacy Gadget functions like a portable router that allows yo
 
 FEATURES:
 
-1) Enhanced Tracking Protection: We use an existing project, the [Pi-hole](https://pi-hole.net/), as a DNS filter that blocks all requests to Apple servers, Akami, iCloud, etc. It is easy to disable, re-enable, fine-tune and configure these filters via a Web-Interface. I.e. we want to allow software updates. An additional benefit is the original purpose of the Pi-hole: It was designed as an ad blocker. As such it allows you to install blocklists that block known ads and trackers. Further you can  create your own custom blocklists and allowlists.
-2) Encrypted DNS: We implement encrypted DNS via [Unbound](https://nlnetlabs.nl/projects/unbound/about/) and [Stubby](https://dnsprivacy.org/wiki/display/DP/About+Stubby) (DNS-over-TLS). Our DNS porviders of choice are [blahdns](https://blahdns.de/) and [CZ.NIC](https://www.nic.cz/odvr/). You can use our configuration or choose your own providers.
-3) VPN: Setup your etherent gadget to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws. However, feel free to use any VPN provider you [trust](https://privacytools.io/providers/vpn/) - or configure your Ethernet Gadget to route all traffic through Tor. It is your choice.
-4) Hidden Wifi Hotspot: In our configuration we use an additional external Wifi Antenna. This frees our built-in Wifi card to be configured as a hidden hotspot that can be used to share the same internet connection with your other devices (i.e. your smartphone). The hotspot is configured via [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) and [hostapd](https://undeadly.org/cgi?action=article&sid=20051008150710).
-5) Firewall: IP-tables. The optional [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script) by [Mike Kuketz](https://www.kuketz-blog.de/) and maloe can be used to block entire IP-Address ranges of known data collectors, such as Facebook.
-6) Rasndomized Device Identity: Any public Wifi you connect to, from now on will only log the MAC Address and the hostname of your Ethernet Gadget, instead of your Mac's MAC Address. We randomize its MAC-Address during each reboot to further enhance your privacy. Our USB Ethernet Gadget also picks a random hostname from a dictionary during each reboot.
+1) VPN: Setup your etherent gadget to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws. However, feel free to use any VPN provider you [trust](https://privacytools.io/providers/vpn/), i.e. install a Wireguard VPN on a Virtual Private Server and become your own VPN provider - or configure your Ethernet Gadget to route all traffic through Tor. It is your choice.
+2) Enhanced Tracking Protection: We use an existing project, the [Pi-hole](https://pi-hole.net/), as a DNS filter that blocks all requests to Apple servers, Akami, iCloud, etc. It is easy to disable, re-enable, fine-tune and configure these filters via a Web-Interface. I.e. we want to allow software updates. An additional benefit is the original purpose of the Pi-hole: It was designed as an ad blocker. As such it allows you to install blocklists that block known ads and trackers. Further you can  create your own custom blocklists and allowlists.
+3) Encrypted DNS: We implement encrypted DOT (DNS-over-TLS) via [Stubby](https://dnsprivacy.org/dns_privacy_daemon_-_stubby/) and [CZ.NIC](https://www.nic.cz/odvr/). Stubby encrypts DNS queries sent from the Raspberry Pi to increase user privacy.
+4) Hidden Wifi Hotspot: In our configuration we use an additional external Wifi Antenna. This frees our built-in Wifi card to be configured as a hidden hotspot that can be used to share the same internet connection, including the VPN on the Raspberry Pi, with your other devices (i.e. your smartphone). The hotspot is configured via [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) (which is already included in a Pi-hole installation) and [hostapd](https://undeadly.org/cgi?action=article&sid=20051008150710).
+5) Firewall: IP-tables.
+6) Randomized Device Identity: Any public Wifi you connect to, from now on will only log the MAC Address and the hostname of your Ethernet Gadget, instead of your Mac's MAC Address. We randomize its MAC-Address during each reboot to further enhance your privacy. During each reboot our USB Ethernet Gadget also picks a random hostname from a dictionary.
 
-This proposed setup only works reliable if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you do a reboot).
+This proposed setup only works reliable if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you boot your machine).
 
 
 ## SETUP
 
 - [01 - Prerequisites](#01---Prerequisites)
-- [02 - Setup new User and delete User Pi](#02---Setup-new-User-and-delete-User-Pi)
+- [02 - Initial Setup](#02---Initial-Setup)
 - [03 - Configure external Wifi Adapter](#03---Configure-external-Wifi-Adapter)
-- [04 - Setup USB-Ethernet Gadget](#04---Setup-USB-Ethernet-Gadget)
-- [05 - Install Pi-Hole](#05---Install-Pi-Hole)
-- [06 - Configure Encrypted DNS](#06---Configure-Encrypted-DNS)
-- [07 - Setup Blocklists](#07---Setup-Blocklists)
-- [08 - VPN](#08---VPN)
+- [04 - VPN](#04---VPN)
+- [05 - Setup USB-Ethernet Gadget](#05---Setup-USB-Ethernet-Gadget)
+- [06 - Install Pi-Hole](#06---Install-Pi-Hole)
+- [07 - Encrypted DNS](#07---Encrypted-DNS)
+- [08 - Setup Blocklists](#08---Setup-Blocklists)
 - [09 - Hidden Wifi Access Point](#09---Hidden-Wifi-Access-Point)
 - [10 - Firewall](#10---Firewall)
 - [11 - Randomized Device Identity](#11---Randomized-Device-Identity)
@@ -98,11 +98,12 @@ A case for the Raspberry Pi and a cooling system. We can recommend the [Pibow Ca
 
 #### OPERATING SYSTEM:
 
-You will need a clean install of *Raspberry Pi OS - Lite* without desktop environment. Instructions how to install it on a micro SD-Card can be found [on this site](https://www.raspberrypi.org/software/). To complete this guide with a Raspberry Pi 4, we recommend you download the latest 64bit system [here](https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64-lite.zip).
+You will need a clean install of *Raspberry Pi OS - Lite* without desktop environment. Instructions how to install it on a micro SD-Card can be found [on this site](https://www.raspberrypi.org/software/). To complete this guide with a Raspberry Pi 4, we recommend you download the latest 64bit system [here](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit).
+
+# 02 - Initial Setup
 
 #### CONNECT TO THE INTERNET AND UPDATE:
 
-Before you start following this guide, you should log into your Raspberry Pi, connect to the internet and update your installation.
 After flushing the operating system onto your SD-Card, open the Terminal.app on your Mac and execute the following command to enable ssh access:
 `touch /Volumes/boot/ssh`
 
@@ -125,18 +126,22 @@ network={
 }
 ```
 
-IMPORTANT: Change the value *ssid* to the network you want to connect to, and *psk* to the required Wifi password and adjust the country code to your location!
+IMPORTANT: Change the value *your-network* to the network you want to connect to, and *your-wifi-password* to the required Wifi password and adjust the country code (in this example *de*) to your location!
+
+Also before you insert the SD-card into your Raspberry Pi, you need to create a user and a password. The former standard user *pi* has been deprecated by the Rasperry Pi Foundation. Because we are doing a headless setup without desktop environment your user has to be created before the first boot. Execute these four commands to create your new user (replace *username* and *password* with a username and a password of your choice):
+
+`echo 'username:' > /Volumes/boot/tmp.txt`<br>
+`echo 'password' | openssl passwd -6 -stdin >> /Volumes/boot/tmp.txt`<br>
+`tr -d '\n' < /Volumes/boot/tmp.txt > /Volumes/boot/userconf.txt`<br>
+`rm /Volumes/boot/tmp.txt`
 
 Next insert the SD-Card into your Raspberry Pi and boot it up.
 There are several ways to find your Raspberry Pi on your local network. You could log into your router and look up its address.
-Another way is this command:<br>
+One way to find the Raspberry Pi on your network is this command:<br>
 `arp -a`
 
 Once you find the local IP address of your Pi, open a terminal window and connect via ssh, i.e.:<br>
-`ssh pi@192.168.8.168` (The default password is *raspberry*)
-
-Once you are logged in, update your Raspberry Pi:<br>
-`sudo apt update && sudo apt upgrade -y`
+`ssh username@192.168.8.168` (Username and password are the username and password you set up in the previous step).
 
 #### ADDITIONAL STEPS:
 
@@ -163,49 +168,53 @@ LANGUAGE=en_GB.UTF-8
 To set your timezone, i.e.:<br>
 `sudo timedatectl set-timezone Europe/Berlin`
 
+#### UPDATE YOUR PI:
 
-# 02 - Setup new User and delete User Pi
+Before you proceed, update your Raspberry Pi:<br>
+`sudo apt update && sudo apt upgrade -y`
 
-For security reasons we recommend to setup a new admin account and delete the standard user *pi*. For this guide we use an admin account called *baer*.
+#### AUTOMATIC LOGIN:
 
-To create the user *baer* with all privileges, log into your Raspberry Pi via SSH and execute the following commands (you will be asked to create a password for your new user):
-
-`sudo adduser baer`<br>
-`sudo usermod -a -G adm,tty,dialout,cdrom,audio,video,plugdev,games,users,input,netdev,gpio,i2c,spi,sudo baer`
-
-Then log into your new user account:<br>
-`su - baer`
-
-Once you are logged in, change `pi` to `baer` in  */etc/systemd/system/autologin@.service*:<br>
-`sudo nano /etc/systemd/system/autologin@.service`
-
-Finally, to make absolutely sure your new user will be logged in on boot, run:
+To make sure your user will be logged in on boot, run:
 
 `sudo raspi-config`
 
-Navigate to *1 System Options* and select *Boot / Auto login*. Make sure you select user *baer* to automatically log into 'Console Autologin'.
+Navigate to *1 System Options* and select *Boot / Auto login*. Select *Console Autologin*.
 Please note that [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) is constantly being developed. The location of the required menu item might change! Then, reboot your Raspberry Pi.
 
-Finally delete user *pi*:
+#### A VIEW SECURITY RECOMMENDATIONS:
 
-`sudo pkill -u pi`<br>
-`sudo deluser -remove-home pi`
+SSH:
 
-#### OPTIONAL BUT RECOMMENDED FOR SECURITY REASONS:
+We strongly recommend you tighten your SSHD login security.
+Change the default SSH port from 22 to an unused port of your choice.
 
-Require sudo password:<br>
+`sudo nano /etc/ssh/sshd_config`
+
+Find and change this line:
+`#port 22`
+
+Also we suggest you enable key-based authentication instead of password based authetication. This tutorial should get you started:
+[https://pimylifeup.com/raspberry-pi-ssh-keys/](https://pimylifeup.com/raspberry-pi-ssh-keys/)
+
+Even better: get a hardwarekey (Nitrokey or Yubikey)
+
+Another option is two-factor authentication:
+[https://pimylifeup.com/setup-2fa-ssh/](https://pimylifeup.com/setup-2fa-ssh/)
+
+SUDO:
+
+We recommend you ask for a password when you use sudo:<br>
 `sudo nano /etc/sudoers.d/010_pi-nopasswd`
 
-Change content to:
-
-`baer ALL=(ALL) PASSWD: ALL`
-
+Replace its content with (*username* is the username you set up earlier):<br>
+`username ALL=(ALL) PASSWD: ALL`
 
 # 03 - Configure external Wifi Adapter
 
 If you use an external wifi adapter that works out of the box, you can skip this step.
 
-We want to use a good external wifi adapter mainly for one reason: a good wifi adapter that supports USB3 connected to one of the Raspberry Pi's USB3 ports is faster and performs better than the built in wifi card. Our external Wifi Adapter is the [Alfa AWUS036ACS](https://www.alfa.com.tw/products/awus036acs?variant=36473965969480). Unfortunately this wifi antenna does not work out of the box. We need to compile its drivers. If you want to use another wifi adapter than the Alfa AWUS036ACS, that does not work out of the box you will have to research online how to compile the required driver.
+Our external Wifi Adapter is the [Alfa AWUS036ACS](https://www.alfa.com.tw/products/awus036acs?variant=36473965969480). This wifi adapter is small and unobtrusive. But we want to use this wifi adapter mainly for one reason: a good wifi adapter that supports USB3 connected to one of the Raspberry Pi's USB3 ports is faster and performs better than the built in wifi card. Unfortunately this wifi antenna does not work out of the box. We need to compile its drivers. If you want to use another wifi adapter than the Alfa AWUS036ACS, that does not work out of the box you will have to research online how to compile the required driver.
 
 Install dependencies:<br>
 `sudo apt install git raspberrypi-kernel-headers dkms -y`
@@ -235,6 +244,8 @@ If you ever need to uninstall this driver:
 After every update of the *raspberrypi-kernel-headers* you will have to recompile this driver, because each update of the *raspberrypi-kernel-headers* will delete it!
 
 DRIVER OPTIONS:
+
+Driver options for example let you turn off the blinking LED of the Wifi-Adapter. More importantly they enable you to switch the adapter to use USB3 instead of USB2. The following file contains possible options and instructions of how to use them. Read it!
 
 Create */etc/modprobe.d/88XXau.conf*:<br>
 `sudo nano /etc/modprobe.d/88XXau.conf`
@@ -312,14 +323,12 @@ options 88XXau rtw_drv_log_level=0 rtw_led_ctrl=1 rtw_vht_enable=1 rtw_power_mgn
 # 0 = No switch
 # 1 = Switch from usb 2.0 to usb 3.0
 # 2 = Switch from usb 3.0 to usb 2.0 (default)
-```
-
-These options for example let you turn off the blinking LED of the Wifi-Adapter. More importantly they enable you to switch the adapter from USB2 to USB3.
+``` 
 
 
 #### ASSIGN PERSISTENT NAMES TO WIFI ADAPTERS:
 
-We noticed, that sometimes the external wifi adapter is called wlan0, sometimes wlan1. However we want to assign a persistent reliable name across reboots. To achieve this we decided we always plug our wifi adapter into the upper USB3 port. Next we edit these udev rules:
+We noticed, that sometimes the external wifi adapter is called *wlan0*, sometimes *wlan1*. However we want to assign a persistent reliable names across reboots. To achieve this we decided we always plug our wifi adapter into the upper USB3 port. We need to change udev rules to ensure it is always called *wlan1* and the built-in wifi is always called *wlan0*:
 
 `sudo ln -nfs /dev/null /etc/systemd/network/99-default.link`
 
@@ -344,11 +353,13 @@ Insert:
 
 ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="sdio", KERNELS=="mmc1:0001:1", NAME="wlan0"
 ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.1",       NAME="wlan1"
-ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.2",       NAME="wlan2"
+#ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.2",       NAME="wlan2"
 #ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.4",       NAME="wlan3"
 ```
 
 This ensures that the onboard wifi will always be called *wlan0* and any wifi adapter plugged into the upper USB3 port will be called *wlan1*.
+
+Now insert your wifi adapter into the upper USB3 port and reboot your Raspberry Pi.
 
 Reboot:<br>
 `sudo reboot now`
@@ -357,17 +368,122 @@ Reboot:<br>
 [https://github.com/aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au)
 
 
-# 04 - Setup USB-Ethernet Gadget
+# 04 - VPN
 
-First we will configure the Raspberry Pi as a USB-Ethernet device that connects to your Mac via USB-C. We need to configure the Pi to load additional modules so that usb0 (the direct connection to our Mac via USB-C) becomes available as a network interface. Further we assign a static IP-address to this interface. Then we set up routing and masquerading via iptables to route traffic from our external Wifi-Adapter to our new usb0 interface.
+Next we configure our Raspberry Pi to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws.
+If you want to use ProtonVPN as well, you first have to visit their [website](https://protonvpn.com/) and open account. You can use a [free account](https://protonvpn.com/support/how-to-create-free-vpn-account/) or choose one of the paid options.
+
+To install ProtonVPN, execute the following two commands:<br>
+`sudo apt install openvpn dialog python3-pip python3-setuptools -y`<br>
+`sudo pip3 install protonvpn-cli`
+
+Further we need to install *iptables*, which we will later also use to setup our Firewall:<br>
+`sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent`
+
+To forward all traffic through the VPN we also need to setup the required iptable rule:<br>
+`sudo iptables -t nat -A POSTROUTING -o proton0 -j MASQUERADE`<br>
+`sudo netfilter-persistent save`
+
+You need to initialize ProtonVPN only once. In future your RaspberryPi will connect automatically:<br>
+`sudo protonvpn init`
+
+You will be asked to enter your ProtonVPN username, your password and to choose your ProtonVPN subscription plan (enter whatever plan you purchased, i.e. *Free*, *Basic* or *Plus*) to complete the initialization.
+
+To configure ProtonVPN run the following command:<br>
+`sudo protonvpn configure`
+
+Here you can change all of your settings, i.e. change the DNS Management of your VPN service or change the default protocol (we recommend TCP), etc. Please consider that the *Kill Switch* may later interfere with your *Pi-hole* in a negative way. If you suddenly cannot connect anymore, we recommend you disable the *Kill Switch* and try again. The *Pi-hole* will most likely bypass your VPN's DNS-settings if you disable the *Kill Switch* (we did not test this).
+
+To check the connection status of ProtonVPN, execute:<br>
+`protonvpn status`
+
+#### CREATE SYSTEM SERVICE TO START PROTONVPN AT BOOT:
+
+`sudo nano /etc/systemd/system/protonvpn.service`
+
+Insert:
+
+```
+[Unit]
+Description=Proton VPN
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/protonvpn c --sc
+ExecStop=/usr/local/bin/protonvpn d
+ExecReload=/usr/local/bin/protonvpn c --sc
+Environment=SUDO_USER=username
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### PLEASE NOTICE:
+
+Unless you subscribed for a *Plus Membership* the above system service won't work, as it attempts to use ProtonVPN's [secure core](https://protonvpn.com/support/secure-core-vpn/) which is only available to paying *Plus Members*. If you always want to connect to the fastest server (any membership), insert these lines instead:
+
+```
+[Unit]
+Description=Proton VPN
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/protonvpn c --fastest
+ExecStop=/usr/local/bin/protonvpn d
+ExecReload=/usr/local/bin/protonvpn c --fastest
+Environment=SUDO_USER=username
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+```
+
+You change the protonvpn command in this System Service according to your own preferences. I.e. if you always want to connect to a random server, replace *--fastest* with *--random*. To see all available options, run:<br>
+`protonvpn -h`
+
+Enable and start *protonvpn.service*:
+
+`sudo systemctl enable protonvpn.service`<br>
+`sudo systemctl start protonvpn.service`
+
+#### IMPORTANT:
+
+If all DNS requests were handled by *ProtonVPN* (i.e. if you enabled *DNS-leak Protection* and *Kill Switch*), your *Pi-hole* suddenly would stop filtering ads and trackers as long as you use the VPN. This is the reason why we do not recommend to use the *Kill Switch* in this specific setup. Also we recommend you disable *DNS Managment* in the ProtonVPN settings because we want our *Pi-hole* to manage all DNS requests to filter ads, trackers and malware - even while we use our VPN Service. This also is the  reason why we did configure our *Pi-hole* to listen on ALL INTERFACES and why we chose to setup encrypted DNS with trustworth, privacy respecting partners (hopefully).
+
+#### OPTIONAL:
+
+IPv6 may be a privacy risk (we neither confirm nor oppose this claim). If you are unsure, you may disable IPv6 altogether to prevent DNS leaks:<br>
+`sudo nano /etc/sysctl.conf`
+
+Insert at the end:
+```
+# Disable IPv6
+
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+```
+
+To make your changes take effect, run this command or reboot your device:
+`sudo sysctl -p`
+
+# 05 - Setup USB-Ethernet Gadget
+
+Now we will configure the Raspberry Pi as a USB-Ethernet device that connects to your Mac via USB-C. We need to configure the Pi to load additional modules so that usb0 (the direct connection to our Mac via USB-C) becomes available as a network interface. Further we assign a static IP-address to this interface.
 For the usb0 interface to become available with each reboot we also need to create a script and a system service that executes this script every time the Raspberry Pi boots up.
 
 #### INSTALL DEPENDENCIES AND CONFIGURE REQUIRED MODULES:
 
-Make sure *rpi-eeprom* and other dependencies are installed:
+Make sure *rpi-eeprom* is installed:
 
 `sudo apt install rpi-eeprom -y`<br>
-`sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent`
 
 First edit */boot/config.txt*:<br>
 `sudo nano /boot/config.txt`
@@ -382,7 +498,7 @@ Insert:<br>
 `modules-load=dwc2`
 
 IMPORTANT:<br>
-Do not start a new line. Insert at the end of the long line, the only separation should be a single space.
+Do not start a new line. Insert at the end of the long line after *rootwait*. The only separation should be a single space.
 
 Then edit */etc/modules*:<br>
 `sudo nano /etc/modules`
@@ -408,22 +524,18 @@ Now we need to enable routing and masquerading to forward internet traffic from 
 
 Insert:
 
-`# Enable IPv4 routing`<br>
-`net.ipv4.ip_forward=1`
+```
+# Enable IPv4 routing
+net.ipv4.ip_forward=1
+```
 
-Also find and edit a line in */etc/sysctl.conf*:<br>
+Also find and uncomment this line in */etc/sysctl.conf*:<br>
 `sudo nano /etc/sysctl.conf`
 
 Edit:<br>
 `net.ipv4.ip_forward=1`
 
-Execute these commands to set the required iptables:
-
-`sudo iptables -t nat -A POSTROUTING -o wlan1 -j MASQUERADE`<br>
-`sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE`<br>
-`sudo netfilter-persistent save`
-
-The Raspberry Pi is supposed to function similiar to a portable router. To achieve this we will use *dnsmasq* as a DNS forwarder and DHCP server. However, we have to keep in mind that we also want to use the *Pi-hole* (see next step) as an ad blocker and network filter. The *Pi-hole* comes bundled with its own version of *dnsmasq*, which will be in conflict with any other existing installation of *dnsmasq*. Thus, for now we will only set up our configuration files without installing *dnsmasq*:
+The Raspberry Pi is supposed to function similiar to a portable router. To achieve this we will use *dnsmasq* as a DNS forwarder and DHCP server. However, we have to keep in mind that we also want to use the *Pi-hole* (see next step) as an ad blocker and network filter. The *Pi-hole* comes bundled with its own version of *dnsmasq*, which will be in conflict with any other existing installation of *dnsmasq*. Thus, for now we will only set up our configuration files without installing *dnsmasq*. This also means, that the USB-Ethernet Gadget will not yet be able to connect to your Mac to the internet. It will only be able to connect to the internet after you install *Pi-hole*. Then it will forward all traffic between *usb0* and *proton0* according to the iptable rule we set up for our VPN.
 
 Create configuration folder and main configuration file:<br>
 `sudo mkdir /etc/dnsmasq.d`<br>
@@ -446,6 +558,13 @@ dhcp-option=set:usb0,3,192.168.77.1
 address=/access.tardigrade/192.168.77.1
                 # Alias for this router
 ```
+
+We also create the configuration file for *proton0*:<br>
+`sudo nano /etc/dnsmasq.d/03-protonvpn.conf`
+
+Insert:<br>
+`interface=proton0 # VPN interface`
+
 
 #### SCRIPT AND SYSTEM SERVICE TO ENABLE USB0 AT BOOT:
 
@@ -528,7 +647,7 @@ Tutorial by Ben Hardill:
 We would like to thank the Raspberry Pi Foundation and Ben Hardill for the great tutorials that made this privacy gadget possible!
 
 
-# 05 - Install Pi-hole
+# 06 - Install Pi-hole
 
 *Pi-hole is a Linux network-level advertisement and Internet tracker blocking application which acts as a DNS sinkhole and in our configuration also as a DHCP server, intended for use on a private network. It is designed for low-power embedded devices with network capability, such as the Raspberry Pi.*<br>
 [Pi-hole](https://pi-hole.net/)
@@ -559,97 +678,94 @@ Ok
   <img src="/png/Pi-hole_03.png" title="Static IP Needed">
 </p>
 Ok: We already configured our static IP!<br>
-:-)
+Select YES
 <br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_04.png" title="Select Interface">
 </p>
-Select wlan1: it is configured to be our intert facing interface.<br>
+Select proton0: it is configured to be our intert facing interface. We don't want to allow connections without VPN...<br>
 Ok
 <br><br>
 
 <p align="center">
   <img src="/png/Pi-hole_05.png" title="Custom DNS">
 </p>
-DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC<br>
+Select: No    Set static IP using custom values <br>
 Ok
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_06.png" title="Upstream DNS Provider">
-</p>
-Upstream DNS Provider: 193.17.47.1, 185.43.135.1<br>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_07.png" title="Is DNS correct?">
-</p>
-Select Yes
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_08.png" title="Blocklists">
-</p>
-OK: We will add more later!
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_09.png" title="Select Protocols">
-</p>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_10.png" title="Use current settings?">
-</p>
-Important: Select No
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_11.png" title="Enter IPv4 Address">
+  <img src="/png/Pi-hole_06.png" title="Enter IPv4 Address">
 </p>
 Enter IPv4 Address: 192.168.77.1/24 *(This is the static IP we assigned to USB0)*<br>
 OK
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_12.png" title="Default Gateway">
+  <img src="/png/Pi-hole_07.png" title="Default Gateway">
 </p>
 Enter default gateway: 192.168.77.1<br>
 OK
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_13.png" title="Settings Correct?">
+  <img src="/png/Pi-hole_08.png" title="Settings Correct?">
 </p>
-OK
+YES
+<br><br>
+
+
+
+<p align="center">
+  <img src="/png/Pi-hole_09.png" title="Custom DNS">
+</p>
+DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC (which is a good DNS porvider that respects your privacy)<br>
+Ok
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_14.png" title="Admin Interface">
+  <img src="/png/Pi-hole_10.png" title="Upstream DNS Provider">
+</p>
+Insert the IP's of CZ.NIC, our temporary DNS Provider: 193.17.47.1, 185.43.135.1<br>
+Ok
+<br><br>
+
+<p align="center">
+  <img src="/png/Pi-hole_11.png" title="Is DNS correct?">
+</p>
+Select Yes
+<br><br>
+
+<p align="center">
+  <img src="/png/Pi-hole_12.png" title="Blocklists">
+</p>
+OK: We will add more later!
+<br><br>
+
+<p align="center">
+  <img src="/png/Pi-hole_13.png" title="Admin Interface">
 </p>
 Select On<br>
 OK
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_15.png" title="web server">
+  <img src="/png/Pi-hole_14.png" title="Web Server">
 </p>
 Select On<br>
 OK
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_16.png" title="log queries">
+  <img src="/png/Pi-hole_15.png" title="log queries">
 </p>
 Select On: *(We want to see what addresses our Mac connects to!)*<br>
 OK
 <br><br>
 
 <p align="center">
-  <img src="/png/Pi-hole_17.png" title="privacy mode">
+  <img src="/png/Pi-hole_16.png" title="privacy mode">
 </p>
 Select 0: Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*<br>
 OK
@@ -658,22 +774,22 @@ OK
 After a short installation period you will see this window:
 
 <p align="center">
-  <img src="/png/Pi-hole_18.png" title="passwd">
+  <img src="/png/Pi-hole_17.png" title="passwd">
 </p>
 Write down your password!<br>
 OK
 
 To enable your Pi-hole as your dhcp server, execute the following command:<br>
-`sudo pihole -a enabledhcp "192.168.77.2" "192.168.77.21" "192.168.77.1" "24" "baer"`
+`sudo pihole -a enabledhcp "192.168.77.2" "192.168.77.21" "192.168.77.1" "24" "username"`
 
 If you want to change the password of your Pi-hole, execute this comand:<br>
 `pihole -a -p`
 
-To update the Pi-hole after each reboot, edit */etc/cron.d/pihole*:<br>
-`sudo nano /etc/cron.d/pihole`
+To update the Pi-hole, execute this command:<br>
+`pihole up`
 
-Change the first configuration line to:<br>
-`@reboot root    PATH="$PATH:/usr/sbin:/usr/local/bin/" pihole updateGravity >/var/log/pihole_updateGravity.log || cat /var/log/pihole_updateGravity.log`
+To update all blocklists, execute this command:<br>
+`pihole -g`
 
 #### REBOOT:
 
@@ -681,7 +797,7 @@ Now it is time to reboot your Raspberry Pi:<br>
 `sudo reboot now`
 
 On your Mac, open System Preferences -> Network Settings
-After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet, even if your Mac's WI-FI is switched off.
+After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet with all your traffic being sent through ProtonVPN, even if your Mac's WI-FI is switched off.
 
 <p align="center">
   <img src="/png/Network-Settings.png" title="Network-Settings">
@@ -689,8 +805,8 @@ After a short while your Raspberry Pi should show up as *Tardigrade*. If it appe
 
 You should now be able to log into your Privacy Gadget directly via SSH with either of these commands:
 
-`ssh baer@192.168.77.1`<br>
-`ssh baer@access.tardigrade`
+`ssh username@192.168.77.1`<br>
+`ssh username@access.tardigrade`
 
 #### RESOURCES:
 
@@ -698,102 +814,22 @@ A very big THANK YOU to the developers of the Pi-hole. This is a great project!
 [https://pi-hole.net/](https://pi-hole.net/)
 
 
-# 06 - Configure Encrypted DNS
+# 07 - Encrypted DNS
 
-We use *unbound* as a validating, recursive caching DNS server and *stubby* as an upstream DNS stub resolver. Our *Pi-hole* will have to be configured to use *unbound* for its DNS requests, while *unbound* needs to be configured to forward fresh requests to *stubby*:
+We use *stubby* as a stub resolver for encrypted DNS requests (DoT) to CZ.NIC's open DNSSEC Validating Resolvers.
+Finally we will configure our *Pi-hole* to use *stubby* for all DNS requests. 
 
-First we configure *unbound* (*unbound* will use port 7397).  Because *unbound* caches DNS requests locally, repeated future DNS requests will be faster, more private and more secure. Further, we will setup *stubby* as an upstream DNS resolver (*stubby* will use port 9053). We do this, because if a DNS request is not in the *unbound* cache, *unbound* will have to perform an online DNS lookup. However, instead of directly requesting the required DNS information, i.e. from a Google Server, we forward this request to our installation of *stubby*, an upstream DNS resolver that can handle encrypted DNS requests. We will configure in *stubby* to contact a privacy respecting DNS service of our choice that also supports enrypted DNS (DNS-over-TLS) and that has a *no logs policy*. We use [blahdns](https://blahdns.de/) and [CZ.NIC](https://www.nic.cz/odvr/).
-You can use our configuration or choose your own providers.
-Finally we will configure our *Pi-hole* to forward all DNS requests to *unbound* instead of connecting directly to a DNS resolver. 
+Install *stubby*:
 
-First we install *unbound* and *stubby*:
-
-`sudo apt install unbound stubby -y`
-
-#### CONFIGURE UNBOUND:
-
-Download *unbound root hints*:<br>
-`wget https://www.internic.net/domain/named.root -qO- | sudo tee /var/lib/unbound/root.hints`
-
-Then create the configuration file for *unbound*:<br>
-`sudo nano /etc/unbound/unbound.conf.d/pi-hole.conf`
-
-Insert:
-
-```
-server:
-    # If no logfile is specified, syslog is used
-    # logfile: "/var/log/unbound/unbound.log"
-    verbosity: 0
-    root-hints: "/var/lib/unbound/root.hints"
-    do-not-query-localhost:  no
-
-    interface: 127.0.0.1
-    port: 7397
-    do-ip4: yes
-    do-udp: yes
-    do-tcp: yes
-
-    # May be set to yes if you have IPv6 connectivity
-    do-ip6: no
-
-    # You want to leave this to no unless you have *native* IPv6. With 6to4 and
-    # Terredo tunnels your web browser should favor IPv4 for the same reasons
-    prefer-ip6: no
-
-    # Use this only when you downloaded the list of primary root servers!
-    # If you use the default dns-root-data package, unbound will find it automatically
-    #root-hints: "/var/lib/unbound/root.hints"
-
-    # Trust glue only if it is within the server's authority
-    harden-glue: yes
-
-    # Require DNSSEC data for trust-anchored zones, if such data is absent, the zone becomes BOGUS
-    harden-dnssec-stripped: yes
-
-    # Don't use Capitalization randomization as it known to cause DNSSEC issues sometimes
-    # see https://discourse.pi-hole.net/t/unbound-stubby-or-dnscrypt-proxy/9378 for further details
-    use-caps-for-id: no
-
-    # Reduce EDNS reassembly buffer size.
-    # Suggested by the unbound man page to reduce fragmentation reassembly problems
-    edns-buffer-size: 1472
-
-    # Perform prefetching of close to expired message cache entries
-    # This only applies to domains that have been frequently queried
-    prefetch: yes
-
-    # One thread should be sufficient, can be increased on beefy machines. In reality for most users running on small networks or on a single machine, it should be unnecessary to seek performance enhancement by increasing num-threads above 1.
-    num-threads: 1
-
-    # Ensure kernel buffer is large enough to not lose messages in traffic spikes
-    so-rcvbuf: 1m
-
-    # Ensure privacy of local IP ranges
-    private-address: 192.168.0.0/16
-    private-address: 169.254.0.0/16
-    private-address: 172.16.0.0/12
-    private-address: 10.0.0.0/8
-    private-address: fd00::/8
-    private-address: fe80::/10
-
-forward-zone:
-    name: "."
-        forward-addr: 127.0.0.1@9053
-        forward-addr: ::1@9053
-```
-
-Next, disable resolvconf for unbound:
-
-`sudo systemctl disable unbound-resolvconf.service`<br>
-`sudo systemctl stop unbound-resolvconf.service`<br>
-`sudo rm /etc/unbound/unbound.conf.d/resolvconf_resolvers.conf`                                      
+`sudo apt install stubby -y`
 
 #### CONFIGURE STUBBY:
 
-Next we configure *stubby* to listen to requests made by *unbound* and to forward these DNS requests to [blahdns](https://blahdns.de/) and [CZ.NIC](https://www.nic.cz/odvr/):
+Make a backup of the original configuration file:<br>
+`sudo mv /etc/stubby/stubby.yml /etc/stubby/stubby_original.yml`
 
-`sudo mv /etc/stubby/stubby.yml /etc/stubby/stubby_original.yml`<br>
+
+Then create the configuration file for *stubby*:<br>
 `sudo nano /etc/stubby/stubby.yml`
 
 Insert:
@@ -822,79 +858,70 @@ round_robin_upstreams: 1
 upstream_recursive_servers:
 ############################ DEFAULT UPSTREAMS  ################################
 
-#IPv4 ODVR
+#IPv4 ODVR:
    - address_data: 193.17.47.1
      tls_auth_name: "odvr.nic.cz"
    - address_data: 185.43.135.1
      tls_auth_name: "odvr.nic.cz"
 
-#IPv4 BLAHDNS
-   - address_data: 192.53.175.149
-     tls_auth_name: "dot-sg.blahdns.com"
-   - address_data: 45.91.92.121
-     tls_auth_name: "dot-ch.blahdns.com"
-   - address_data: 139.162.112.47
-     tls_auth_name: "dot-jp.blahdns.com"
-   - address_data: 78.46.244.143
-     tls_auth_name: "dot-de.blahdns.com"
-   - address_data: 95.216.212.177
-     tls_auth_name: "dot-fi.blahdns.com"
-
-#IPv6 ODVR
-   - address_data: 2001:148f:ffff::1
-     tls_auth_name: "odvr.nic.cz"
-   - address_data: 2001:148f:fffe::1
-     tls_auth_name: "odvr.nic.cz"
-
-#IPv6 BLAHDNS
-   - address_data: 2400:8901::f03c:92ff:fe27:870a
-     tls_auth_name: "dot-sg.blahdns.com"
-   - address_data: 2a0e:dc0:6:23::2
-     tls_auth_name: "dot-ch.blahdns.com"
-   - address_data: 2400:8902::f03c:92ff:fe27:344b 
-     tls_auth_name: "dot-jp.blahdns.com"
-   - address_data: 2a01:4f8:c17:ec67::1 
-     tls_auth_name: "dot-de.blahdns.com"
-   - address_data: 2a01:4f9:c010:43ce::1
-     tls_auth_name: "dot-fi.blahdns.com"
+#IPv6 ODVR (uncomment the following lines if you want use IPv6):
+#   - address_data: 2001:148f:ffff::1
+#     tls_auth_name: "odvr.nic.cz"
+#   - address_data: 2001:148f:fffe::1
+#     tls_auth_name: "odvr.nic.cz"
 ```
-
-Finally, make sure that your system uses *unbound* and *stubby* to prevent DNS leaks:
-
+Finally, make sure that *stubby* is used globally on all outward facing network interfaces:<br>
 `sudo nano /etc/dhcpcd.conf`
 
-Insert:
+Insert at the end:
 
 ```
-interface eth0
-    static domain_name_servers=127.0.0.1
-
 interface wlan1
     static domain_name_servers=127.0.0.1
- ```
+
+interface eth0
+    static domain_name_servers=127.0.0.1
+```
 
 Reboot:
  
 `sudo reboot now`
- 
- 
-After the reboot, check that */etc/resolv.conf* only contains *127.0.0.1* as a nameserver. If not, delete all other entries and reboot again:
 
+#### TEST YOUR DNS CONFIGURATION:
+
+Check which nameserver is used:<br>
 `cat /etc/resolv.conf`
 
-If the output looks like this, everything is ok:<br>
+If you see only this *nameserver*, your configuration is correct:<br>
+`nameserver 127.0.0.1`
 
-```
-# Generated by resolvconf
-nameserver 127.0.0.1
-```
+Run the dig command to test DNS resolution. You should see the status as “NOERROR” with an IP address for the pi-hole.net server:<br>
+`dig pi-hole.net @127.0.0.1 -p 9053`
 
-If not, edit the file accordingly and reboot again.
- 
- 
-#### CONFIGURE PI-HOLE TO USE UNBOUND:
+<p align="center">
+  <img src="/png/dig_Pi-hole.png" title="dig Pi-Hole">
+</p>
 
-To configure *Pi-hole* to use *unbound*, we log into the *pi-hole web interface*. Here you can also install additional blocklists, setup your own custom blocklists, view query logs, etc.
+The final test is to ensure that DNSSEC is working properly. If the following commands are returned properly, DNSSEC is properly working.
+
+This command should return SERVFAIL with NO IP address:<br>
+`dig sigfail.verteiltesysteme.net @127.0.0.1 -p 9053`
+
+<p align="center">
+  <img src="/png/dig_SIGFAIL.png" title="SERVFAIL">
+</p>
+
+This command should return NOERROR WITH an IP address:<br>
+`dig sigok.verteiltesysteme.net @127.0.0.1 -p 9053`
+
+<p align="center">
+  <img src="/png/dig_SIGOK.png" title="SIGOK">
+</p>
+
+
+#### CONFIGURE PI-HOLE TO USE STUBBY:
+
+To configure *Pi-hole* to use *stubby*, we log into the *pi-hole web interface*. Here you can also install additional blocklists, setup your own custom blocklists, view query logs, etc.
 
 To log into your *Pi-hole*, open your Mac's web browser and enter this address into the address bar:<br>
 `http://192.168.77.1/admin/index.php?login`
@@ -903,7 +930,7 @@ To log into your *Pi-hole*, open your Mac's web browser and enter this address i
   <img src="/png/Pi-hole_Login.png" title="Pi-hole Login">
 </p>
 
-To log in, enter the password that was generated at the final step of the *Pi-hole* installation process, unless you already changed your password earlier. If you did, use the password you have set up.
+To log in, enter the password that was generated at the final step of the *Pi-hole* installation process, unless you already changed your password earlier.
 
 Then, navigate to *Settings* and click on *DNS*.
 
@@ -913,29 +940,41 @@ Then, navigate to *Settings* and click on *DNS*.
 
 Make sure all boxes for pre-configured DNS providers are unchecked!
 Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server:<br>
-`127.0.0.1#7397`
+`127.0.0.1#9053`
 
-Since you are already checking your DNS settings, scroll down and make sure that your *Pi-hole* listens on all interfaces!
+Since you are already in *Settings*, you can also change in *API / Web Interface* the appearance of the web interface if you like, i.e. to *Star Trek LCARS theme (dark)*:
 
 <p align="center">
   <img src="/png/Pi-hole_Interfaces.png" title="Pi-hole Interfaces">
 </p>
 
+
 #### RESOURCES:
 
-Pi-Hole & Unbound:
-[https://docs.pi-hole.net/guides/dns/unbound/](https://docs.pi-hole.net/guides/dns/unbound/)
+Stubby:
+[https://dnsprivacy.org/dns_privacy_daemon_-_stubby/about_stubby/](https://dnsprivacy.org/dns_privacy_daemon_-_stubby/about_stubby/)<br>
+[https://www.nic.cz/odvr/](https://www.nic.cz/odvr/)<br>
+[https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en](https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en)
 
 
 
-# 07 - Setup Blocklists
+# 08 - Setup Blocklists
 
 Still in your *Pi-hole* web interface, navigate to *Group Management / Adlists*. Here you can add new blocklists. We strongly recommend [Steven Black's](https://github.com/StevenBlack/hosts) blocklist for fakenews, gambling, social trackers:
 
 [https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts](https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts)
 
-Further we recommend this malware and phishing blocklist by [Phishing Army](https://phishing.army/):
-[https://phishing.army/download/phishing_army_blocklist_extended.txt](https://phishing.army/download/phishing_army_blocklist_extended.txt)
+Further we can recommend the following blocklists:
+
+- [https://phishing.army/download/phishing_army_blocklist_extended.txt](https://phishing.army/download/phishing_army_blocklist_extended.txt)
+- [https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt)
+- [https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt)
+- [https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt](https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt.txt)
+- [https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt](https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt)
+- [https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt](https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt)
+- [    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware](    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware)
+- [    https://v.firebog.net/hosts/Prigent-Phishing.txt](    https://v.firebog.net/hosts/Prigent-Phishing.txt)
+- [https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt](https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt)
 
 <p align="center">
   <img src="/png/Pi-hole_Adlists.png" title="Pi-hole Adlists">
@@ -944,7 +983,7 @@ Further we recommend this malware and phishing blocklist by [Phishing Army](http
 Under *Blacklist Management* you can set your own custom blocklists. In this example we block ALL CONNECTIONS to apple servers and related 3rd parties.
 We use RegEx filters for:
 
-*apple, icloud, akamai, mzstatic, aapling, oscp*
+*apple, icloud, apple-cloudkit, mzstatic, aaplimg, oscp*
 
 <p align="center">
   <img src="/png/Pi-hole_Blocklists.png" title="Pi-hole Blocklists">
@@ -952,121 +991,15 @@ We use RegEx filters for:
 
 #### IMPORTANT - PLEASE NOTICE:
 
-If you block *apple, icloud, akamai, mzstatic, aapling, oscp* via RegEx, your Mac won't be able to check for Updates, download Updates, connect to iCloud or to  the App-Store. FaceTime, Messages and other native macOS Apps won't be able to connect. This may be exactly what you want, but probably not. It requires a lot of patience, work and effort to fine-tune your custom filters. I.e. check your Query Log reqularly when you try to check for updates, to see which connections are blocked. Then try to whitelist specific processes which are required to perform an update.
+If you block *apple, icloud, apple-cloudkit, mzstatic, aaplimg, oscp* via RegEx, your Mac won't be able to check for Updates, download Updates, connect to iCloud or to  the App-Store. FaceTime, Messages and other native macOS Apps won't be able to connect. This may be exactly what you want, but probably not. It requires a lot of patience, work and effort to fine-tune your custom filters. I.e. check your Query Log reqularly when you try to check for updates, to see which connections are blocked. Then try to whitelist specific processes which are required to perform an update.
 Alternatively you could also log into your `Ph-hole` web interface and temporarily disable all RegEx Filters, then check for updates and re-enable your custom blocklists once you are done.
 
+To update all blocklists, execute this command:<br>
+`pihole -g`
 
-# 08 - VPN
+#### TIME SERVER:
 
-Next we configure our etherent gadget to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws.
-If you want to use ProtonVPN as well, you first have to visit their [website](https://protonvpn.com/) and open account. You can use a [free account](https://protonvpn.com/support/how-to-create-free-vpn-account/) or choose one of the paid options.
-
-To install ProtonVPN, execute the following two commands:<br>
-`sudo apt install openvpn dialog python3-pip python3-setuptools -y`<br>
-`sudo pip3 install protonvpn-cli`
-
-To forward all traffic through the VPN we also need to setup the required iptable rule:<br>
-`sudo iptables -t nat -A POSTROUTING -o proton0 -j MASQUERADE`<br>
-`sudo netfilter-persistent save`
-
-You need to initialize ProtonVPN only once. In future your RaspberryPi will connect automatically:<br>
-`sudo protonvpn init`
-
-You will be asked to enter your ProtonVPN username, your password and to choose your ProtonVPN subscription plan (enter whatever plan you purchased, i.e. *Free*, *Basic* or *Plus*) to complete the initialization.
-
-To configure ProtonVPN run the following command:<br>
-`sudo protonvpn configure`
-
-Here you can change all of your settings, i.e. change the DNS Management of your VPN service or change the default protocol (we recommend TCP), etc. Please consider that the *Kill Switch* may interfere with your *Pi-hole* in a negative way. If you suddenly cannot connect anymore, we recommend you disable the *Kill Switch* and try again. The *Pi-hole* will most likely bypass your VPN's DNS-settings if you disable the *Kill Switch* (we did not test this).
-
-To check the connection status of ProtonVPN, execute:<br>
-`protonvpn status`
-
-#### CREATE SYSTEM SERVICE TO START PROTONVPN AT BOOT:
-
-`sudo nano /etc/systemd/system/protonvpn.service`
-
-Insert:
-
-```
-[Unit]
-Description=Proton VPN
-After=syslog.target network-online.target
-Wants=network-online.target
-
-[Service]
-Type=forking
-ExecStart=/usr/local/bin/protonvpn c --sc
-ExecStop=/usr/local/bin/protonvpn d
-ExecReload=/usr/local/bin/protonvpn c --sc
-Environment=SUDO_USER=baer
-Restart=always
-RestartSec=2
-
-[Install]
-WantedBy=multi-user.target
-```
-
-#### PLEASE NOTICE:
-
-Unless you subscribed for a *Plus Membership* the above system service won't work, as it attempts to use ProtonVPN's [secure core](https://protonvpn.com/support/secure-core-vpn/) which is only available to paying *Plus Members*. If you always want to connect to the fastest server (any membership), insert these lines instead:
-
-```
-[Unit]
-Description=Proton VPN
-After=syslog.target network-online.target
-Wants=network-online.target
-
-[Service]
-Type=forking
-ExecStart=/usr/local/bin/protonvpn c --fastest
-ExecStop=/usr/local/bin/protonvpn d
-ExecReload=/usr/local/bin/protonvpn c --fastest
-Environment=SUDO_USER=baer
-Restart=always
-RestartSec=2
-
-[Install]
-WantedBy=multi-user.target
-```
-
-If you always want to connect to a random server, replace *--fastest* with *--random*.
-You can edit this command in your System Service according to your own preferences. To see all available options, run:<br>
-`protonvpn -h`
-
-Enable and start *protonvpn.service*:
-
-`sudo systemctl enable protonvpn.service`<br>
-`sudo systemctl start protonvpn.service`
-
-#### IMPORTANT:
-
-If all DNS requests were handled by *ProtonVPN* (i.e. if you enabled *DNS-leak Protection* and *Kill Switch*), your *Pi-hole* suddenly would stop filtering ads and trackers as long as you use the VPN. This is the reason why we do not recommend to use the *Kill Switch* in this specific setup. Also we recommend you disable *DNS Managment* in the ProtonVPN settings because we want our *Pi-hole* to manage all DNS requests to filter ads, trackers and malware - even while we use our VPN Service. This also is the  reason why we did configure our *Pi-hole* to listen on ALL INTERFACES and why we chose to setup encrypted DNS with trustworth, privacy respecting partners (hopefully).
-
-To make sure the `Pi-hole` does filter VPN traffic as well, we need to add the VPN interface to its configuration (*dnsmasq*):<br>
-`sudo nano /etc/dnsmasq.d/03-protonvpn.conf`
-
-Insert:<br>
-`interface=proton0 # VPN interface`
-
-#### OPTIONAL:
-
-IPv6 may be a privacy risk (we neither confirm nor oppose this claim). If you are unsure, you may disable IPv6 altogether to prevent DNS leaks:<br>
-`sudo nano /etc/sysctl.conf`
-
-Insert at the end:
-```
-# Disable IPv6
-
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-```
-
-To make your changes take effect, run this command or reboot your device:
-`sudo sysctl -p`
-
-Another thing to do to protect your privacy, may be to connect to a privacy respecting time server, i.e. from [dismail.de](https://dismail.de/):<br>
+You may want to connect to a privacy respecting time server, i.e. from [dismail.de](https://dismail.de/):<br>
 `sudo nano /etc/systemd/timesyncd.conf`
 
 Below `[Time]`, insert:<br>
@@ -1121,7 +1054,7 @@ Finally we configure our *Hidden Wifi Access Point*:<br>
 Insert:
 
 ```
-country_code=US
+country_code=DE
 interface=wlan0
 ssid=HiddenAP
 hw_mode=g
@@ -1139,6 +1072,16 @@ rsn_pairwise=CCMP
 Change the country code to your location and pick an ssid and wpa_passphrase of your choice!
 In this setup your Wifi hotspot will be hidden. This means it will not automatically show up in your list of available networks. Instead you need to select *other* in your Mac's Network list and type both, *Network Name* and *Password* in order to connect.
 If you want your *Hidden Wifi Access Point* to be a *Visible Wifi Access Point*, change the parameter behind `ignore_broadcast_ssid` to `0`.
+
+#### OPTIONAL: DISABLE AUTOMATIC WIFI ACCESS POINT
+
+To disable your Wifi Access Point from starting automatically run this command:<br>
+`sudo systemctl start hostapd.service`
+
+To switch it on and off manually:
+
+`sudo systemctl start hostapd.service`
+`sudo systemctl start hostapd.service`
 
 #### RESOURCES:
 
@@ -1159,28 +1102,23 @@ Insert:
 ```
 #/bin/sh
 
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface:
-iptables -A INPUT -i usb0 -p tcp --destination-port 53 -j ACCEPT
-iptables -A INPUT -i usb0 -p udp --destination-port 53 -j ACCEPT
-iptables -A INPUT -i usb0 -p tcp --destination-port 80 -j ACCEPT
+# Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
+iptables -I INPUT -i usb0 -j ACCEPT
 
-# Allow SSH only via USB and Wifi-AP:
-iptables -A INPUT -i usb0 -p tcp --destination-port 1985 -j ACCEPT
-iptables -A INPUT -i wlan0 -p tcp --destination-port 1985 -j ACCEPT
-iptables -A INPUT -i wlan1 -p tcp --destination-port 1985 -j DROP
-iptables -A INPUT -i wlan2 -p tcp --destination-port 1985 -j DROP
+# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
+iptables -A INPUT -i wlan0 -p tcp --destination-port 53 -j ACCEPT
+iptables -A INPUT -i wlan0 -p udp --destination-port 53 -j ACCEPT
+iptables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
+
+# Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
+iptables -A INPUT -i usb0 -p tcp --destination-port 22 -j ACCEPT
+iptables -A INPUT -i wlan0 -p tcp --destination-port 22 -j ACCEPT
 
 # Allow TCP/IP to do three-way handshakes:
 iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Allow loopback traffic:
 iptables -I INPUT -i lo -j ACCEPT
-
-# Since there only can be a wired connection between the Pi and your computer, allow all traffic on usb0:
-iptables -I INPUT -i usb0 -j ACCEPT
-
-# Allow Wifi-AP:
-iptables -I INPUT -i wlan0 -j ACCEPT
 
 # Reject all access from anywhere else:
 iptables -P INPUT DROP
@@ -1206,28 +1144,22 @@ Insert:
 ```
 #/bin/sh
 
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface:
-ip6tables -A INPUT -i usb0 -p tcp --destination-port 53 -j ACCEPT
-ip6tables -A INPUT -i usb0 -p udp --destination-port 53 -j ACCEPT
-ip6tables -A INPUT -i usb0 -p tcp --destination-port 80 -j ACCEPT
+# Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
+ip6tables -I INPUT -i usb0 -j ACCEPT
 
-# Allow SSH only via USB and Wifi-AP:
-ip6tables -A INPUT -i usb0 -p tcp --destination-port 1985 -j ACCEPT
-ip6tables -A INPUT -i wlan0 -p tcp --destination-port 1985 -j ACCEPT
-ip6tables -A INPUT -i wlan1 -p tcp --destination-port 1985 -j DROP
-ip6tables -A INPUT -i wlan2 -p tcp --destination-port 1985 -j DROP
+# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
+ip6tables -A INPUT -i wlan0 -p tcp --destination-port 53 -j ACCEPT
+ip6tables -A INPUT -i wlan0 -p udp --destination-port 53 -j ACCEPT
+ip6tables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
+
+# Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
+ip6tables -A INPUT -i wlan0 -p tcp --destination-port 22 -j ACCEPT
 
 # Allow TCP/IP to do three-way handshakes:
 ip6tables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Allow loopback traffic:
 ip6tables -I INPUT -i lo -j ACCEPT
-
-# Since there only can be a wired connection between the Pi and your computer, allow all traffic on usb0:
-ip6tables -I INPUT -i usb0 -j ACCEPT
-
-# Allow Wifi-AP:
-ip6tables -I INPUT -i wlan0 -j ACCEPT
 
 # Reject all access from anywhere else:
 ip6tables -P INPUT DROP
@@ -1246,7 +1178,7 @@ netfilter-persistent save
 ```
 
 This script will flush all your IPv4 firewall rules:
-`sudo nano Script/iptables/flush_iptables.sh`
+`sudo nano Script/iptables/flush-iptables.sh`
 
 Insert:
 
@@ -1267,7 +1199,7 @@ iptables -X
 # Flush all counters too #
 iptables -Z
 
-# Flush and delete all nat and mangle #
+# Uncomment to flush and delete all nat and mangle #
 #iptables -t nat -F
 #iptables -t nat -X
 #iptables -t mangle -F
@@ -1280,7 +1212,7 @@ netfilter-persistent save
 ```
 
 The same for IPv6:
-`sudo nano Script/iptables/flush_ip6tables.sh`
+`sudo nano Script/iptables/flush-ip6tables.sh`
 
 Insert:
 
@@ -1301,7 +1233,7 @@ ip6tables -X
 # Flush all counters too #
 ip6tables -Z
 
-# Flush and delete all nat and  mangle #
+# Uncomment to flush and delete all nat and mangle #
 #ip6tables -t nat -F
 #ip6tables -t nat -X
 #ip6tables -t mangle -F
@@ -1316,77 +1248,22 @@ netfilter-persistent save
 Make all scripts executable:<br>
 `sudo chmod +x Script/iptables/iptables.sh`<br>
 `sudo chmod +x Script/iptables/ip6tables.sh`<br>
-`sudo chmod +x Script/iptables/flush_iptables.sh`<br>
-`sudo chmod +x Script/iptables/flush_ip6tables.sh`
+`sudo chmod +x Script/iptables/flush-iptables.sh`<br>
+`sudo chmod +x Script/iptables/flush-ip6tables.sh`
 
 Finally, to enable your firewall run these two commands:<br>
-`sudo Script/iptables/iptables.sh`<br>
-`sudo Script/iptables/ip6tables.sh`
-
-#### OPTIONAL: ASN SCRIPT TO BLOCK ENTIRE IP-ADDRESS RANGES:
-
-This [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script) can be used to block entire IP-Address ranges that belong to companies that you don't want to be tracked by. It will effectively prevent any connection to the company you specify:
-
-`cd Script/iptables`<br>
-`git clone https://notabug.org/maloe/ASN_IPFire_Script.git`<br>
-`sudo mv ASN* ASN`<br>
-`cd ASN`<br>
-`rm -r old`<br>
-`rm asn_ipfire_v0.7.7_beta2_termux.sh`<br>
-
-Next we need to create our own custom configuration file, we will use *Facebook* as an example for this script:
-
-`sudo mv asn_script.conf asn_script_backup.conf`<br>
-`sudo nano asn_script.conf`
-
-Insert:
-
-```
-#######################################################################
-## Configuration file for ASN-IPFire-Script v0.7.12 (asn_ipfire.sh)  ##
-#######################################################################
-
-downloadtool=wget
-timeout=30
-
-iptables_path="/sbin/iptables"
-outputline="$iptables_path -A OUTPUT -d %network% -j REJECT # %company% Nr.%number%"
-
-#Specify the tracking company you want to block:
-output_file="Facebook.sh"
-```
-
-To collect the IP-address range of *Facebook* and create a file with the required IP-tables commands, run the following command:<br>
-`sudo bash asn_ipfire.sh --custom Facebook`
-
-Next make this file executable:<br>
-`sudo chmod +X Facebook.sh`
-
-Now run this script tp block all IP-Addresses connected to *Facebook*:<br>
-`sudo bash Facebook.sh`
-
-To make these changes permanenent, run the following command:<br>
-`sudo netfilter-persistent save`
+`sudo sh Script/iptables/iptables.sh`<br>
+`sudo sh Script/iptables/ip6tables.sh`
 
 #### USEFULL IPTABLES COMMANDS:
 
 View current iptables routing rules:<br>
 `sudo iptables -t nat -v -L -n --line-number`
+`sudo ip6tables -t nat -v -L -n --line-number`
 
 View current iptables rules:<br>
 `sudo iptables -L -n -v`
-
-#### TO DO:
-
-In future we will add a simple script here, that makes blocking IP-Address ranges in our setup easier (only one command).
-
-#### RESOURCES:
-
-In this part of our guide, we refer to the ASN IPFire Script by maloe and a blog post by Mike Kuketz:
-
-[ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script)<br>
-[ASN-Skript: Datensammler haben ausgeschnüffelt – IPFire Teil3](https://www.kuketz-blog.de/asn-skript-datensammler-haben-ausgeschnueffelt-ipfire-teil3/)
-
+`sudo ip6tables -L -n -v`
 
 # 11 - Randomized Device Identity
 
@@ -1399,7 +1276,7 @@ Download *macchanger*:<br>
 `sudo apt install macchanger -y`
 
 IMPORTANT!
-During the installation process: select no when asked if *macchanger* should automatically generate new MAC addresses. We will set up a system service that does this job better:<br>
+During the installation process: select `<NO>` when asked if *macchanger* should automatically generate new MAC addresses. We will set up a system service that does this job better:<br>
 `sudo nano /etc/systemd/system/spoofmac@.service`
 
 Insert:
@@ -1421,10 +1298,11 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 ```
 
-Now we enable the System Service to individually randomize the MAC Addresses of both Wifi-Cards:
+Now we enable the System Service to individually randomize the MAC Addresses of all Wifi-Cards and your ethernet interface:
 
 `sudo systemctl enable spoofmac@wlan0.service`<br>
-`sudo systemctl enable spoofmac@wlan1.service`
+`sudo systemctl enable spoofmac@wlan1.service`<br>
+`sudo systemctl enable spoofmac@eth0.service`
 
 
 #### RANDOMIZE HOSTNAME:
@@ -1464,7 +1342,7 @@ echo -e "127.0.1.1      $NEW_HOSTNAME" >> /etc/hosts
 Make this script executable:<br>
 `sudo chmod +X /root/hostname.sh`
 
-Then we also create a System Service that runs our script each time you boot up the RaspberryPi:<br>
+Then we create a System Service that runs our script each time you boot up the RaspberryPi:<br>
 `sudo nano /etc/systemd/system/hostname.service`
 
 Insert:
@@ -1485,8 +1363,31 @@ WantedBy=multi-user.target
 Finally enable the service:<br>
 `sudo systemctl enable hostname.service`
 
+
 # 12 - Optional Custom Login Information
 
+#### LOGIN WARNING BANNER
+
+A simple banner that warns against unauthorized access:<br>
+`sudo nano /etc/issue.net`
+
+Insert:
+
+```
+            / Unauthorized access to this machine is prohibited /
+
+################################################################################
+#                                                                              #
+#   Welcome...                                                                 #
+#           ...all connections to this machine are monitored and recorded...   #
+#                                                                              #
+#                     Disconnect IMMEDIATELY unless you are AUTHORIZED!        #
+#                                                                              #
+#                                                                              #
+################################################################################
+
+            / Unless authorized you will be disconnected shortly /
+```
 
 #### MESSAGE OF THE DAY
 
@@ -1500,7 +1401,6 @@ We use a dynamic message of the day to display system information once we log in
 
 To set up dynamic *motd* run the following commands:
 
-`sudo mkdir /etc/update-motd.d`<br>
 `cd /etc/update-motd.d`<br>
 `sudo touch 00-header && sudo touch 10-sysinfo && sudo touch 90-footer`<br>
 `sudo chmod +x /etc/update-motd.d/*`<br>
@@ -1520,11 +1420,6 @@ Insert:
 session    optional     pam_motd.so  motd=/run/motd.dynamic
 # session    optional     pam_motd.so noupdate
 ```
-
-Next remove the original *motd system service*
-
-`sudo rm /lib/systemd/system/motd.service`<br>
-`sudo systemctl daemon-reload`
 
 Now we create the dynamic *motd header*:<br>
 `sudo nano /etc/update-motd.d/00-header`
@@ -1702,19 +1597,15 @@ You do not need to load this *daemon* now. If you do, it will switch off your Ma
 
 # 14 - To Do
 
-We are planning to create a simple web interface that makes it easy for you to connect to new Wifi-Networks, block and allow IP-Address Ranges with your ASN Script. etc.
+We are planning to create a simple web interface that makes it easy for you to connect to new Wifi-Networks, block and allow IP-Address Ranges with an [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script). etc.
 
-
-#### RECOMMENDATIONS:
-
-We do recommend you secure your SSH configuration, i.e. by changing the default ssh port - maybe you even want to use a hardware key (i.e. Yubikey) to log into your Raspberry Pi.
 
 
 
 
 ## MIT License
 
-Copyright (c) 2021 term7
+Copyright (c) 2022 term7
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
