@@ -370,8 +370,8 @@ Reboot:<br>
 
 # 04 - VPN
 
-Next we configure our Raspberry Pi to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws.
-If you want to use ProtonVPN as well, you first have to visit their [website](https://protonvpn.com/) and open account. You can use a [free account](https://protonvpn.com/support/how-to-create-free-vpn-account/) or choose one of the paid options.
+Next we configure our Raspberry Pi to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws.
+If you want to use ProtonVPN as well, you first have to visit their [website](https://protonvpn.com/) and open account. You can use a [free account](https://protonvpn.com/support/how-to-create-free-vpn-account/) or choose one of the paid options. There is a [commandline tool](https://protonvpn.com/support/linux-vpn-tool-early-access/) by ProtonVPN, however it does not work on a Raspberry Pi, which is why we use the community build.
 
 To install ProtonVPN, execute the following two commands:<br>
 `sudo apt install openvpn dialog python3-pip python3-setuptools -y`<br>
