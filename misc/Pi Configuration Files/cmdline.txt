@@ -1,1 +1,1 @@
-console=serial0,115200 console=tty1 root=PARTUUID=06aba36b-02 rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2
+console=serial0,115200 console=tty1 root=PARTUUID=bca75af0-02 rootfstype=ext4 fsck.repair=yes rootwait modules-load=dwc2
