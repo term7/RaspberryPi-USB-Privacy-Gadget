@@ -1,24 +1,21 @@
 #/bin/sh
 
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface:
-iptables -A INPUT -i usb0 -p tcp --destination-port 53 -j ACCEPT
-iptables -A INPUT -i usb0 -p udp --destination-port 53 -j ACCEPT
-iptables -A INPUT -i usb0 -p tcp --destination-port 80 -j ACCEPT
+# Since there only can be a wired connection between the Pi and your computer, >
+iptables -I INPUT -i usb0 -j ACCEPT
 
-# Allow SSH only via USB and Wifi-AP:
-iptables -A INPUT -i usb0 -p tcp --destination-port 1985 -j ACCEPT
-iptables -A INPUT -i wlan0 -p tcp --destination-port 1985 -j ACCEPT
-iptables -A INPUT -i wlan1 -p tcp --destination-port 1985 -j DROP
-iptables -A INPUT -i wlan2 -p tcp --destination-port 1985 -j DROP
+# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot:
+iptables -A INPUT -p tcp --destination-port 53 -j ACCEPT
+iptables -A INPUT -p udp --destination-port 53 -j ACCEPT
+iptables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
+
+# Allow SSH also via Wifi-AP:
+iptables -A INPUT -i wlan0 -p tcp --destination-port 22 -j ACCEPT
 
 # Allow TCP/IP to do three-way handshakes:
 iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Allow loopback traffic:
 iptables -I INPUT -i lo -j ACCEPT
-
-# Since there only can be a wired connection between the Pi and your computer, allow all traffic on usb0:
-iptables -I INPUT -i usb0 -j ACCEPT
 
 # Allow Wifi-AP:
 iptables -I INPUT -i wlan0 -j ACCEPT
