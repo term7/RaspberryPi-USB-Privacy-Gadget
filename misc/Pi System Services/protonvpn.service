@@ -17,5 +17,5 @@ RestartSec=2
 [Install]
 WantedBy=multi-user.target
 
-# Please Notice: Edit ExecStart according to your needs (i.e. c --fastest od  c --random)
+# Please Notice: Edit ExecStart according to your needs (i.e. c --fastest or  c --random)
 # c --sc (secure core) is only available for Plus Members!
