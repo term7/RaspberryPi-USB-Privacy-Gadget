@@ -21,38 +21,14 @@ round_robin_upstreams: 1
 upstream_recursive_servers:
 ############################ DEFAULT UPSTREAMS  ################################
 
-#IPv4 ODVR
+#IPv4 ODVR:
    - address_data: 193.17.47.1
      tls_auth_name: "odvr.nic.cz"
    - address_data: 185.43.135.1
      tls_auth_name: "odvr.nic.cz"
 
-#IPv4 BLAHDNS
-   - address_data: 192.53.175.149
-     tls_auth_name: "dot-sg.blahdns.com"
-   - address_data: 45.91.92.121
-     tls_auth_name: "dot-ch.blahdns.com"
-   - address_data: 139.162.112.47
-     tls_auth_name: "dot-jp.blahdns.com"
-   - address_data: 78.46.244.143
-     tls_auth_name: "dot-de.blahdns.com"
-   - address_data: 95.216.212.177
-     tls_auth_name: "dot-fi.blahdns.com"
-
-#IPv6 ODVR
-   - address_data: 2001:148f:ffff::1
-     tls_auth_name: "odvr.nic.cz"
-   - address_data: 2001:148f:fffe::1
-     tls_auth_name: "odvr.nic.cz"
-
-#IPv6 BLAHDNS
-   - address_data: 2400:8901::f03c:92ff:fe27:870a
-     tls_auth_name: "dot-sg.blahdns.com"
-   - address_data: 2a0e:dc0:6:23::2
-     tls_auth_name: "dot-ch.blahdns.com"
-   - address_data: 2400:8902::f03c:92ff:fe27:344b 
-     tls_auth_name: "dot-jp.blahdns.com"
-   - address_data: 2a01:4f8:c17:ec67::1 
-     tls_auth_name: "dot-de.blahdns.com"
-   - address_data: 2a01:4f9:c010:43ce::1
-     tls_auth_name: "dot-fi.blahdns.com"
+#IPv6 ODVR (uncomment the following lines if you want use IPv6):
+#   - address_data: 2001:148f:ffff::1
+#     tls_auth_name: "odvr.nic.cz"
+#   - address_data: 2001:148f:fffe::1
+#     tls_auth_name: "odvr.nic.cz"
