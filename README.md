@@ -870,6 +870,16 @@ upstream_recursive_servers:
 #   - address_data: 2001:148f:fffe::1
 #     tls_auth_name: "odvr.nic.cz"
 ```
+
+Do avoid dnsmasq warnings ain your Pi-Hole about *reducing DNS packet size for nameserver 127.0.0.1 to 1232* add this configuration file:<br>
+`sudo nano /etc/dnsmasq.d/99-edns.conf`
+
+Insert:
+
+```
+edns-packet-max=1232
+```
+
 Finally, make sure that *stubby* is used globally on all outward facing network interfaces:<br>
 `sudo nano /etc/dhcpcd.conf`
 
@@ -1258,11 +1268,11 @@ Finally, to enable your firewall run these two commands:<br>
 #### USEFUL IPTABLES COMMANDS:
 
 View current iptables routing rules:<br>
-`sudo iptables -t nat -v -L -n --line-number`
+`sudo iptables -t nat -v -L -n --line-number`<br>
 `sudo ip6tables -t nat -v -L -n --line-number`
 
 View current iptables rules:<br>
-`sudo iptables -L -n -v`
+`sudo iptables -L -n -v`<br>
 `sudo ip6tables -L -n -v`
 
 # 11 - Randomized Device Identity
