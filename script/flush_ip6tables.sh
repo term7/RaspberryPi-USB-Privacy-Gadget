@@ -14,7 +14,7 @@ ip6tables -X
 # Flush all counters too #
 ip6tables -Z
 
-# Flush and delete all nat and  mangle #
+# Uncomment to flush and delete all nat and mangle #
 #ip6tables -t nat -F
 #ip6tables -t nat -X
 #ip6tables -t mangle -F
