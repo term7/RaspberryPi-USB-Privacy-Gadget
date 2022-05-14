@@ -422,6 +422,9 @@ RestartSec=2
 WantedBy=multi-user.target
 ```
 
+Please don't forget to adjust the `username` in the Line `Environment=SUDO_USER=username` to your username!
+
+
 #### PLEASE NOTICE:
 
 Unless you subscribed for a *Plus Membership* the above system service won't work, as it attempts to use ProtonVPN's [secure core](https://protonvpn.com/support/secure-core-vpn/) which is only available to paying *Plus Members*. If you always want to connect to the fastest server (any membership), insert these lines instead:
@@ -444,7 +447,7 @@ RestartSec=2
 [Install]
 WantedBy=multi-user.target
 ```
-
+Again - Please don't forget to adjust the `username` in the Line `Environment=SUDO_USER=username` to your username!
 You change the protonvpn command in this System Service according to your own preferences. I.e. if you always want to connect to a random server, replace *--fastest* with *--random*. To see all available options, run:<br>
 `protonvpn -h`
 
@@ -535,6 +538,10 @@ Also find and uncomment this line in */etc/sysctl.conf*:<br>
 Edit:<br>
 `net.ipv4.ip_forward=1`
 
+We already enabled forwarding to our VPN interface. As a fallback, enable forwarding from wlan1 and eth0 with the required iptable rule:<br>
+```sudo iptables -t nat -A POSTROUTING -o wlan1 -j MASQUERADE```
+```sudo netfilter-persistent save```
+
 The Raspberry Pi is supposed to function similiar to a portable router. To achieve this we will use *dnsmasq* as a DNS forwarder and DHCP server. However, we have to keep in mind that we also want to use the *Pi-hole* (see next step) as an ad blocker and network filter. The *Pi-hole* comes bundled with its own version of *dnsmasq*, which will be in conflict with any other existing installation of *dnsmasq*. Thus, for now we will only set up our configuration files without installing *dnsmasq*. This also means, that the USB-Ethernet Gadget will not yet be able to connect to your Mac to the internet. It will only be able to connect to the internet after you install *Pi-hole*. Then it will forward all traffic between *usb0* and *proton0* according to the iptable rule we set up for our VPN.
 
 Create configuration folder and main configuration file:<br>
@@ -552,7 +559,7 @@ Insert:
 ```
 # USB Gadget
 interface=usb0  # USB interface
-dhcp-range=set:usb0,192.168.77.2,192.168.77.21,255.255.255.0,24h
+dhcp-range=set:usb0,192.168.77.1,192.168.77.255,255.255.255.0,24h
 dhcp-option=set:usb0,3,192.168.77.1
                 # Default Gateway
 address=/access.tardigrade/192.168.77.1
@@ -612,7 +619,13 @@ ifconfig usb0 up
 Make */root/usb.sh* executable:<br>
 `sudo chmod +X /root/usb.sh`
 
-Create System Service to bring up USB interface on boot:<br>
+Before we create a System Service that brings up the USB interface at boot time, perform a reboot and bring up your USB interface manually:<br>
+```sudo reboot now```<br>
+```sudo sh /root/usb.sh```<br>
+
+We do this before we install and configure our Pi-Hole, so that we get the option during its setup process to use `usb0` as our listening interface.
+
+Now create System Service to bring up USB interface on boot:<br>
 `sudo nano /lib/systemd/system/usb.service`
 
 Insert:
@@ -633,6 +646,8 @@ Enable service and unblock wlan:
 
 `sudo systemctl enable usb.service`<br>
 `sudo rfkill unblock wlan`
+
+It is important, that you install the Pi-Hole now and do not reboot your Pi before the Pi-Hole is installed!
 
 #### RESOURCES:
 
@@ -684,7 +699,7 @@ Select YES
 <p align="center">
   <img src="/png/Pi-hole_04.png" title="Select Interface">
 </p>
-Select proton0: it is configured to be our intert facing interface. We don't want to allow connections without VPN...<br>
+Select usb0: it is configured to the interface that connects our Computer to the Raspberry Pi. <br>
 Ok
 <br><br>
 
@@ -780,13 +795,13 @@ Write down your password!<br>
 OK
 
 To enable your Pi-hole as your dhcp server, execute the following command:<br>
-`sudo pihole -a enabledhcp "192.168.77.2" "192.168.77.21" "192.168.77.1" "24" "username"`
+`sudo pihole -a enabledhcp "192.168.77.1" "192.168.77.255" "192.168.77.1" "24" "username"`
 
 If you want to change the password of your Pi-hole, execute this comand:<br>
 `pihole -a -p`
 
 To update the Pi-hole, execute this command:<br>
-`pihole up`
+`pihole -up`
 
 To update all blocklists, execute this command:<br>
 `pihole -g`
@@ -797,7 +812,10 @@ Now it is time to reboot your Raspberry Pi:<br>
 `sudo reboot now`
 
 On your Mac, open System Preferences -> Network Settings
-After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet with all your traffic being sent through ProtonVPN, even if your Mac's WI-FI is switched off.
+After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet with all your traffic being sent through ProtonVPN, even if your Mac's WI-FI is switched off. To check if your traffic is routed through your VPN, browse to [https://dnsleaktest.com](https://dnsleaktest.com) and compare the IP-address that is shown with the output of this command:<br>
+```protonvpn status```
+
+All your traffic should now be routed through your VPN.
 
 <p align="center">
   <img src="/png/Network-Settings.png" title="Network-Settings">
@@ -816,7 +834,7 @@ A very big THANK YOU to the developers of the Pi-hole. This is a great project!
 
 # 07 - Encrypted DNS
 
-We use *stubby* as a stub resolver for encrypted DNS requests (DoT) to CZ.NIC's open DNSSEC Validating Resolvers.
+Right now use *stubby* as a stub resolver for encrypted DNS requests (DoT) to CZ.NIC's open DNSSEC Validating Resolvers. We did run into trouble useing *unbound*, possibly because the system clock does not stay synchronized (our Pi is used like a travel router - it is often switched off -  and has no built-in real time clock).
 Finally we will configure our *Pi-hole* to use *stubby* for all DNS requests. 
 
 Install *stubby*:
@@ -980,7 +998,6 @@ Further we can recommend the following blocklists:
 - [https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt)
 - [https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt)
 - [https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt](https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt.txt)
-- [https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt](https://osint.digitalside.it/Threat-Intel/lists/latestdomains.txt)
 - [https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt](https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt)
 - [    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware](    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware)
 - [    https://v.firebog.net/hosts/Prigent-Phishing.txt](    https://v.firebog.net/hosts/Prigent-Phishing.txt)
@@ -1052,7 +1069,7 @@ Insert at the end:
 ```
 # Wifi-AP
 interface=wlan0 # Access Point
-dhcp-range=set:wlan0,192.168.79.2,192.168.79.21,24h
+dhcp-range=set:wlan0,192.168.79.1,192.168.79.255,24h
                 # Pool of IP addresses served via DHCP
 dhcp-option=wlan0,3,192.168.79.1
                 # Default Gateway
@@ -1086,12 +1103,16 @@ If you want your *Hidden Wifi Access Point* to be a *Visible Wifi Access Point*,
 #### OPTIONAL: DISABLE AUTOMATIC WIFI ACCESS POINT
 
 To disable your Wifi Access Point from starting automatically run this command:<br>
-`sudo systemctl start hostapd.service`
+`sudo systemctl disable hostapd.service`
 
 To switch it on and off manually:
 
 `sudo systemctl start hostapd.service`<br>
 `sudo systemctl start hostapd.service`
+
+Configure your Pi-hole to listen on all interfaces:<br>
+```pihole -a -i all```
+
 
 #### RESOURCES:
 
@@ -1115,9 +1136,9 @@ Insert:
 # Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
 iptables -I INPUT -i usb0 -j ACCEPT
 
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
-iptables -A INPUT -i wlan0 -p tcp --destination-port 53 -j ACCEPT
-iptables -A INPUT -i wlan0 -p udp --destination-port 53 -j ACCEPT
+# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface:
+iptables -A INPUT --destination-port 53 -j ACCEPT
+iptables -A INPUT --destination-port 53 -j ACCEPT
 iptables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
 
 # Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
@@ -1158,8 +1179,8 @@ Insert:
 ip6tables -I INPUT -i usb0 -j ACCEPT
 
 # Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
-ip6tables -A INPUT -i wlan0 -p tcp --destination-port 53 -j ACCEPT
-ip6tables -A INPUT -i wlan0 -p udp --destination-port 53 -j ACCEPT
+ip6tables -A INPUT -p tcp --destination-port 53 -j ACCEPT
+ip6tables -A INPUT -p udp --destination-port 53 -j ACCEPT
 ip6tables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
 
 # Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
