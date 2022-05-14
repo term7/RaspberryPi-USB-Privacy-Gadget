@@ -621,7 +621,7 @@ Make */root/usb.sh* executable:<br>
 
 Before we create a System Service that brings up the USB interface at boot time, perform a reboot and bring up your USB interface manually:<br>
 ```sudo reboot now```<br>
-```sudo sh /root/usb.sh```<br>
+```sudo ifconfig usb0 up```<br>
 
 We do this before we install and configure our Pi-Hole, so that we get the option during its setup process to use `usb0` as our listening interface.
 
