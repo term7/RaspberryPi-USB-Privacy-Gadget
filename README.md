@@ -453,12 +453,45 @@ You change the protonvpn command in this System Service according to your own pr
 
 Enable and start *protonvpn.service*:
 
-`sudo systemctl enable protonvpn.service`<br>
-`sudo systemctl start protonvpn.service`
+```sudo systemctl enable protonvpn.service```<br>
+```sudo systemctl start protonvpn.service```
 
 #### IMPORTANT:
 
-If all DNS requests were handled by *ProtonVPN* (i.e. if you enabled *DNS-leak Protection* and *Kill Switch*), your *Pi-hole* suddenly would stop filtering ads and trackers as long as you use the VPN. This is the reason why we do not recommend to use the *Kill Switch* in this specific setup. Also we recommend you disable *DNS Managment* in the ProtonVPN settings because we want our *Pi-hole* to manage all DNS requests to filter ads, trackers and malware - even while we use our VPN Service. This also is the  reason why we did configure our *Pi-hole* to listen on ALL INTERFACES and why we chose to setup encrypted DNS with trustworth, privacy respecting partners (hopefully).
+If all DNS requests were handled by *ProtonVPN* (i.e. if you keep *DNS-leak Protection* and *Kill Switch* enabled), your *Pi-hole* might missbehave. This is the reason why we recommend to disable the *Kill Switch* in this specific setup. Also we recommend you disable *DNS Managment* in the ProtonVPN settings because we want our *Pi-hole* to manage all DNS requests to filter ads, trackers and malware - even while we use our VPN Service. We will configure our *Pi-hole* to listen on ALL INTERFACES.
+
+#### TIME SERVER:
+
+This step also is very important. The Raspberry Pi has no on-board realtime clock and needs an internet connection to synchronise time. However, if you set up a VPN we noticed that our Pi tries to sync time through the VPN after it booted. But because the time is off (we had ist switched off over night) the VPN refused to connect, which means we were not able to connect to the interent anymore. Further, aou may want to connect to a privacy respecting time server, i.e. from [dismail.de](https://dismail.de/). To use custom timeservers edit this file:<br>
+`sudo nano /etc/systemd/timesyncd.conf`
+
+Below `[Time]`, insert (example: timeservers by [dismail.de](https://dismail.de/)):<br>
+`NTP=ntp1.dismail.de ntp2.dismail.de ntp3.dismail.de`
+
+Further we need to enable split tunneling in our VPN configuration and exclude the IP's of our timeserver from using the VPN:<br>
+`sudo protonvpn configure`
+
+Select *6) Split Tunneling* and enter the following IP's:<br>
+`213.136.94.10`<br>
+`80.241.218.68`<br>
+`78.46.223.134`
+
+If you want to use IPv6 as well, enter the following IP6 too:<br>
+`2a02:c207:3000:6091::1`<br>
+`2a02:c205:3001:4558::1`<br>
+`2a01:4f8:c17:e5e::2`
+
+Reboot your device to make your changes take effect.
+
+Other configuration options we do recommend:<br>
+`sudo protonvpn configure`
+
+Select *4) DNS Management* and then *3) Disable DNS Management*
+
+Further:<br>
+`sudo protonvpn configure`
+
+Select *5) Kill Switch* and then *3) Disable Kill Switch*
 
 #### OPTIONAL:
 
@@ -565,12 +598,6 @@ dhcp-option=set:usb0,3,192.168.77.1
 address=/access.tardigrade/192.168.77.1
                 # Alias for this router
 ```
-
-We also create the configuration file for *proton0*:<br>
-`sudo nano /etc/dnsmasq.d/03-protonvpn.conf`
-
-Insert:<br>
-`interface=proton0 # VPN interface`
 
 
 #### SCRIPT AND SYSTEM SERVICE TO ENABLE USB0 AT BOOT:
@@ -834,60 +861,91 @@ A very big THANK YOU to the developers of the Pi-hole. This is a great project!
 
 # 07 - Encrypted DNS
 
-Right now use *stubby* as a stub resolver for encrypted DNS requests (DoT) to CZ.NIC's open DNSSEC Validating Resolvers. We did run into trouble useing *unbound*, possibly because the system clock does not stay synchronized (our Pi is used like a travel router - it is often switched off -  and has no built-in real time clock).
-Finally we will configure our *Pi-hole* to use *stubby* for all DNS requests. 
+Right now use *unbound* as a recursive resolver for encrypted DNS requests and to validate DNSSEC. Finally we will configure our *Pi-hole* to use *unbound* for all DNS requests and to use DNSSEC. 
 
-Install *stubby*:
+Install *unbound*:
 
-`sudo apt install stubby -y`
+`sudo apt install unbound -y`
 
-#### CONFIGURE STUBBY:
-
-Make a backup of the original configuration file:<br>
-`sudo mv /etc/stubby/stubby.yml /etc/stubby/stubby_original.yml`
+#### CONFIGURE UNBOUND:
 
 
-Then create the configuration file for *stubby*:<br>
-`sudo nano /etc/stubby/stubby.yml`
+Create the configuration file for *unbound*:<br>
+`/etc/unbound/unbound.conf.d/pi-hole.conf`
 
 Insert:
 
 ```
-################################################################################
-######################## STUBBY YAML CONFIG FILE ###############################
-################################################################################
-resolution_type: GETDNS_RESOLUTION_STUB
-dnssec_return_status: GETDNS_EXTENSION_TRUE
+server:
+    # If no logfile is specified, syslog is used
+    # logfile: "/var/log/unbound/unbound.log"
+    verbosity: 0
 
-dns_transport_list:
-  - GETDNS_TRANSPORT_TLS
+    interface: 127.0.0.1
+    port: 5335
+    do-ip4: yes
+    do-udp: yes
+    do-tcp: yes
 
-tls_authentication: GETDNS_AUTHENTICATION_REQUIRED
-tls_query_padding_blocksize: 256
-edns_client_subnet_private : 1
-idle_timeout: 10000
+    # May be set to yes if you have IPv6 connectivity
+    do-ip6: no
 
-listen_addresses:
-  - 127.0.0.1@9053
-  - 0::1@9053
+    # You want to leave this to no unless you have *native* IPv6. With 6to4 and
+    # Terredo tunnels your web browser should favor IPv4 for the same reasons
+    prefer-ip6: no
 
+    # Use this only when you downloaded the list of primary root servers!
+    # If you use the default dns-root-data package, unbound will find it automatically
+    root-hints: "/var/lib/unbound/root.hints"
 
-round_robin_upstreams: 1
-upstream_recursive_servers:
-############################ DEFAULT UPSTREAMS  ################################
+    # Trust glue only if it is within the server's authority
+    harden-glue: yes
 
-#IPv4 ODVR:
-   - address_data: 193.17.47.1
-     tls_auth_name: "odvr.nic.cz"
-   - address_data: 185.43.135.1
-     tls_auth_name: "odvr.nic.cz"
+    # Require DNSSEC data for trust-anchored zones, if such data is absent, the zone becomes BOGUS
+    harden-dnssec-stripped: yes
 
-#IPv6 ODVR (uncomment the following lines if you want use IPv6):
-#   - address_data: 2001:148f:ffff::1
-#     tls_auth_name: "odvr.nic.cz"
-#   - address_data: 2001:148f:fffe::1
-#     tls_auth_name: "odvr.nic.cz"
+    # Don't use Capitalization randomization as it known to cause DNSSEC issues sometimes
+    # see https://discourse.pi-hole.net/t/unbound-stubby-or-dnscrypt-proxy/9378 for further details
+    use-caps-for-id: no
+
+    # Reduce EDNS reassembly buffer size.
+    # IP fragmentation is unreliable on the Internet today, and can cause
+    # transmission failures when large DNS messages are sent via UDP. Even
+    # when fragmentation does work, it may not be secure; it is theoretically
+    # possible to spoof parts of a fragmented DNS message, without easy
+    # detection at the receiving end. Recently, there was an excellent study
+    # >>> Defragmenting DNS - Determining the optimal maximum UDP response size for DNS <<<
+    # by Axel Koolhaas, and Tjeerd Slokker (https://indico.dns-oarc.net/event/36/contributions/776/)
+    # in collaboration with NLnet Labs explored DNS using real world data from the
+    # the RIPE Atlas probes and the researchers suggested different values for
+    # IPv4 and IPv6 and in different scenarios. They advise that servers should
+    # be configured to limit DNS messages sent over UDP to a size that will not
+    # trigger fragmentation on typical network links. DNS servers can switch
+    # from UDP to TCP when a DNS response is too big to fit in this limited
+    # buffer size. This value has also been suggested in DNS Flag Day 2020.
+    edns-buffer-size: 1232
+
+    # Perform prefetching of close to expired message cache entries
+    # This only applies to domains that have been frequently queried
+    prefetch: yes
+
+    # One thread should be sufficient, can be increased on beefy machines. In reality for most users running on small networks or on a single machine, it should be unnecessary to seek performance enhancement by increasing num-threads above 1.
+    num-threads: 1
+
+    # Ensure kernel buffer is large enough to not lose messages in traffic spikes
+    so-rcvbuf: 1m
+
+    # Ensure privacy of local IP ranges
+    private-address: 192.168.0.0/16
+    private-address: 169.254.0.0/16
+    private-address: 172.16.0.0/12
+    private-address: 10.0.0.0/8
+    private-address: fd00::/8
+    private-address: fe80::/10
 ```
+
+We also want to download the the current root hints file:<br>
+`wget https://www.internic.net/domain/named.root -qO- | sudo tee /var/lib/unbound/root.hints`
 
 Do avoid dnsmasq warnings ain your Pi-Hole about *reducing DNS packet size for nameserver 127.0.0.1 to 1232* add this configuration file:<br>
 `sudo nano /etc/dnsmasq.d/99-edns.conf`
@@ -898,7 +956,7 @@ Insert:
 edns-packet-max=1232
 ```
 
-Finally, make sure that *stubby* is used globally on all outward facing network interfaces:<br>
+Finally, make sure that *unbound* is used globally on all outward facing network interfaces:<br>
 `sudo nano /etc/dhcpcd.conf`
 
 Insert at the end:
@@ -910,6 +968,17 @@ interface wlan1
 interface eth0
     static domain_name_servers=127.0.0.1
 ```
+
+Next we want to disable *resolvconf* for *unbound* because it is interfering with the static domain name server setting in `/etc/dhcpcd.conf`:
+
+`sudo systemctl disable unbound-resolvconf.service`
+`sudo systemctl stop unbound-resolvconf.service`
+
+Futher you can tell *ProtonVPN* to use *unbound* for DNS resloution:<br>
+`sudo protonvpn configure`
+
+Select *4) DNS Management*, then *2) Configure Custom DNS Servers* and enter:<br>
+`127.0.0.1`
 
 Reboot:
  
@@ -924,7 +993,7 @@ If you see only this *nameserver*, your configuration is correct:<br>
 `nameserver 127.0.0.1`
 
 Run the dig command to test DNS resolution. You should see the status as “NOERROR” with an IP address for the pi-hole.net server:<br>
-`dig pi-hole.net @127.0.0.1 -p 9053`
+`dig pi-hole.net @127.0.0.1 -p 5335`
 
 <p align="center">
   <img src="/png/dig_Pi-hole.png" title="dig Pi-Hole">
@@ -933,21 +1002,21 @@ Run the dig command to test DNS resolution. You should see the status as “NOER
 The final test is to ensure that DNSSEC is working properly. If the following commands are returned properly, DNSSEC is properly working.
 
 This command should return SERVFAIL with NO IP address:<br>
-`dig sigfail.verteiltesysteme.net @127.0.0.1 -p 9053`
+`dig sigfail.verteiltesysteme.net @127.0.0.1 -p 5335`
 
 <p align="center">
   <img src="/png/dig_SIGFAIL.png" title="SERVFAIL">
 </p>
 
 This command should return NOERROR WITH an IP address:<br>
-`dig sigok.verteiltesysteme.net @127.0.0.1 -p 9053`
+`dig sigok.verteiltesysteme.net @127.0.0.1 -p 5335`
 
 <p align="center">
   <img src="/png/dig_SIGOK.png" title="SIGOK">
 </p>
 
 
-#### CONFIGURE PI-HOLE TO USE STUBBY:
+#### CONFIGURE PI-HOLE TO USE UNBOUND:
 
 To configure *Pi-hole* to use *stubby*, we log into the *pi-hole web interface*. Here you can also install additional blocklists, setup your own custom blocklists, view query logs, etc.
 
@@ -967,8 +1036,8 @@ Then, navigate to *Settings* and click on *DNS*.
 </p>
 
 Make sure all boxes for pre-configured DNS providers are unchecked!
-Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server:<br>
-`127.0.0.1#9053`
+Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server and tick the box that says *Use DNSSEC*:<br>
+`127.0.0.1#5335`
 
 Since you are already in *Settings*, you can also change in *API / Web Interface* the appearance of the web interface if you like, i.e. to *Star Trek LCARS theme (dark)*:
 
@@ -979,9 +1048,9 @@ Since you are already in *Settings*, you can also change in *API / Web Interface
 
 #### RESOURCES:
 
-Stubby:
-[https://dnsprivacy.org/dns_privacy_daemon_-_stubby/about_stubby/](https://dnsprivacy.org/dns_privacy_daemon_-_stubby/about_stubby/)<br>
-[https://www.nic.cz/odvr/](https://www.nic.cz/odvr/)<br>
+Unbound:
+[https://nlnetlabs.nl/projects/unbound/about/](https://nlnetlabs.nl/projects/unbound/about/)<br>
+[https://docs.pi-hole.net/guides/dns/unbound/](https://docs.pi-hole.net/guides/dns/unbound/)<br>
 [https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en](https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en)
 
 
@@ -1023,17 +1092,6 @@ Alternatively you could also log into your `Ph-hole` web interface and temporari
 
 To update all blocklists, execute this command:<br>
 `pihole -g`
-
-#### TIME SERVER:
-
-You may want to connect to a privacy respecting time server, i.e. from [dismail.de](https://dismail.de/):<br>
-`sudo nano /etc/systemd/timesyncd.conf`
-
-Below `[Time]`, insert:<br>
-`NTP=ntp1.dismail.de ntp2.dismail.de ntp3.dismail.de`
-
-Reboot your device to make your changes take effect.
-
 
 
 # 09 - Hidden Wifi Access Point
