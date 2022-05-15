@@ -1029,22 +1029,20 @@ To log into your *Pi-hole*, open your Mac's web browser and enter this address i
 
 To log in, enter the password that was generated at the final step of the *Pi-hole* installation process, unless you already changed your password earlier.
 
-Then, navigate to *Settings* and click on *DNS*.
-
-<p align="center">
-  <img src="/png/Pi-hole_DNS.png" title="Pi-hole DNS">
-</p>
-
-Make sure all boxes for pre-configured DNS providers are unchecked!
-Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server and tick the box that says *Use DNSSEC*:<br>
-`127.0.0.1#5335`
-
-Since you are already in *Settings*, you can also change in *API / Web Interface* the appearance of the web interface if you like, i.e. to *Star Trek LCARS theme (dark)*:
+Then, navigate to *Settings*. Since you are already in *Settings*, you can change in *API / Web Interface* the appearance of the web interface if you like, i.e. to *Star Trek LCARS theme (dark)*:
 
 <p align="center">
   <img src="/png/Pi-hole_Interfaces.png" title="Pi-hole Interfaces">
 </p>
 
+
+Make sure all boxes for pre-configured DNS providers are unchecked!<br>
+Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server and tick the box that says *Use DNSSEC*:<br>
+`127.0.0.1#5335`
+
+<p align="center">
+  <img src="/png/Pi-hole_DNS.png" title="Pi-hole DNS">
+</p>
 
 #### RESOURCES:
 
