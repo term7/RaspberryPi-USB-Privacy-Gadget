@@ -1201,17 +1201,18 @@ Insert:
 ```
 #/bin/sh
 
-# Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
+# Since there only can be a wired connection between the Pi and your computer, allow all traffic on usb0:
 iptables -I INPUT -i usb0 -j ACCEPT
 
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface:
-iptables -A INPUT --destination-port 53 -j ACCEPT
-iptables -A INPUT --destination-port 53 -j ACCEPT
-iptables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
+# Accept also input on Wifi-Hotspot (we keep it hidden):
+iptables -I INPUT -i wlan0 -j ACCEPT
 
-# Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
-iptables -A INPUT -i usb0 -p tcp --destination-port 22 -j ACCEPT
-iptables -A INPUT -i wlan0 -p tcp --destination-port 22 -j ACCEPT
+# Allow DNS needed for name resolution (Pi-hole):
+iptables -A INPUT -p tcp --destination-port 53 -j ACCEPT
+iptables -A INPUT -p udp --destination-port 53 -j ACCEPT
+
+# Allow SSH only via USB and Wifi-AP:
+iptables -A INPUT -i wlan0 -p tcp --destination-port 7666 -j ACCEPT
 
 # Allow TCP/IP to do three-way handshakes:
 iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
@@ -1245,6 +1246,9 @@ Insert:
 
 # Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
 ip6tables -I INPUT -i usb0 -j ACCEPT
+
+# Accept also input on Wifi-Hotspot (we keep it hidden):
+ip6tables -I INPUT -i wlan0 -j ACCEPT
 
 # Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
 ip6tables -A INPUT -p tcp --destination-port 53 -j ACCEPT
