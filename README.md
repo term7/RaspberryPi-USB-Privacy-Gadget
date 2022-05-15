@@ -1048,6 +1048,14 @@ Further, delete all Upstream DNS Servers. Then enter the local address of your *
   <img src="/png/Pi-hole_DNSSEC.png" title="Pi-hole DNS">
 </p>
 
+#### POSSIBLE ERROR:
+
+Your *Pi-Hole* might notify you after each reboot that interface *usb0* does not currently exist. This happens because *Pi-Hole* gets started before the interface becomes available. There is nothing to worry about. However, if it annoys you, try to add a delay before *Pi-Hole* starts:<br>
+`sudo nano /etc/pihole/pihole-FTL.conf`
+
+Insert:<br>
+`DELAY_STARTUP=7`
+
 #### RESOURCES:
 
 Unbound:
