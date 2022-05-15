@@ -1036,7 +1036,7 @@ Then, navigate to *Settings*. Since you are already in *Settings*, you can chang
 </p>
 
 
-Make sure all boxes for pre-configured DNS providers are unchecked!<br>
+Click on *Setting* and select *DNS*. Make sure all boxes for pre-configured DNS providers are unchecked!<br>
 Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server and tick the box that says *Use DNSSEC*:<br>
 `127.0.0.1#5335`
 
@@ -1044,12 +1044,16 @@ Further, delete all Upstream DNS Servers. Then enter the local address of your *
   <img src="/png/Pi-hole_DNS.png" title="Pi-hole DNS">
 </p>
 
+<p align="center">
+  <img src="/png/Pi-hole_DNSSEC.png" title="Pi-hole DNS">
+</p>
+
 #### RESOURCES:
 
 Unbound:
 [https://nlnetlabs.nl/projects/unbound/about/](https://nlnetlabs.nl/projects/unbound/about/)<br>
-[https://docs.pi-hole.net/guides/dns/unbound/](https://docs.pi-hole.net/guides/dns/unbound/)<br>
-[https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en](https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en)
+Pihole-Unbound: [https://docs.pi-hole.net/guides/dns/unbound/](https://docs.pi-hole.net/guides/dns/unbound/)<br>
+DNSSEC: [https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en](https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en)
 
 
 
