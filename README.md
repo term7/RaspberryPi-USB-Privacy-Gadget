@@ -1149,19 +1149,19 @@ Finally we configure our *Hidden Wifi Access Point*:<br>
 Insert:
 
 ```
-country_code=DE
 interface=wlan0
-ssid=HiddenAP
 hw_mode=g
 channel=7
 macaddr_acl=0
 auth_algs=1
 ignore_broadcast_ssid=2
 wpa=2
-wpa_passphrase=Passphrase_for_my_hidden_AP!
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
 rsn_pairwise=CCMP
+country_code=DE
+ssid=HiddenAP
+wpa_passphrase=Passphrase_for_my_hidden_AP!
 ```
 
 Change the country code to your location and pick an ssid and wpa_passphrase of your choice!
