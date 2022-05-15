@@ -592,7 +592,7 @@ Insert:
 ```
 # USB Gadget
 interface=usb0  # USB interface
-dhcp-range=set:usb0,192.168.77.1,192.168.77.255,255.255.255.0,24h
+dhcp-range=set:usb0,192.168.77.2,192.168.77.254,255.255.255.0,24h
 dhcp-option=set:usb0,3,192.168.77.1
                 # Default Gateway
 address=/access.tardigrade/192.168.77.1
@@ -1137,7 +1137,7 @@ Insert at the end:
 ```
 # Wifi-AP
 interface=wlan0 # Access Point
-dhcp-range=set:wlan0,192.168.79.1,192.168.79.255,24h
+dhcp-range=set:wlan0,192.168.79.2,192.168.79.22,255.255.255.0,24h
                 # Pool of IP addresses served via DHCP
 dhcp-option=wlan0,3,192.168.79.1
                 # Default Gateway
