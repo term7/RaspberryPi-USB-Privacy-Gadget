@@ -996,7 +996,7 @@ Run the dig command to test DNS resolution. You should see the status as “NOER
 `dig pi-hole.net @127.0.0.1 -p 5335`
 
 <p align="center">
-  <img src="/png/dig_Pi-hole.png" title="dig Pi-Hole">
+  <img src="/png/dig_pihole.net.png" title="dig Pi-Hole">
 </p>
 
 The final test is to ensure that DNSSEC is working properly. If the following commands are returned properly, DNSSEC is properly working.
