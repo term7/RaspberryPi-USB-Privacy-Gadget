@@ -357,7 +357,7 @@ After setting up SSH key authentication, you need to set the correct permissions
 ssh term7@192.168.1.123
 ```
 
-(Replace `192.168.1.123` with your actual Raspberry Pi IP!)
+Replace `192.168.1.123` with your actual Raspberry Pi IP!
 
 #### 5. Set the Correct SSH Directory and File Permissions
 
@@ -423,12 +423,14 @@ Do **NOT** log out yet! On your Mac, open a new terminal window and test SSH acc
 ```
 ssh term7@192.168.1.123 -p 6666
 ```
+Don't forget to replace `192.168.1.123` with your actual Raspberry Pi IP!
 
-If the connection works fine, your new hardened SSH configuration is successfully applied!
+If the connection works fine, your new hardened SSH configuration is successfully applied!<br>
+Since you are still logged in in your first terminal window you can retrace your steps to find out what went wrong.
 
 #### 9. Recover from an Issue (If Needed)
 
-If something goes wrong and you get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Then type the following commands:
+If something goes wrong and you do get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Then type the following commands:
 
 ```
 sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
