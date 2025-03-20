@@ -1407,36 +1407,48 @@ sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home usb0.local\n192.168.3
 
 ## 14 NGINX REVERSE PROXY AND SSL
 
-In this section, we will configure NGINX as a reverse proxy for the AdGuardHome web interface. This will allow us to serve the interface securely while enabling additional customization options.
+In this section, we will configure *NGINX* as a reverse proxy for the *AdGuardHome* web interface. This will allow us to serve the interface securely while enabling additional customization options.
 
 #### 1. Install NGINX:
 
-First, install NGINX, a modern and lightweight web server:<br>
-`sudo apt install -y nginx`
+First, install *NGINX*, a modern and lightweight web server:
+```
+sudo apt install -y nginx
+```
 
-By default, NGINX is configured to listen on IPv6, but since we have previously disabled IPv6 on this system, the nginx.service will fail to start. To prevent this, we need to modify the default configuration file and disable IPv6 support:<br>
-`sudo sed -i 's/^\(\s*listen \[::\]:80 default_server;\)/# \1/' /etc/nginx/sites-available/default`
+By default, *NGINX* is configured to listen on IPv6, but since we have previously disabled IPv6 on this system, the nginx.service will fail to start. To prevent this, we need to modify the default configuration file and disable IPv6 support:<br>
+```
+sudo sed -i 's/^\(\s*listen \[::\]:80 default_server;\)/# \1/' /etc/nginx/sites-available/default
+```
 
 #### 2. Self-signed Certificate:
 
 The goal is to access AdguardHome using the local address:<br>
-https://adguard.home
+[https://adguard.home](https://adguard.home)
 
-In the previous chapter, we enabled reverse lookup via Unbound. Now, we need to set up encryption using a self-signed certificate, which will be used by NGINX to serve adguard.home over HTTPS. Additionally, this certificate will allow AdGuardHome to support encrypted DNS queries via DNS over HTTPS (DoH) as a fallback method alongside our Unbound configuration.
+In the previous chapter, we enabled reverse lookup via *Unbound*. Now, we need to set up encryption using a self-signed certificate, which will be used by *NGINX* to serve *adguard.home* over HTTPS. Additionally, this certificate will allow *AdGuardHome* to support encrypted DNS queries via DNS over HTTPS (DoH) as a fallback method alongside our *Unbound* configuration.
 
-Run the following command to ensure the required directories exist:<br>
-`[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/CA ] || mkdir ~/tools/CA && [ -d ~/tools/CA/SSL ] || mkdir ~/tools/CA/SSL`
+Run the following command to ensure the required directories exist:
+```
+[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/CA ] || mkdir ~/tools/CA && [ -d ~/tools/CA/SSL ] || mkdir ~/tools/CA/SSL
+```
 
-Change into the Certificate Authority (CA) configuration folder:<br>
-`cd ~/tools/CA`
+Change into the *Certificate Authority (CA)* configuration folder:
+```
+cd ~/tools/CA
+```
 
-Create a self-signed Certificate Authority (CA) key and certificate (valid for 100 years):<br>
-`openssl req -x509 -new -nodes -keyout term7-CA.key -out term7-CA.pem -days 36500 -subj "/CN=term7-CA"`
+Create a self-signed *Certificate Authority (CA)* key and certificate (valid for 100 years):
+```
+openssl req -x509 -new -nodes -keyout term7-CA.key -out term7-CA.pem -days 36500 -subj "/CN=term7-CA"
+```
 
-Move into the SSL configuration folder:<br>
-`cd ~/tools/CA/SSL`
+Move into the SSL configuration folder:
+```
+cd ~/tools/CA/SSL
+```
 
-Create an OpenSSL configuration file for adguard.home:
+Create an *OpenSSL Configuration File* for *adguard.home*:
 
 ```
 echo '[ req ]
@@ -1458,39 +1470,56 @@ DNS.1 = adguard.home
 IP.1 = 192.168.77.1' | sudo tee /home/admin/tools/CA/SSL/openssl-san.cnf > /dev/null
 ```
 
-Now, generate the private key for adguard.home:<br>
-`openssl genrsa -out adguard.home.key 2048`
+Now, generate the *Private Key* for *adguard.home*:
+```
+openssl genrsa -out adguard.home.key 2048
+```
 
-Create a Certificate Signing Request (CSR):<br>
-`openssl req -new -key adguard.home.key -out adguard.home.csr -config openssl-san.cnf``
+Create a *Certificate Signing Request (CSR)*:
+```
+openssl req -new -key adguard.home.key -out adguard.home.csr -config openssl-san.cnf
+```
 
+Sign the *Certificate Signing Request (CSR)* with the *Local Certificate Authority (CA)*:
+```
+openssl x509 -req -in adguard.home.csr -CA ../term7-CA.pem -CAkey ../term7-CA.key -CAcreateserial -out adguard.home.crt -days 36500 -extensions v3_req -extfile openssl-san.cnf
+```
 
-Sign the Certificate Signing Request (CSR) with the Local Certificate Authority (CA):<br>
-´openssl x509 -req -in adguard.home.csr -CA ../term7-CA.pem -CAkey ../term7-CA.key -CAcreateserial -out adguard.home.crt -days 36500 -extensions v3_req -extfile openssl-san.cnf´
+Create the Full-Chain Certificate:
+```
+cat adguard.home.crt ../term7-CA.pem > adguard.home-fullchain.crt
+```
 
-Create the Full-Chain Certificate:<br>
-`cat adguard.home.crt ../term7-CA.pem > adguard.home-fullchain.crt`
+Finally we configure our system to trust the *Local Certificate Authority (CA)*. Copy the CA certificate to the system's trusted certificate directory:
+```
+sudo cp ~/tools/CA/term7-CA.pem /usr/local/share/ca-certificates/term7-CA.crt
+```
 
-Finally we configure our system to trust the Local Certificate Authority (CA). Copy the CA certificate to the system's trusted certificate directory:<br>
-`sudo cp ~/tools/CA/term7-CA.pem /usr/local/share/ca-certificates/term7-CA.crt`
+Update the system's certificate store:
+```
+sudo update-ca-certificates
+```
 
-Update the system's certificate store:<br>
-`sudo update-ca-certificates`
+Since we have enforced strict user access control, root login is not allowed. To transfer the certificate to our Mac, we first copy it to our standard user account:
+```
+sudo cp ~/tools/CA/term7-CA.pem /home/term7/
+```
 
-Since we have enforced strict user access control, root login is not allowed. To transfer the certificate, we first copy it to our standard user account:<br>
-`sudo cp ~/tools/CA/term7-CA.pem /home/term7/`
+Now, on your Mac, open a new Terminal window and run the following command to securely copy the certificate to your Downloads folder. Once the transfer is complete, we immediately delete it from the Raspberry Pi standart user account:
+```
+scp -P 8519 term7@192.168.77.1:term7-CA.pem ~/Downloads/ && ssh -p 8519 term7@192.168.77.1 "rm term7-CA.pem"
+```
 
-Now, on your Mac, open a new Terminal window and run the following command to securely copy the certificate to your Downloads folder. Once the transfer is complete, we immediately delete it from the Raspberry Pi:<br>
-`scp -P 8519 term7@192.168.77.1:term7-CA.pem ~/Downloads/ && ssh -p 8519 term7@192.168.77.1 "rm term7-CA.pem"`
+Once the certificate is transferred, install it as a trusted root certificate on macOS by running the following command:
+```
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/Downloads/term7-CA.pem
+```
 
-Once the certificate is transferred, install it as a trusted root certificate on macOS by running the following command:<br>
-`sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/Downloads/term7-CA.pem`
-
-This command adds the certificate to the macOS System Keychain and marks it as trusted for all users. By doing so, it ensures that the certificate is recognized as a Root Certificate Authority, allowing you to access https://adguard.home without encountering security warnings.
+This command adds the certificate to the macOS System Keychain and marks it as trusted for all users. By doing so, it ensures that the certificate is recognized as a *Root Certificate Authority*, allowing you to access https://adguard.home without encountering security warnings.
 
 #### 3. Configure NGINX as a reverse proxy for AdGuardHome:
 
-Next, we configure NGINX to serve as a reverse proxy for the AdGuardHome web interface and to forward DNS-over-HTTPS (DoH) requests between connected clients and AdGuardHome.<br>
+Next, we configure *NGINX* to serve as a reverse proxy for the *AdGuardHome* web interface and to forward DNS-over-HTTPS (DoH) requests between connected clients and *AdGuardHome*.<br>
 Run the following command to create the configuration:
 
 ```
@@ -1534,14 +1563,20 @@ server {
 }' | sudo tee /etc/nginx/sites-available/nginx-adguard > /dev/null
 ```
 
-Enable the NGINX configuration:<br>
-`sudo ln -s /etc/nginx/sites-available/nginx-adguard /etc/nginx/sites-enabled/`
+Enable the *NGINX* configuration:
+```
+sudo ln -s /etc/nginx/sites-available/nginx-adguard /etc/nginx/sites-enabled/
+```
 
-Test the configuration for syntax errors:<br>
-`sudo nginx -t`
+Test the configuration for syntax errors:
+```
+sudo nginx -t
+```
 
-If the test is successful, restart NGINX:<br>
-`sudo systemctl restart nginx`
+If the test is successful, restart *NGINX*:
+```
+sudo systemctl restart nginx
+```
 
 * * *
 
