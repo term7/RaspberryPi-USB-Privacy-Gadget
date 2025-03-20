@@ -685,10 +685,19 @@ sudo systemctl daemon-reload
 sudo systemctl enable hostname.service
 ```
 
-After any reboot, check the current hostname:
+#### 5. Test the Service
+
+Manually start the service:
+```
+sudo systemctl start hostname.service
+```
+
+Check the current hostname:
 ```
 hostname
 ```
+
+If you see a different hostname than before, the setup is working correctly. From now on, your Raspberry Pi will randomly select a new hostname from the dictionary on each reboot.
 
 * * *
 
