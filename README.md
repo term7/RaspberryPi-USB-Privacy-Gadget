@@ -728,8 +728,12 @@ sudo sed -i 's/$/ rootwait modules-load=dwc2,g_ether quiet/' /boot/firmware/cmdl
 
 By default, NetworkManager may ignore the gadget interface (*usb0*). We need to modify udev rules to allow it. Copy and modify the required udev rules to allow *NetworkManager* to manage the gadget interface:
 
-`sudo cp /usr/lib/udev/rules.d/85-nm-unmanaged.rules /etc/udev/rules.d/85-nm-unmanaged.rules`<br>
-`sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' -i /etc/udev/rules.d/85-nm-unmanaged.rules`
+```
+sudo cp /usr/lib/udev/rules.d/85-nm-unmanaged.rules /etc/udev/rules.d/85-nm-unmanaged.rules
+```
+```
+sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' -i /etc/udev/rules.d/85-nm-unmanaged.rules
+```
 
 #### 3. Configure usb0 as a Static Interface in NetworkManager
 
