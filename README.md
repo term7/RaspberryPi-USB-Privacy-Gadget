@@ -818,7 +818,7 @@ Look for your external Wi-Fi adapter in the output. It will typically have a nam
 
 #### 2. Rename Preconfigured External Connections and Disable IPv6:
 
-To standardize connection names and disable IPv6, run:
+To standardize connection names, run:
 
 ```
 sudo nmcli con modify preconfigured connection.id "Wi-Fi"
