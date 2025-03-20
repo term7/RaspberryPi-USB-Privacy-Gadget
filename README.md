@@ -1049,7 +1049,7 @@ Reboot your Raspberry Pi for changes to take effect:
 sudo reboot now
 ```
 
-The Raspberry Pi uses a fake hardware clock (software-based) by default. Since we now have a real RTC, remove it to avoid conflicts:
+The Raspberry Pi uses a software-based fake hardware clock by default. Since we now have a real RTC, remove it to avoid conflicts:
 
 ```
 sudo apt -y remove fake-hwclock
