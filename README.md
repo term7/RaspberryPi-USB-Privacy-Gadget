@@ -1734,6 +1734,8 @@ Once the password has been updated, restart the service:
 sudo systemctl start AdGuardHome
 ```
 
+#### 5. Log into AdGuardHome's Web Interface
 
+Finally, switch off your Mac's Wi-Fi, open your browser and browse to: [https://adguard.home](https://adguard.home)
 
 * * *
