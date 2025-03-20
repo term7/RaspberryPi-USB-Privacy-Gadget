@@ -599,6 +599,8 @@ sudo nmcli device show | grep GENERAL.HWADDR
 
 If the MAC address differs from the previous output, the randomization setup is working correctly.
 
+**⚠️ IMPORTANT: A side effect of MAC address randomization is that your router may assign a different IP address to your Raspberry Pi. If you're using SSH, you may need to check your Raspberry Pi’s new IP address and update your SSH connection accordingly.**
+
 * * *
 
 ## 09 RANDOM HOSTNAME
