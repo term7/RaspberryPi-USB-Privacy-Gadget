@@ -611,11 +611,17 @@ Many networks log hostnames alongside MAC addresses and IP addresses. If your ho
 
 First we create the folders where we want to store our scripts and our dictionary:
 
-`[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/dict ] || mkdir ~/tools/dict`<br>
-`[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost`
+```
+[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/dict ] || mkdir ~/tools/dict
+```
+```
+[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost
+```
 
-Download our UK English dictionary:<br>
-`curl -L -o ~/tools/dict/ukenglish.zip https://codeberg.org/term7/Going-Dark/raw/branch/main/misc/Dictionary/ukenglish.zip`
+Download our UK English dictionary:
+```
+curl -L -o ~/tools/dict/ukenglish.zip https://codeberg.org/term7/Going-Dark/raw/branch/main/misc/Dictionary/ukenglish.zip
+```
 
 #### 2. Create the Script to Randomize the Hostname
 
@@ -643,8 +649,12 @@ sed -i "/127.0.1.1/c\127.0.1.1       $NEW_HOSTNAME" /etc/hosts' | sudo tee /home
 
 Ensure the script has the correct ownership and permissions:
 
-`sudo chmod 700 /home/admin/script/randhost/hostname.sh`
-`sudo chown root:root /home/admin/script/randhost/hostname.sh`
+```
+sudo chmod 700 /home/admin/script/randhost/hostname.sh
+```
+```
+sudo chown root:root /home/admin/script/randhost/hostname.sh
+```
 
 #### 3. Create a System Service to Run the Script on Boot
 
@@ -666,13 +676,19 @@ WantedBy=network-pre.target' | sudo tee /etc/systemd/system/hostname.service > /
 ```
 #### 4. Enable and Start the Service and Verify the New Hostname
 
-Enable service:
+Enable the service:
 
-`sudo systemctl daemon-reload`<br>
-`sudo systemctl enable hostname.service`
+```
+sudo systemctl daemon-reload
+```
+```
+sudo systemctl enable hostname.service
+```
 
-After rebooting, check the current hostname:<br>
-`hostname`
+After any reboot, check the current hostname:
+```
+hostname
+```
 
 * * *
 
