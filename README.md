@@ -1395,7 +1395,7 @@ To ensure all DNS queries are routed through *AdGuardHome* and *Unbound*, we nee
 sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
 ```
 ```
-`sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
+sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
 ```
 
 Next, we update `/etc/hosts` to define local hostname mappings to ensure that local hostnames resolve correctly:
