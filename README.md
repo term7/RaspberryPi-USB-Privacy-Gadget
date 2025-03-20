@@ -1633,10 +1633,14 @@ To create a salted password, we need an additional software package:
 ```
 sudo apt install -y whois
 ```
-Then use this command to change the default password:
+Then use these two commands to change the default password:
+```
+PASSWORD='YOUR-NEW-PASSWORD'
+```
 
 ```
-sudo sed -i "s/^    password: default/    password: \"$(mkpasswd -m bcrypt YOUR-NEW-PASSWORD)\"/" ~/build/AdGuardHome/AdGuardHome.yaml
+sudo sed -i "s/^    password: default/    password: \"$(mkpasswd -m bcrypt "$PASSWORD")\"/" ~/build/AdGuardHome/AdGuardHome.yaml
+
 ```
 Change YOUR-NEW-PASSWORD to a safe password of your choice!
 
