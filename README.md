@@ -405,7 +405,7 @@ sudo curl -L -o /etc/ssh/sshd_config "https://codeberg.org/term7/Going-Dark/raw/
 
 This overwrites your current standard SSH configuration file. **IMPORTANT**: If you use a different standard username than *term7*, you must update this line: `AllowUsers term7`
 
-To check and edit the file before applying changes, open it in Nano:
+To check and edit the file before applying changes, open it in *Nano*:
 ```
 sudo nano /etc/ssh/sshd_config
 ```
