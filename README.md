@@ -1092,7 +1092,7 @@ We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHC
 
 **SPEED:** *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
 
-**DRAWBACK: Lack of Encryption**
+**DRAWBACK:** Lack of Encryption
 
 One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
 To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
@@ -1312,7 +1312,8 @@ auth-zone:
     fallback-enabled: yes' | sudo tee /etc/unbound/unbound.conf.d/local-zones.conf > /dev/null
 ```
 
-This configuration is particularly useful for the following reasons:<br>
+This configuration is particularly useful for the following reasons:
+
 *AdGuardHome* will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
 Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address:
 
