@@ -381,7 +381,7 @@ su admin
 
 To display a security warning banner before login, download and replace the `/etc/issue.net` file with our pre-configured version from the repository:
 ```
-sudo curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/ssh/issue.net
+sudo curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net
 ```
 
 You can edit the banner text to match your requirements:
