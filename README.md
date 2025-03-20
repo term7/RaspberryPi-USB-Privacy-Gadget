@@ -1072,7 +1072,7 @@ sudo systemctl restart ntpsec
 
 ## 13 DHCP & DNS WITH UNBOUND AND ADGUARDHOME
 
-In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the AdGuardHome web interface and enable SSL encryption for both local HTTPS access and secure communication with AdGuardHome’s fallback DNS servers.<br>
+In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the *AdGuardHome* web interface and enable SSL encryption for both local HTTPS access and secure communication with *AdGuardHome’s* fallback DNS servers.<br>
 Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
 Finally, we will configure the [Firewall](#17-firewall).
 
@@ -1080,42 +1080,48 @@ Finally, we will configure the [Firewall](#17-firewall).
 Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 #### AdGuardHome:
-We will install AdGuardHome - a DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security by blocking unwanted content at DNS level.
+We will install *AdGuardHome* - a DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security by blocking unwanted content at DNS level.
 
 #### NetworkManager’s Built-in Dnsmasq:
-We will configure NetworkManager and its built-in dnsmasq to manage both DHCP and DNS for the usb0 Ethernet Gadget and the wlan0 Hotspot. This will allow all connected clients to have their DNS queries forwarded to AdGuardHome, ensuring filtered and secure DNS resolution.
+We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHCP and DNS for the *usb0* (Ethernet Gadget) and the *wlan0* (Hotspot). This will allow all connected clients to have their DNS queries forwarded to *AdGuardHome*, ensuring filtered and secure DNS resolution.
 
 #### Unbound:
-Unbound is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure AdGuardHome to use Unbound as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying Unbound, we eliminate this dependency, gaining the following advantages:
+*Unbound* is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure *AdGuardHome* to use *Unbound* as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying *Unbound*, we eliminate this dependency, gaining the following advantages:
 
-Privacy: Unbound performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
+Privacy: *Unbound* performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
 
-Speed: AdGuardHome already includes a built-in DNS cache, but combining it with Unbound’s advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
+Speed: *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
 
 The Drawback: Lack of Encryption:
 
 One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
 To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
-This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in Unbound) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
+This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in *Unbound*) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
 
 #### 1. Install AdGuardHome:
 
-Before installing AdGuardHome, create a build directory and navigate into it:<br>
-`[ -d ~/build ] || mkdir ~/build && cd ~/build`
+Before installing *AdGuardHome*, make sure the build directory exists and navigate into it:
+```
+[ -d ~/build ] || mkdir ~/build && cd ~/build
+```
 
 Run the following command to download and extract the latest AdGuardHome release:
-`curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz`
+```
+curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz
+```
 
 Then, navigate into the extracted directory and start the installation:
-`cd AdGuardHome && sudo ./AdGuardHome -s install`
+```
+cd AdGuardHome && sudo ./AdGuardHome -s install
+```
 
-Note: We will configure AdGuardHome later in the guide. At this stage, the installation is only preparing the system.
+**Note: We will configure *AdGuardHome* later in the guide. At this stage, the installation is only preparing the system.**
 
 #### 2. Configure NetworkManager and NetworManager's built-in Dnsmasq:
 
-To properly manage DHCP and DNS with NetworkManager, we first need to configure its general settings and then set up Dnsmasq for both standard and shared network interfaces.
+To properly manage DHCP and DNS with *NetworkManager*, we first need to configure its general settings and then set up *Dnsmasq* for both standard and shared network interfaces.
 
-Run the following command to create and update /etc/NetworkManager/NetworkManager.conf:
+Run the following command to create and update `/etc/NetworkManager/NetworkManager.conf`:
 
 ```
 echo '[main]
@@ -1127,16 +1133,16 @@ dhcp=dnsmasq
 managed=false' | sudo tee /etc/NetworkManager/NetworkManager.conf > /dev/null
 ```
 
-This ensures that NetworkManager uses Dnsmasq for DHCP and DNS.
+This ensures that *NetworkManager* uses *Dnsmasq* for DHCP and DNS.
 
-NetworkManager uses two different configuration folders for Dnsmasq:
+*NetworkManager* uses two different configuration folders for Dnsmasq:
 
-- Standard Interfaces (/etc/NetworkManager/dnsmasq.d/) → Used for lo (localhost).
-- Shared Interfaces (/etc/NetworkManager/dnsmasq-shared.d/) → Used for shared networks like wlan0 and usb0.
+- Standard Interfaces (`/etc/NetworkManager/dnsmasq.d/`) → Used for lo (localhost).
+- Shared Interfaces (`/etc/NetworkManager/dnsmasq-shared.d/`) → Used for shared networks like *wlan0* and *usb0*.
 
 We need to configure both.
 
-Create the following configuration file to ensure that all DNS requests are forwarded to AdGuardHome and apply security features:
+Create the following configuration file to ensure that all DNS requests are forwarded to *AdGuardHome* and apply security features:
 
 ```
 echo '# Redirect DNS to Adguard (localhost)
@@ -1159,7 +1165,7 @@ local-service
 expand-hosts' | sudo tee /etc/NetworkManager/dnsmasq.d/00_dnsmasq-adguard.conf > /dev/null
 ```
 
-Create a configuration file for shared interfaces to redirect DNS queries to AdGuardHome and enable EDNS Client Subnet (ECS):
+Create a configuration file for shared interfaces to redirect DNS queries to *AdGuardHome* and enable EDNS Client Subnet (ECS):
 
 ```
 echo '# Redirect DNS to Adguard
@@ -1186,7 +1192,7 @@ local-service
 expand-hosts' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
 ```
 
-Set up DHCP settings for usb0 (single-client device) and wlan0 (Wi-Fi hotspot):
+Set up DHCP settings for *usb0* (Ethernet Gadget) and *wlan0* (Wi-Fi hotspot):
 
 ```
 echo '########################################
@@ -1231,19 +1237,32 @@ dhcp-option=tag:wlan0,option:ntp-server,192.168.37.1
 dhcp-option=tag:wlan0,12' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/01_usb0-wlan0.conf > /dev/null
 ```
 
-To ensure your Mac appears as a distinct client in AdGuardHome, we need to assign it a static IP address (see configuration above). However, since MAC address randomization is enabled on our laptop, we cannot use its MAC address as an identifier. Instead, we will set a fixed hostname, WORKSTATION, which will allow us to reliably assign a static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
+To ensure your Mac appears as a distinct client in *AdGuardHome*, we need to assign it a static IP address (see configuration above). However, since MAC address randomization is enabled on our laptop, we cannot use its MAC address as an identifier. Instead, we will set a fixed hostname, WORKSTATION, which will allow us to reliably assign a static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
 
-`sudo scutil --set HostName WORKSTATION`
-`sudo scutil --set LocalHostName WORKSTATION`
-`sudo scutil --set ComputerName WORKSTATION`
-`dscacheutil -flushcache`
+```
+sudo scutil --set HostName WORKSTATION
+```
+```
+sudo scutil --set LocalHostName WORKSTATION
+```
+```
+sudo scutil --set ComputerName WORKSTATION
+```
+```
+dscacheutil -flushcache
+```
 
 #### 3. Install and configure Unbound:
 
+```
 sudo apt install -y unbound unbound-anchor
+```
 
-Our Unbound configuration is designed for a privacy-focused, high-performance recursive DNS resolver with DNSSEC validation, enhanced caching, and security hardening. Download our pre-configured Unbound configuration file from our repository:<br>
-`curl -L -o /etc/ntpsec/ntp.conf https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf`
+Our *Unbound* configuration is designed for a privacy-focused, high-performance recursive DNS resolver with DNSSEC validation, enhanced caching, and security hardening. Download our pre-configured *Unbound* configuration file from our repository:<br>
+
+```
+curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf"
+```
 
 Privacy & Security Features:
 
@@ -1262,7 +1281,7 @@ Performance Enhancements:
 - Optimized threading & memory usage
 - Minimizes DNS response sizes to reduce network overhead.
 
-Next, we will create a second configuration file to define local zones and enable reverse lookups for wlan0 and usb0, allowing local hostname resolution within our network:
+Next, we will create a second configuration file to define local zones and enable reverse lookups for *wlan0* and *usb0*, allowing local hostname resolution within our network:
 
 ```
 echo 'server:
@@ -1294,16 +1313,18 @@ auth-zone:
 ```
 
 This configuration is particularly useful for the following reasons:<br>
-AdGuardHome will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
-Later in this guide, we will configure an Nginx reverse proxy to serve the AdGuardHome web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address:
+*AdGuardHome* will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
+Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address:
 
-This setup does not work out of the box due to two key issues: NetworkManager generates a zone file that is incompatible with Unbound’s syntax. To resolve this, we need a script that translates the lease file into a format that Unbound can read.<br>
-Furthermore Dnsmasq needs to trigger this script whenever a new client connects. This ensures automatic updates to Unbound’s zone file, keeping hostname resolution accurate.
+This setup does not work out of the box due to two key issues: *NetworkManager* generates a zone file that is incompatible with *Unbound’s* syntax. To resolve this, we need a script that translates the lease file into a format that *Unbound* can read.<br>
+Furthermore *Dnsmasq* needs to trigger this script whenever a new client connects. This ensures automatic updates to *Unbound’s* zone file, keeping hostname resolution accurate.
 
 Prepare the Script Storage Location:<br>
-`[ -d ~/script ] || mkdir ~/script && [ -d ~/script/DNS ] || mkdir ~/script/DNS`
+```
+[ -d ~/script ] || mkdir ~/script && [ -d ~/script/DNS ] || mkdir ~/script/DNS
+```
 
-Now, create the script that translates NetworkManager’s lease file into an Unbound-compatible format:
+Now, create the script that translates *NetworkManager’s* lease file into a format that is compatible with *Unbound*:
 
 ```
 echo '#!/bin/bash
@@ -1346,24 +1367,38 @@ done
 systemctl reload unbound' | sudo tee /home/admin/script/DNS/update-unbound-leases.sh > /dev/null
 ```
 
-Make this script executable:<br>
-`sudo chmod +x ~/script/DNS/update-unbound-leases.sh`
+Make this script executable:
+```
+sudo chmod +x ~/script/DNS/update-unbound-leases.sh
+```
 
-Configure dnsmasq to run the script automatically whenever a client connects:
+Configure *Dnsmasq* to run the script automatically whenever a client connects:
 
-`echo "" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`<br>
-`echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`<br>
-`echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`
+```
+echo "" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
+```
+```
+echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
+```
+```
+echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
+```
 
 #### 4. Enforcing Local DNS and Updating Hosts:
 
-To ensure all DNS queries are routed through AdGuardHome and Unbound, we need to configure NetworkManager to use our local resolver:
+To ensure all DNS queries are routed through *AdGuardHome* and *Unbound*, we need to configure *NetworkManager* to use our local resolver:
 
-`sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1`<br>
-`sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1`
+```
+sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
+```
+```
+`sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
+```
 
-Next, we update /etc/hosts to define local hostname mappings to ensure that local hostnames resolve correctly:<br>
-`sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home usb0.local\n192.168.37.1    hotspot.local/' /etc/hosts`
+Next, we update `/etc/hosts` to define local hostname mappings to ensure that local hostnames resolve correctly:
+```
+sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home usb0.local\n192.168.37.1    hotspot.local/' /etc/hosts
+```
 
 * * *
 
