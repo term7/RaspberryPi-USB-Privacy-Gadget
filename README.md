@@ -1600,7 +1600,7 @@ To apply all changes and ensure that *NGINX*, *NetworkManager*, *Dnsmasq*, *AdGu
 sudo reboot now
 ```
 
-**⚠️ Important Note: At this stage, the necessary services are running, but the firewall is not yet configured. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall.**
+**⚠️ IMPORTANT: At this stage, the necessary services are running, but the firewall is not yet configured. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall.**
 
 * * *
 
@@ -1650,7 +1650,17 @@ Our firewall includes multiple security mechanisms to block attacks, enforce net
 - Drops all IPv6 traffic to prevent potential IPv6-based attacks or leaks. 
 - Ensures all traffic is routed through IPv4, which is explicitly controlled by the firewall.
 
-To ensure the firewall is applied automatically after every reboot, run:
+**⚠️ CRITICAL: Configure the Firewall for Your Wi-Fi Adapter: If you use a different Wi-Fi adapter than the [ALFA AWUS036ACM](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136), the firewall will break! Run the following commands to update the firewall configuration with your adapter’s predictable interface name:**<br>
+
+```
+WIFI='PREDICTABLE-INTERFACE-NAME'
+```
+```
+sudo sed -i "s/\bwlx00c0caae6319\b/$WIFI/" /etc/nftables.conf
+```
+**⚠ Replace PREDICTABLE-INTERFACE-NAME with your actual Wi-Fi adapter name. For guidance, refer to [03 - PREREQUISITES](#03-prerequisites) and [11 SETUP WIRELESS HOTSPOT](#11-setup-wireless-hotspot).**
+
+Enable *nftables* so the firewall rules persist across reboots:
 ```
 sudo systemctl enable nftables
 ```
@@ -1667,6 +1677,7 @@ Reboot to apply all changes:
 sudo reboot now
 ```
 
+* * *
 
 ## 16 CONFIGURE ADGUARDHOME
 
