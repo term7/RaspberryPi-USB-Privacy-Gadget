@@ -1,0 +1,11 @@
+[Unit]
+Description=Clear dnsmasq lease file at shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target
