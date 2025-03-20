@@ -927,14 +927,16 @@ After starting the hotspot, you can connect your smartphone or other devices usi
 
 ## 12 SETUP NTP
 
-By default, the Raspberry Pi synchronizes time using the Debian NTP pool servers. However, we want to set up a local NTP server on the Raspberry Pi to provide network time synchronization for connected clients Additionally, we will configure our Raspberry Pi to use privacy-respecting external NTP servers from ntppool.org, ensuring accurate and secure time synchronization.
+By default, the Raspberry Pi synchronizes time using the Debian NTP pool servers. However, we want to set up a local NTP server on the Raspberry Pi to provide network time synchronization for connected clients. Additionally, we will configure our Raspberry Pi to use privacy-respecting external NTP servers from the *NTP Pool Project*, ensuring accurate and secure time synchronization. By doing so, our Mac will synchronize time through the Raspberry Pi instead of contacting *time.apple.com*, further limiting Apple’s ability to track our device based on time synchronization requests.
 
 For more details, visit: [NTP Pool Project](https://www.ntppool.org/en/use.html)
 
 #### 1. Download & Apply NTP Configuration:
 
-To simplify the setup, download our pre-configured NTP configuration file from our repository:<br>
-`curl -L -o /etc/ntpsec/ntp.conf https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ntp/ntp.conf`
+To simplify the setup, download our pre-configured NTP configuration file from our repository:
+```
+sudo curl -L -o /etc/ntpsec/ntp.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/ntp/ntp.conf"
+```
 
 This configuration:<br>
 - Sets up the Raspberry Pi as an NTP server for local network clients.
@@ -949,10 +951,12 @@ If the Raspberry Pi loses internet access, it will continue serving time to loca
 
 Even though local clients are allowed to sync from the Raspberry Pi, they may still prefer external NTP servers such as Apple, Google, or Microsoft. To ensure all network devices use the Raspberry Pi for time synchronization, we will later configure NetworkManager to use its built-in dnsmasq as a DHCP server. This setup broadcasts the Raspberry Pi's NTP settings to all DHCP clients, ensuring they automatically use the Raspberry Pi for time synchronization. It should eliminate the need for manual configuration on each device.
 
-However, if you want to configure your Mac to use the Raspberry Pi as its NTP server, open a new terminal window and disable automatic time setting for the moment:<br>
-`sudo systemsetup -setusingnetworktime off`
+However, if you want to configure your Mac to use the Raspberry Pi as its NTP server, open a new terminal window on your Mac and disable automatic time setting for the moment:<br>
+```
+sudo systemsetup -setusingnetworktime off
+```
 
-Note: This command may produce 'Error:-99' due to Apple's System Integrity Protection (SIP). However, despite this error, our testing has shown that the setting is still applied correctly.
+Note: This command may produce *'Error:-99'* due to Apple's System Integrity Protection (SIP). However, despite this error, our testing has shown that the setting is still applied correctly.
 
 The next command is a bit of a hack because Apple does not document support for multiple lines in this command. Officially, systemsetup -setnetworktimeserver only accepts a single line. However, despite being undocumented, this method does not produce errors and correctly formats the configuration file in our experience. We want to set up the [NTP Pool Project](https://www.ntppool.org/en/use.html) as secondary servers if the Raspberry Pi Ethernet Gadget is not available:
 
@@ -964,63 +968,97 @@ server 2.pool.ntp.org
 server 3.pool.ntp.org"
 ```
 
-If you prefer to avoid this undocumented method, you can manually enter multiple time servers in System Settings > Date & Time. Separate each entry with a comma and end each with a period, e.g.:
-192.168.77.1, 0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org
+If you prefer to avoid this undocumented method, you can manually enter multiple time servers in **System Settings > Date & Time**. Separate each entry with a comma and end each with a period, e.g.:
+`192.168.77.1, 0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org`
 
-If you only want to synchronise time via your Raspberry Pi and adhere to the correct syntax as documented by Apple, use this command:<br>
-`sudo systemsetup -setnetworktimeserver "192.168.77.1"`
+If you only want to synchronise time via your Raspberry Pi and adhere to the correct syntax as documented by Apple, use this command instead:
+```
+sudo systemsetup -setnetworktimeserver "192.168.77.1"
+```
 
-Finally re-enable automatic time setting: <br>
-`sudo systemsetup -setusingnetworktime off`
+Finally re-enable automatic time setting:
+```
+sudo systemsetup -setusingnetworktime off
+```
 
-Verify whether automatic time setting is enabled:<br>
-`sudo systemsetup -getusingnetworktime`
+Verify whether automatic time setting is enabled:
+```
+sudo systemsetup -getusingnetworktime
+```
 
-To check if macOS is using the correct settings, run:<br>
-`sudo systemsetup -getnetworktimeserver`
+To check if macOS is using the correct settings, run:
+```
+sudo systemsetup -getnetworktimeserver
+```
 
 However, this command only returns the first server in the list!
 
 #### 3. Optional - Install an RTC Module for Reliable Offline Timekeeping:
 
-In this guide, we will set up the [RV3028 RTC Module](https://shop.pimoroni.com/products/rv3028-real-time-clock-rtc-breakout?variant=27926940549203). If you use a different RTC module, follow the respective installation instructions.
+In this guide, we will set up the [RV3028 RTC Module](https://shop.pimoroni.com/products/rv3028-real-time-clock-rtc-breakout?variant=27926940549203). If you use a different RTC module, follow the respective installation instructions. Make sure you are connected to your Raspberry Pi via SSH and logged into your *admin* account.
 
-Install required packages:<br>
-`sudo apt install -y git python3-smbus`
+Install required packages:
+```
+sudo apt install -y git python3-smbus
+```
 
-Create a build directory and navigate into it:<br>
-`[ -d ~/build ] || mkdir ~/build && cd ~/build`
+Create a build directory and navigate into it:
+```
+[ -d ~/build ] || mkdir ~/build && cd ~/build
+```
 
 Clone & Install the RV3028 Python Library:
-
-`git clone https://github.com/pimoroni/rv3028-python`<br>
-`cd rv3028-python`<br>
-`sudo ./install.sh --unstable`
+```
+git clone https://github.com/pimoroni/rv3028-python
+```
+```
+cd rv3028-python
+```
+```
+sudo ./install.sh --unstable
+```
 
 Move example scripts to a dedicated folder:
+```
+sudo mv ~/Pimoroni/* ~/build/rv3028-python/examples
+```
+```
+sudo rm -R /home/admin/Pimoroni
+```
 
-`sudo mv ~/Pimoroni/* ~/build/rv3028-python/examples`<br>
-`sudo rm -R /home/admin/Pimoroni`
+Enable I2C communication:
+```
+sudo sed -i 's/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/' /boot/firmware/config.txt
+```
 
-Enable I2C communication:<br>
-`sudo sed -i 's/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/' /boot/firmware/config.txt`
+Furthermore, to enable the RV3028 RTC, we need to load the correct kernel overlay. Run the following command to append the required overlay to `/boot/firmware/config.txt`:
+```
+sudo sed -i '$a\dtoverlay=i2c-rtc,rv3028,backup-switchover-mode=1' /boot/firmware/config.txt
+```
 
-Furthermore, to enable the RV3028 RTC, we need to load the correct kernel overlay. Run the following command to append the required overlay to /boot/firmware/config.txt:<br>
-`sudo sed -i '$a\dtoverlay=i2c-rtc,rv3028,backup-switchover-mode=1' /boot/firmware/config.txt`
-
-Reboot your Raspberry Pi for changes to take effect:<br>
-`sudo reboot now`
+Reboot your Raspberry Pi for changes to take effect:
+```
+sudo reboot now
+```
 
 The Raspberry Pi uses a fake hardware clock (software-based) by default. Since we now have a real RTC, remove it to avoid conflicts:
 
-`sudo apt -y remove fake-hwclock`<br>
-`sudo update-rc.d -f fake-hwclock remove`
+```
+sudo apt -y remove fake-hwclock
+```
+```
+sudo update-rc.d -f fake-hwclock remove
+```
 
-Finally, configure NTP (ntpsec) to read time from the RTC module:<br>
-`sudo sed -i 's/^#rtcfile \/dev\/rtc0/rtcfile \/dev\/rtc0/' /etc/ntpsec/ntp.conf`
+Finally, configure NTP (ntpsec) to read time from the RTC module:
+```
+sudo sed -i 's/^#rtcfile \/dev\/rtc0/rtcfile \/dev\/rtc0/' /etc/ntpsec/ntp.conf
+```
 
-Restart NTP to apply changes:<br>
-`sudo systemctl restart ntpsec`
+Restart NTP to apply changes:
+```
+sudo systemctl restart ntpsec
+```
 
 * * *
 
