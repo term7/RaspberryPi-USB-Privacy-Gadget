@@ -580,21 +580,22 @@ ethernet.cloned-mac-address=random
 connection.stable-id=${CONNECTION}/${BOOT}' | sudo tee /etc/NetworkManager/conf.d/00-randomize.conf > /dev/null
 ```
 
-#### 2. Apply Changes:
-
-Restart NetworkManager to apply the new configuration:
-```
-sudo systemctl restart NetworkManager
-```
-
-#### 3. Verify MAC Address Randomization:
+#### 2. Verify MAC Address Randomization:
 
 To check if the MAC address is changing dynamically, run:
 ```
 sudo nmcli device show | grep GENERAL.HWADDR
 ```
 
-Run this command before and after a reboot to confirm that the MAC address changes. If the MAC address is different after each reboot, the setup is working correctly.
+Then reboot your Raspberry Pi to confirm that the MAC address changes:
+```
+sudo reboot now
+```
+```
+sudo nmcli device show | grep GENERAL.HWADDR
+```
+
+ If the MAC address is different after reboot, the setup is working correctly.
 
 * * *
 
