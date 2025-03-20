@@ -177,15 +177,22 @@ An active cooling system to prevent overheating, especially during hot summer da
 #### INSTALL RASPBERRY Pi OS (Headless Setup)
 
 <strong>1. Download and Install the Raspberry Pi Imager</strong>
+
 - Get the official [Raspberry Pi Imager](https://downloads.raspberrypi.org/imager/imager_latest.dmg)  and install Raspberry Pi OS Lite (64-bit), based on Debian Bookworm.
+
 <strong>2. Enable SSH and Configure Network</strong>
+
 - We recommend a headless setup, meaning you won't need an external monitor, mouse, or keyboard. Instead, you can complete the entire setup from your computer.
 - The advantage of a headless setup is that it skips the Welcome Wizard and allows you to remotely access the Raspberry Pi immediately after the first boot.
 - To achieve this, make sure to set up the username, password, and network configuration through the OS customization settings in Raspberry Pi Imager. For this tutorial we use <strong>Username: term7</strong> as username. If you choose a different username, make sure to replace it accordingly whenever it appears in this tutorial.
 - If you're unfamiliar with setting up a Raspberry Pi for the first time, follow our detailed headless installation guide: [Headless Raspberry Pi OS Setup Guide](https://term7.info/intro-raspberry-pi/#PI-IMAGER)
+
 <strong>3. Update Your System</strong>
+
 - After installation, update your Raspberry Pi OS as described in the tutorial linked above. There’s no need to follow additional steps from that guide.<br>
+
 <strong>4. Additional Tweaks</strong>
+
 However, if you're interested, you might want to check out: [Z-Ram Tweaks](https://term7.info/intro-raspberry-pi/#Z-RAM): These optimizations can improve system performance, especially on low-memory setups.<br>
 [MOTD Tweaks](https://term7.info/intro-raspberry-pi/#MOTD): Customizing the Message of the Day (MOTD) can enhance your login experience with useful system info. Both tweaks are optional but can be beneficial.<br>
 Skip the sections on user access management, SSH hardening, and firewall setup. These will be fully covered in this tutorial!
@@ -218,7 +225,9 @@ By enforcing the principle of least privilege (PoLP), we enhance security and mi
 #### 1. CREATE NEW ADMIN USER:
 
 To create a dedicated admin account, run the following command:<br>
-```sudo adduser admin```
+```
+sudo adduser admin
+```
 
 The only required detail is a strong password. We highly recommend using a password manager such as KeePassXC to store and manage your credentials securely.
 
