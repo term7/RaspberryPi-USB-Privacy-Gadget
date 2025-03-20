@@ -6,7 +6,7 @@ http:
   session_ttl: 720h
 users:
   - name: term7
-    password: uhFTPfY9yUHfdWZwDtm5V~YJzZTnh9$^uwNveC`jVx2YvF9Pg&cNErE2nHF7
+    password: default
 auth_attempts: 5
 block_auth_min: 15
 http_proxy: ""
@@ -147,7 +147,7 @@ filters:
     url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.apple.txt
     name: 'Hagezi: Apple Tracker DNS Blocklist'
     id: 1739820131
-  - enabled: true
+  - enabled: false
     url: https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt
     name: 'Term7: Break Apple Blocklist / Allow System Updates'
     id: 1739995786
