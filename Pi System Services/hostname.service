@@ -1,7 +1,7 @@
 [Unit]
 Description=Random Hostname Generator
 Wants=network-pre.target
-Before=network-pre.target
+After=network-pre.target
 
 [Service]
 Type=oneshot
@@ -11,4 +11,4 @@ Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=network-pre.target
+WantedBy=multi-user.target
