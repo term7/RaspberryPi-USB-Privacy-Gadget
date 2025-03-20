@@ -1622,7 +1622,7 @@ sudo curl -L -o /home/admin/build/AdGuardHome/AdGuardHome.yaml "https://codeberg
 ```
 
 Restrict file permissions:
-``
+```
 sudo chmod 600 ~/home/admin~/build/AdGuardHome/AdGuardHome.yaml
 ```
 #### 3. Change the Default Password
