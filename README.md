@@ -564,7 +564,7 @@ sudo sed -i '/::/d' /etc/hosts
 
 ## 08 RANDOM MAC ADDRESS
 
-By default, modern Raspberry Pi OS uses *NetworkManager* to handle network interfaces, DHCP, and Wi-Fi settings. To enhance privacy and prevent tracking, we will configure *NetworkManager’s* built-in MAC address randomization.
+By default, modern Raspberry Pi OS uses *NetworkManager* to handle network interfaces, DHCP, and Wi-Fi settings. To improve privacy and reduce the risk of tracking, we will enable *NetworkManager’s* built-in MAC address randomization feature.
 
 #### 1. Enable MAC Address Randomization:
 
