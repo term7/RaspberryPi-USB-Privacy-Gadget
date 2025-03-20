@@ -1835,7 +1835,7 @@ sudo systemctl start AdGuardHome
 
 Now, test your setup:
 
-1. Disable Wi-Fi on your Mac.
+1. Disable Wi-Fi on your Mac.<br>
 2️. Open your browser and navigate to: [https://adguard.home](https://adguard.home). 
 
 **CONGRATULATIONS**
