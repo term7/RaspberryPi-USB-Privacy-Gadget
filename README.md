@@ -1076,8 +1076,7 @@ In this section, we will configure DHCP and DNS. In the next chapter, we will se
 Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
 Finally, we will configure the [Firewall](#17-firewall).
 
-**⚠ IMPORTANT:<br>
-Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
+**⚠ IMPORTANT: Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 #### AdGuardHome:
 We will install *AdGuardHome* - a powerful DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security for all connected devices by blocking unwanted content at DNS level.
