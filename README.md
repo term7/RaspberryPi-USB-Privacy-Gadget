@@ -703,9 +703,9 @@ If you see a different hostname than before, the setup is working correctly. Fro
 
 ## 10 SETUP USBC ETHERNET GADGET
 
-In this section we will configure your Raspberry Pi as a USB-C Ethernet Gadget, allowing it to share its internet connection with your computer over USB.
+In this section we will configure your Raspberry Pi as a *USB-C Ethernet Gadget*, allowing it to share its internet connection with your computer over USB.
 
-To configure your Raspberry Pi as a USB-C Ethernet Gadget, we need to:
+To configure your Raspberry Pi as a *USB-C Ethernet Gadget*, we need to:
 
 - Enable the DWC2 USB controller and configure kernel boot parameters.
 - Allow NetworkManager to manage the USB interface (usb0).
@@ -714,56 +714,75 @@ To configure your Raspberry Pi as a USB-C Ethernet Gadget, we need to:
 
 #### 1. Enable the DWC2 USB Controller
 
-To enable USB-C Ethernet Gadget mode, we need to enable the DWC2 USB controller and configure kernel boot parameters. Append the required overlay to /boot/firmware/config.txt:<br>
-`sudo sed -i '$a\dtoverlay=dwc2' /boot/firmware/config.txt`
+To enable ethernet gadget mode, we need to enable the DWC2 USB controller and configure kernel boot parameters. Append the required overlay to `/boot/firmware/config.txt`:
+```
+sudo sed -i '$a\dtoverlay=dwc2' /boot/firmware/config.txt
+```
 
-Modify /boot/firmware/cmdline.txt to load the required kernel modules:<br>
-`sudo sed -i 's/$/ rootwait modules-load=dwc2,g_ether quiet/' /boot/firmware/cmdline.txt`
+Modify `/boot/firmware/cmdline.txt` to load the required kernel modules:
+```
+sudo sed -i 's/$/ rootwait modules-load=dwc2,g_ether quiet/' /boot/firmware/cmdline.txt
+```
 
 #### 2. Allow NetworkManager to Manage usb0
 
-By default, NetworkManager may ignore the gadget interface (usb0). We need to modify udev rules to allow it. Copy and modify udev rules to allow NetworkManager to manage the gadget interface:
+By default, NetworkManager may ignore the gadget interface (*usb0*). We need to modify udev rules to allow it. Copy and modify the required udev rules to allow *NetworkManager* to manage the gadget interface:
 
 `sudo cp /usr/lib/udev/rules.d/85-nm-unmanaged.rules /etc/udev/rules.d/85-nm-unmanaged.rules`<br>
 `sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' -i /etc/udev/rules.d/85-nm-unmanaged.rules`
 
 #### 3. Configure usb0 as a Static Interface in NetworkManager
 
-We will assign a static IP (192.168.77.1/24) to usb0 and enable network sharing.<br>
+We will assign a static IP (`192.168.77.1/24`) to *usb0* and enable network sharing.<br>
 Create and configure the interface:
 
-`sudo nmcli con add type ethernet ifname usb0 con-name usb0-static`<br>
-`sudo nmcli con modify usb0-static ipv4.addresses 192.168.77.1/24 ipv4.method shared`<br>
-`sudo nmcli con modify usb0-static connection.autoconnect yes connection.autoconnect-priority 50`
+```
+sudo nmcli con add type ethernet ifname usb0 con-name usb0-static
+```
+```sudo nmcli con modify usb0-static ipv4.addresses 192.168.77.1/24 ipv4.method shared
+```
+```
+sudo nmcli con modify usb0-static connection.autoconnect yes connection.autoconnect-priority 50
+```
 
-Since IPv6 is disabled globally, disable it for this interface as well:<br>
-`sudo nmcli connection modify usb0-static ipv6.method disable`
+Since IPv6 is disabled globally, disable it for this interface as well:
+```
+sudo nmcli connection modify usb0-static ipv6.method disable
+```
 
-Ensure a consistent MAC address for usb0 (no randomization):<br>
-`sudo nmcli connection modify usb0-static ethernet.cloned-mac-address permanent`
+Ensure a consistent MAC address for *usb0* (the only interface for which we want no randomization):
+```
+sudo nmcli connection modify usb0-static ethernet.cloned-mac-address permanent
+```
 
 #### 4. Enable IPv4 Forwarding
 
-To allow internet sharing from Raspberry Pi's Wi-Fi to the connected computer, enable IPv4 forwarding. Modify /etc/sysctl.conf to enable IPv4 forwarding:<br>
-`sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf`
+To allow internet sharing from Raspberry Pi's Wi-Fi to the connected computer, enable IPv4 forwarding. Modify `/etc/sysctl.conf` to enable IPv4 forwarding:<br>
+```
+sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+```
 
-This allows forwarding network packets for sharing internet via usb0.
+This allows forwarding network packets for sharing internet via *usb0*.
 
 #### 5. Apply Changes and Reboot
 
-All changes take effect after reboot:<br>
-`sudo reboot now`
+All changes take effect after the next reboot:<br>
+```
+sudo reboot now
+```
 
 #### 6. Verify Internet Access via Raspberry Pi USB-C Ethernet Gadget
 
 After reboot, you should be able to connect to the Raspberry Pi via USB and access the internet.
 
- Connect via SSH using usb0:<br>
-`ssh term7@192.168.77.1 -p 6666`
+ Connect via SSH using *usb0*:<br>
+```
+ssh term7@192.168.77.1 -p 6666
+```
 
-Verify the connection on your computer: Go to System Settings → Network and look for RNDIS/Ethernet Gadget. You should see a green dot with the status: Connected.
+Verify the connection on your computer: Go to **System Settings** → **Network** and look for **RNDIS/Ethernet Gadget**. You should see a green dot with the status: **Connected**.
 
-Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi.
+Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi. Switch off your Mac's Wi-Fi to test if it works.
 
 * * *
 
