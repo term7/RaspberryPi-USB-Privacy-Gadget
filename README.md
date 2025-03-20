@@ -659,10 +659,10 @@ sudo chown root:root /home/admin/script/randhost/hostname.sh
 #### 3. Create a System Service to Run the Script on Boot
 
 ```
-echo '[Unit]
+[Unit]
 Description=Random Hostname Generator
 Wants=network-pre.target
-Before=network-pre.target
+After=network-pre.target
 
 [Service]
 Type=oneshot
@@ -672,7 +672,7 @@ Restart=on-failure
 RestartSec=5
 
 [Install]
-WantedBy=network-pre.target' | sudo tee /etc/systemd/system/hostname.service > /dev/null
+WantedBy=multi-user.target' | sudo tee /etc/systemd/system/hostname.service > /dev/null
 ```
 #### 4. Enable and Start the Service and Verify the New Hostname
 
@@ -1041,7 +1041,7 @@ sudo sed -i 's/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/' /boot/firmware/config.t
 
 Furthermore, to enable the RV3028 RTC, we need to load the correct kernel overlay. Run the following command to insert the required overlay into `/boot/firmware/config.txt`:
 ```
-sudo sed -i '/dtoverlay=dwc2/i dtoverlay=i2c-rtc,rv3028,backup-switchover-mode=1' /boot/firmware/config.txt
+sudo sed -i '0,/^\[all\]/s//&\ndtoverlay=i2c-rtc,rv3028,backup-switchover-mode=1/' /boot/firmware/config.txt
 ```
 
 Reboot your Raspberry Pi for changes to take effect:
