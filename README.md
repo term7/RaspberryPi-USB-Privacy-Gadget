@@ -282,15 +282,15 @@ If you want to allow additional commands without requiring sudo, simply edit the
 
 By default, you can still SSH directly into your admin account, which is a security risk. To strengthen SSH security, we will modify the SSH configuration.
 
-Port Hardening:<br>
+<strong>Port Hardening</strong>
 - Change the default SSH port (to port 6666)
 
-Strong Cryptographic Algorithms:<br>
+<strong>Strong Cryptographic Algorithms:</strong>
 - Cyphers for strong encryption (chacha20-poly1305, aes256-gcm)
 - Secure Key Exchange (curve25519-sha256, diffie-hellman-group16-sha512)
 - MACs to protect against cryptographic vulnerabilities (hmac-sha2-512-etm)
 
-Strict Authentication Controls:<br>
+<strong>Strict Authentication Controls</strong>
 - Disable direct root login
 - Restrict SSH access to specific users (term7)
 - Limits Authentication Attempts & Sessions (MaxAuthTries 2, MaxSessions 2)
@@ -298,11 +298,11 @@ Strict Authentication Controls:<br>
 - Disable Password Login
 - Disable challenge-response authentication (prevents brute-force attacks)
 
-Session Hardening:<br>
+<strong>Session Hardening</strong>
 - Timeout and Inactivity Control (ClientAliveInterval 300, ClientAliveCountMax 2)
 - Prevent Empty Password Logins
 
-Enhanced Logging and Monitoring:<br>
+<strong>Enhanced Logging and Monitoring</strong>
 - Logging: Capture failed authentication attempts, IP addresses, and suspicious activities
 - Enable Warning Banner
 
@@ -310,97 +310,105 @@ Enhanced Logging and Monitoring:<br>
 
 SSH key authentication is more secure than password-based authentication. It uses a pair of cryptographic keys:
 
-Private key → Stays securely on your Mac.<br>
-Public key → Is copied to your Raspberry Pi.
+*Private key → Stays securely on your Mac.*<br>
+*Public key → Is copied to your Raspberry Pi.*
 
-Once configured, only your Mac can log into the Raspberry Pi—unless your private key is compromised.
+Once configured, only your Mac can log into the Raspberry Pi — unless your private key is compromised.
 
 #### 1. Generate a New SSH Key Pair on Your Mac
 
 Open Terminal on your Mac and run:<br>
-`ssh-keygen -t ed25519 -C "your_email@example.com"`
+```
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
 
 It uses the Ed25519 algorithm, which is faster and more secure than RSA. Please use your real email for reference.
 
-Advanced Security:
+<strong>Advanced Security</strong><br>
 For an even stronger setup, consider using a hardware security key such as a [Nitrokey](https://www.nitrokey.com/products/nitrokeys) or [YubiKey](https://www.yubico.com/products/yubikey-5-overview/). However, these require additional setup and are beyond the scope of this tutorial. We might cover them in a separate guide in the future.
 
 #### 2. Copy the Public Key to Your Raspberry Pi
 
-Run this command, replacing 192.168.1.123 with your Raspberry Pi’s actual local IP address:<br>
-`ssh-copy-id -i ~/.ssh/id_ed25519.pub term7@192.168.1.123`
+Run this command, replacing 192.168.1.123 with your Raspberry Pi’s actual local IP address:
+```
+ssh-copy-id -i ~/.ssh/id_ed25519.pub term7@192.168.1.123
+```
 
-If ssh-copy-id is not installed on macOS, manually copy the key using:<br>
-`cat ~/.ssh/id_ed25519.pub | ssh term7@192.168.1.123 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'`
+If ssh-copy-id is not installed on macOS, manually copy the key using:
+```
+cat ~/.ssh/id_ed25519.pub | ssh term7@192.168.1.123 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'
+```
 
 #### 3. Configure SSH on Your Mac for Easier Access
 
-Edit your SSH configuration file:<br>
-`nano ~/.ssh/config`
+Still on your Mac, edit your SSH configuration file:
+```
+nano ~/.ssh/config
+```
 
-Make sure this line is present:<br>
-`IdentityFile ~/.ssh/id_ed25519`
+Make sure this line is present: `IdentityFile ~/.ssh/id_ed25519`
 
 This ensures your Mac always uses the correct private key (id_ed25519) for authentication and prevents SSH from prompting for a password if key authentication is set up correctly.
 
 #### 4. Log Back into Your Raspberry Pi Standard User Account
 
-After setting up SSH key authentication, you need to set the correct permissions on your .ssh directory and the authorized_keys file to ensure SSH works securely:<br>
-`ssh term7@192.168.1.123`
+After setting up SSH key authentication, you need to set the correct permissions on your .ssh directory and the authorized_keys file to ensure SSH works securely:
+```
+ssh term7@192.168.1.123
+```
 
-(Replace 192.168.1.123 with your actual Raspberry Pi IP.)
+(Replace `192.168.1.123` with your actual Raspberry Pi IP!)
 
 #### 5. Set the Correct SSH Directory and File Permissions
 
 Run the following commands on your Raspberry Pi:
 
-`chmod 700 ~/.ssh`<br>
-`chmod 600 ~/.ssh/authorized_keys`
+```chmod 700 ~/.ssh```
+```chmod 600 ~/.ssh/authorized_keys```
 
-This ensures that only the user (term7) has access to the .ssh directory and that only the user can read and write the authorized_keys file.
+This ensures that only the user (term7) has access to the `.ssh` directory and that only the user can read and write `authorized_keys`.
 
 #### 6. Setup Warning Banner
 
-To display a security warning banner before login, download and replace the /etc/issue.net file with our pre-configured version from the repository:<br>
-`curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net`
+To display a security warning banner before login, download and replace the /etc/issue.net file with our pre-configured version from the repository:
+```curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net```
 
-You can edit the banner text to match your requirements:<br>
-`sudo nano /etc/issue.net`
+You can edit the banner text to match your requirements:
+```sudo nano /etc/issue.net```
 
 #### 7. Harden SSH configuration
 
 The fastest way to harden your SSH configuration is to replace it with our pre-configured file from this repository.
 
-However, before making any changes, create a backup to avoid getting locked out in case anything goes wrong. Run this command to create a backup:<br>
-`sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak`
+However, before making any changes, create a backup to avoid getting locked out in case anything goes wrong. Run this command to create a backup:
+```sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak```
 
-If anything goes wrong, you can restore the original file. To download our hardened configuration, run this command:<br>
-`curl -L -o /etc/ssh/sshd_config https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config`
+If anything goes wrong, you can restore the original file. To download our hardened configuration, run this command:
+```curl -L -o /etc/ssh/sshd_config https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config```
 
-This overwrites your current standard SSH configuration file. IMPORTANT: If you use a different standard username than term7, you must update this line:<br>
-`AllowUsers term7`
+This overwrites your current standard SSH configuration file. IMPORTANT: If you use a different standard username than term7, you must update this line: `AllowUsers term7`
 
-To check and edit the file before applying changes, open it in Nano:<br>
-`sudo nano /etc/ssh/sshd_config`
+To check and edit the file before applying changes, open it in Nano:
+```sudo nano /etc/ssh/sshd_config```
 
-Find and replace term7 with your actual username, then save (CTRL + X, then Y, then Enter).
+Find and replace `term7` with your actual username, then save (CTRL + X, then Y, then Enter).
 
 #### 8. Apply and Test the New SSH Configuration
 
-After making necessary changes, restart the SSH service:<br>
-`sudo systemctl restart ssh`
+After making necessary changes, restart the SSH service:
+```sudo systemctl restart ssh```
 
-Do NOT log out yet! On your Mac, open a new terminal window and test SSH access:<br>
-`ssh term7@192.168.1.123 -p 6666`
+Do NOT log out yet! On your Mac, open a new terminal window and test SSH access:
+```ssh term7@192.168.1.123 -p 6666```
 
 If the connection works fine, your new hardened SSH configuration is successfully applied!
 
 #### 9. Recover from an Issue (If Needed)
 
-If something goes wrong and you get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Type the following commands:
+If something goes wrong and you get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Then type the following commands:
 
-`sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config`<br>
-`sudo systemctl restart ssh`
+```sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config```
+```sudo systemctl restart ssh```
 
 This will restore your previous working SSH configuration.
 
