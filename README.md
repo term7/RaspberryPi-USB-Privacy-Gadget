@@ -19,7 +19,7 @@ This repository is both a guide and a step-by-step tutorial for configuring a Ra
 - [10 SETUP USBC ETHERNET GADGET](#10-setup-usbc-ethernet-gadget)
 - [11 SETUP WIRELESS HOTSPOT](#11-setup-wireless-hotspot)
 - [12 SETUP NTP](#12-setup-ntp)
-- [13 DHCP & DNS WITH UNBOUND AND ADGUARDHOME](#13-dhcp-&-dns-with-unbound-and-adguardhome)
+- [13 DHCP AND DNS WITH UNBOUND AND ADGUARDHOME](#13-dhcp-and-dns-with-unbound-and-adguardhome)
 - [14 NGINX REVERSE PROXY AND SSL](#14-nginx-reverse-proxy-and-ssl)
 - [15 CONFIGURE ADGUARDHOME](#15-configure-adguardhome)
 - [16 DNS BLOCKLISTS](#16-dns-blocklists)
@@ -1070,7 +1070,7 @@ sudo systemctl restart ntpsec
 
 * * *
 
-## 13 DHCP & DNS WITH UNBOUND AND ADGUARDHOME
+## 13 DHCP AND DNS WITH UNBOUND AND ADGUARDHOME
 
 In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the *AdGuardHome* web interface and enable SSL encryption for both local HTTPS access and secure communication with *AdGuardHome’s* fallback DNS servers.<br>
 Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
