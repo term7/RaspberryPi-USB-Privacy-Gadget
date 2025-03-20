@@ -795,90 +795,133 @@ Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUI
 
 ## 11 SETUP WIRELESS HOTSPOT
 
-In this setup, we want to configure wlan0 as a wireless hotspot that can be started manually rather than running continuously. This provides greater control over network availability and helps optimize system performance.
+In this setup, we want to configure *wlan0* as a wireless hotspot that can be started manually rather than running continuously. This provides greater control over network availability and helps optimize system performance.
 
-Since we do not want wlan0 to be used for internet access, we will configure our external Wi-Fi adapter — the ALFA AWUS036ACM — to handle the internet connection instead.
+Since we do not want *wlan0* to be used for internet access, we will configure our external Wi-Fi adapter — the **ALFA AWUS036ACM** — to handle the internet connection instead.
 
 #### Why Use an External Wi-Fi Adapter?
 
-The ALFA AWUS036ACM provides significantly better bandwidth compared to the Raspberry Pi’s built-in Wi-Fi (wlan0), especially when connected to a USB 3.0 port. Using an external adapter ensures faster speeds and improved stability, making it the preferred choice for connecting to the internet.
+The **ALFA AWUS036ACM** provides significantly better bandwidth compared to the Raspberry Pi’s built-in Wi-Fi (*wlan0*), especially when connected to a USB 3.0 port. Using an external adapter ensures faster speeds and improved stability, making it the preferred choice for connecting to the internet.
 
-Because we enabled predictable network interface names (see [03 - PREREQUISITES](#03-prerequisites)), our external Wi-Fi adapter is assigned the interface name: wlx00c0caae6319
+Because we enabled predictable network interface names (see [03 - PREREQUISITES](#03-prerequisites)), our external Wi-Fi adapter is assigned the interface name: *wlx00c0caae6319*
 
-Important: If you are using a different external Wi-Fi adapter, its interface name will be different. You should replace wlx00c0caae6319 with your actual interface name throughout this tutorial, in all firewall configuration files and any network-related commands or settings.
+**⚠️ Important: If you are using a different external Wi-Fi adapter, its interface name will be different. You should replace *wlx00c0caae6319* with your actual interface name throughout this tutorial, in all firewall configuration files and any network-related commands or settings.**
 
 #### 1. Verify Your External Wi-Fi Adapter:
 
-Before proceeding, make sure your external Wi-Fi adapter is plugged in and properly connected to your Raspberry Pi. To find out the interface name of your Wi-Fi adapters, run the following command:<br>
-`nmcli device status`
+Before proceeding, make sure your external Wi-Fi adapter is plugged in and properly connected to your Raspberry Pi. To find out the interface name of your Wi-Fi adapters, run the following command:
+```
+nmcli device status
+```
 
-Look for your external Wi-Fi adapter in the output. It will typically have a name starting with wlx or wlan. If you're unsure which one is your external adapter, compare it to the built-in Wi-Fi (wlan0), as the external one should have a different name.
+Look for your external Wi-Fi adapter in the output. It will typically have a name starting with *wlx* or *wlan*. If you're unsure which one your external adapter is, compare it to the built-in Wi-Fi (*wlan0*). The external one will have a different name.
 
 #### 2. Rename Preconfigured External Connections and Disable IPv6:
 
 To standardize connection names and disable IPv6, run:
 
-`sudo nmcli con modify preconfigured connection.id "Wi-Fi"`<br>
-`sudo nmcli con modify "Wired connection 1" connection.id "Ethernet"`
+```
+sudo nmcli con modify preconfigured connection.id "Wi-Fi"
+```
+```
+sudo nmcli con modify "Wired connection 1" connection.id "Ethernet"
+```
 
 Disable IPv6 on both connections:
 
-`sudo nmcli connection modify Ethernet ipv6.method disable`<br>
-`sudo nmcli connection modify Wi-Fi ipv6.method disable`
+```
+sudo nmcli connection modify Ethernet ipv6.method disable
+```
+```
+sudo nmcli connection modify Wi-Fi ipv6.method disable
+```
 
 #### 3. Configure External Wi-Fi Adapter (wlx00c0caae6319) for Internet Access:
 
 Modify the Wi-Fi connection to use the external adapter:
 
-`sudo nmcli con down Wi-Fi`<br>
-`sudo nmcli con modify Wi-Fi ifname wlx00c0caae6319`
+```
+sudo nmcli con down Wi-Fi
+```
+```
+sudo nmcli con modify Wi-Fi ifname wlx00c0caae6319
+```
 
-Start the external Wi-Fi connection:<br>
-`sudo nmcli con up Wi-Fi`
+Start the external Wi-Fi connection:
+```
+sudo nmcli con up Wi-Fi
+```
 
-Now, your external Wi-Fi adapter should be handling the internet connection.
+Now, your external Wi-Fi adapter should be handling the internet connection instead of *wlan0*.
 
 #### 4. Create the wlan0 Hotspot:
 
-Add a new hotspot connection (ONION):<br>
-`sudo nmcli con add con-name Hotspot ifname wlan0 type wifi ssid "ONION"`
+Add a new hotspot connection (SSID: ONION):<br>
+```
+sudo nmcli con add con-name Hotspot ifname wlan0 type wifi ssid "ONION"
+```
 
- Configure the hotspot as an access point with network sharing:
-
-`sudo nmcli con modify Hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared`<br>
-`sudo nmcli con modify Hotspot ipv4.addresses 192.168.37.1/24`
+Configure the hotspot as an access point with network sharing:
+```
+sudo nmcli con modify Hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+```
+```
+sudo nmcli con modify Hotspot ipv4.addresses 192.168.37.1/24
+```
 
 Set up Wi-Fi security for the hotspot:
 
-`sudo nmcli con modify Hotspot wifi-sec.key-mgmt wpa-psk`
-`sudo nmcli con modify Hotspot wifi-sec.proto rsn`
-`sudo nmcli con modify Hotspot wifi-sec.pairwise ccmp`
-`sudo nmcli con modify Hotspot wifi-sec.group ccmp`
-`sudo nmcli con modify Hotspot wifi-sec.auth-alg open`
-`sudo nmcli con modify Hotspot wifi-sec.pmf optional`
-`sudo nmcli con modify Hotspot wifi-sec.psk "your-own-strong-wifi-password"`
+```
+sudo nmcli con modify Hotspot wifi-sec.key-mgmt wpa-psk
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.proto rsn
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.pairwise ccmp
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.group ccmp
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.auth-alg open
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.pmf optional
+```
+```
+sudo nmcli con modify Hotspot wifi-sec.psk "your-own-strong-wifi-password"
+```
 
-Disable IPv6 for the hotspot:<br>
-`sudo nmcli connection modify Hotspot ipv6.method disable`
+Disable IPv6 for the hotspot:
+```
+sudo nmcli connection modify Hotspot ipv6.method disable
+```
 
-Prevent automatic connection at startup:<br>
-`sudo nmcli connection modify Hotspot connection.autoconnect no`
+Prevent automatic connection at startup:
+```
+sudo nmcli connection modify Hotspot connection.autoconnect no
+```
 
 The hotspot is now configured, but will only start when manually enabled.
 
-#### 5. Connect Your Devices to the Hotspot:
+#### 5. TEST: Connect Your Devices to the Hotspot:
 
-To start the hotspot:<br>
-`sudo nmcli con up Hotspot`
+To start the hotspot:
+```
+sudo nmcli con up Hotspot
+```
 
-To stop the hotspot:<br>
-`sudo nmcli con down Hotspot`
+To stop the hotspot:
+```
+sudo nmcli con down Hotspot
+```
 
 Your Raspberry Pi is now acting as a manually controlled wireless hotspot.<br>
 After starting the hotspot, you can connect your smartphone or other devices using:
 
-- SSID: ONION
-- Password: "your-own-strong-wifi-password"
+- SSID: *ONION*
+- Password: *"your-own-strong-wifi-password"*
 
 * * *
 
