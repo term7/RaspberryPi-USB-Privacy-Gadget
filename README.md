@@ -19,11 +19,11 @@ This repository is both a guide and a step-by-step tutorial for configuring a Ra
 - [10 SETUP USBC ETHERNET GADGET](#10-setup-usbc-ethernet-gadget)
 - [11 SETUP WIRELESS HOTSPOT](#11-setup-wireless-hotspot)
 - [12 SETUP NTP](#12-setup-ntp)
-- [13 DHCP AND DNS WITH UNBOUND AND ADGUARDHOME](#13-dhcp-and-dns-with-unbound-and-adguardhome)
+- [13 PREPARE DNSMASQ UNBOUND AND ADGUARDHOME](#13-prepare-dnsmasq-unbound-and-adguardhome)
 - [14 NGINX REVERSE PROXY AND SSL](#14-nginx-reverse-proxy-and-ssl)
-- [15 CONFIGURE ADGUARDHOME](#15-configure-adguardhome)
-- [16 DNS BLOCKLISTS](#16-dns-blocklists)
-- [17 FIREWALL](#17-firewall)
+- [15 FIREWALL](#15-firewall)
+- [16 CONFIGURE ADGUARDHOME](#16-configure-adguardhome)
+- [17 DNS BLOCKLISTS](#17-dns-blocklists)
 - [18 WIREGUARD VPN](#18-wireguard-vpn)
 - [19 TOR TRANSPARENT PROXY](#19-tor-transparent-proxy)
 - [20 LOCAL WEB CONTROL INTERFACE](#20-local-web-control-interface)
@@ -1241,6 +1241,12 @@ dhcp-option=tag:wlan0,option:ntp-server,192.168.37.1
 dhcp-option=tag:wlan0,12' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/01_usb0-wlan0.conf > /dev/null
 ```
 
+IMPORTANT: These changes will take effect only after restarting *NetworkManager*. However, since you are connected via SSH, restarting *NetworkManager* would break your connection. The only way to apply these changes without losing access is a full system reboot.
+
+**⚠ Do NOT reboot your Raspberry Pi at this stage!
+
+*AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity or lock you out. Continue with the remaining setup steps before restarting.**
+
 To ensure your Mac appears as a distinct client in *AdGuardHome*, we need to assign it a static IP address (see configuration above). However, since MAC address randomization is enabled on our laptop, we cannot use its MAC address as an identifier. Instead, we will set a fixed hostname, WORKSTATION, which will allow us to reliably assign a static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
 
 ```
@@ -1319,7 +1325,7 @@ auth-zone:
 This configuration is particularly useful for the following reasons:
 
 *AdGuardHome* will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
-Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address:
+Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address.
 
 This setup does not work out of the box due to two key issues: *NetworkManager* generates a zone file that is incompatible with *Unbound’s* syntax. To resolve this, we need a script that translates the lease file into a format that *Unbound* can read.<br>
 Furthermore *Dnsmasq* needs to trigger this script whenever a new client connects. This ensures automatic updates to *Unbound’s* zone file, keeping hostname resolution accurate.
@@ -1587,9 +1593,82 @@ If the test is successful, restart *NGINX*:
 sudo systemctl restart nginx
 ```
 
+#### 4. Restart Raspberry Pi
+
+To apply all changes and ensure that *NGINX*, *NetworkManager*, *Dnsmasq*, *AdGuardHome*, and *Unbound* restart with the correct configurations, reboot your Raspberry Pi:
+```
+sudo reboot now
+```
+
+**⚠️ Important Note: At this stage, the necessary services are running, but the firewall is not yet configured. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall.**
+
 * * *
 
-## 15 CONFIGURE ADGUARDHOME
+## 15 FIREWALL
+
+In this section, we will configure *nftables*, a modern firewall application that is installed by default on your Raspberry Pi. , a modern firewall solution that comes pre-installed on your Raspberry Pi. Our firewall setup is designed to maximize security, prevent unauthorized access, and ensure only essential services function correctly while protecting connected devices.
+
+To avoid manual configuration errors, download our pre-configured firewall setup from the repository:
+
+```
+sudo curl -L -o /etc/nftables.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/nftables/nftables.conf"
+```
+
+Our firewall includes multiple security mechanisms to block attacks, enforce network segmentation, and prevent unauthorized access:
+
+#### 1. Protection Against Unauthorized Access
+
+- Blocks all incoming traffic by default: Only explicitly allowed traffic is permitted.
+- Restricts SSH access: Only allows SSH (port 6666) from the private network (*usb0* and *wlan0*) and limits SSH connection attempts to 3 per minute to prevent brute-force attacks.
+
+#### 2. Defense Against Network Scanning & DDoS Attacks
+- Mitigates SYN Flood Attacks: The firewall limits new TCP connections to 5 per second with a burst of 10 packets.
+- Drops malicious packets: NULL packets (often used in stealth scans), XMAS packets (used for port scanning) and invalid TCP flag combinations to prevent malformed packet attacks.
+
+#### 3. Restriction of Internet-Facing Access (Minimal Attack Surface)
+- Blocks unnecessary inbound traffic from the internet.
+- Allows limited ICMP (ping) requests – Maximum 3 per second.
+- Drops all other external traffic unless explicitly allowed.
+
+#### 4. Control Over Internal Network Traffic
+- DNS (AdGuardHome) on port 5357 (UDP/TCP) → Ensures DNS queries are filtered and logged.
+- DHCP (ports 67/68) → Required for IP address assignment.
+- NTP (port 123) → Ensures accurate time synchronization.
+- HTTPS (port 443) → Enables secure web access.
+- Any unapproved connection attempts are rejected with a TCP reset.
+
+#### 5. Enforced DNS Filtering
+- Redirects all client DNS queries to *AdGuardHome* (port 5357) and prevents users from bypassing *AdGuardHome* → Enforces DNS filtering so all queries are logged and filtered.
+
+#### 6. Isolation of Devices (Prevents Unauthorized Lateral Movement)
+- Blocks direct traffic between *usb0* (Ethernet Gadget) and *wlan0* (Wi-Fi Hotspot). This prevents clients from communicating across networks, reducing security risks.
+
+#### 7. Secure Internet Access via Network Address Translation (NAT)
+- Masquerades all outgoing traffic from the private network (*usb0*, *wlan0*) to the internet → Hides internal IP addresses and prevents direct exposure of connected devices.
+
+#### 8. Disabling IPv6 (Prevents IPv6 Leaks & Attacks)
+- Drops all IPv6 traffic to prevent potential IPv6-based attacks or leaks. 
+- Ensures all traffic is routed through IPv4, which is explicitly controlled by the firewall.
+
+To ensure the firewall is applied automatically after every reboot, run:
+```
+sudo systemctl enable nftables
+```
+
+**⚠️ IMPORTANT: Prevent NetworkManager from Overwriting Firewall Rules!**<br>
+By default, NetworkManager can interfere with firewall settings. Our setup is too complex to allow this:
+
+```
+sudo sed -i '/^dhcp=dnsmasq$/a firewall-backend=none' /etc/NetworkManager/NetworkManager.conf
+```
+
+Reboot to apply all changes:
+```
+sudo reboot now
+```
+
+
+## 16 CONFIGURE ADGUARDHOME
 
 This repository provides a pre-configured *AdGuardHome* setup, which we highly recommend using. It is specifically tailored to prevent common conflicts, such as port overlaps with *NGINX* for HTTPS. Additionally, it ensures seamless integration with our setup by:
 
@@ -1621,7 +1700,7 @@ Fetch the pre-configured setup from the repository:
 sudo curl -L -o /home/admin/build/AdGuardHome/AdGuardHome.yaml "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/adguard-home/AdGuardHome.yaml"
 ```
 
-Restrict file permissions:
+Restrict file permissions to enhance security:
 ```
 sudo chmod 600 ~/build/AdGuardHome/AdGuardHome.yaml
 ```
@@ -1629,11 +1708,12 @@ sudo chmod 600 ~/build/AdGuardHome/AdGuardHome.yaml
 
 Since this is a public repository, the default password is set to *"default"*. You must change it!
 
-To create a salted password, we need an additional software package:
+To generate a bcrypt-hashed password, install the `whois` package:
 ```
 sudo apt install -y whois
 ```
-Then use these two commands to change the default password:
+
+Run the following commands to replace the default password:
 ```
 PASSWORD='YOUR-NEW-PASSWORD'
 ```
@@ -1642,7 +1722,7 @@ PASSWORD='YOUR-NEW-PASSWORD'
 sudo sed -i "s/^    password: default/    password: \"$(mkpasswd -m bcrypt "$PASSWORD")\"/" ~/build/AdGuardHome/AdGuardHome.yaml
 
 ```
-Change YOUR-NEW-PASSWORD to a safe password of your choice!
+**⚠ Replace YOUR-NEW-PASSWORD with a strong password of your choice. Consider using a password manager to generate a secure password.**
 
 #### 4. Restart AdGuardHome
 
@@ -1650,3 +1730,7 @@ Once the password has been updated, restart the service:
 ```
 sudo systemctl start AdGuardHome
 ```
+
+
+
+* * *
