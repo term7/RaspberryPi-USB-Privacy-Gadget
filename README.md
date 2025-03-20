@@ -615,7 +615,7 @@ First we create the folders where we want to store our scripts and our dictionar
 [ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/dict ] || mkdir ~/tools/dict
 ```
 ```
-[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost
+[ -d ~/script ] || mkdir ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost
 ```
 
 Download our UK English dictionary:
