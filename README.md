@@ -789,7 +789,7 @@ ssh term7@192.168.77.1 -p 6666
 
 Verify the connection on your computer: Go to **System Settings** → **Network** and look for **RNDIS/Ethernet Gadget**. You should see a green dot with the status: **Connected**.
 
-Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi. Turn off Wi-Fi on your Mac and check if you still have an internet connection.
+Since your Raspberry Pi is connected to the internet via your home router, your computer should now access the internet via the Raspberry Pi. Turn off Wi-Fi on your Mac and check if you still have an internet connection.
 
 * * *
 
