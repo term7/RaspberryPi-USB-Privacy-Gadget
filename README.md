@@ -530,29 +530,35 @@ While IPv6 offers advantages, using both IPv4 and IPv6 (dual-stack networking) s
 
 #### Why diable IPv6?
 
-Security & Privacy Concerns:
-
-- Larger Attack Surface → Both IPv4 and IPv6 require separate firewall rules, increasing complexity and risk of misconfiguration.
-- Tracking Risks → IPv6 can embed a device's MAC address in its IP (EUI-64 format), allowing attackers and advertisers to track device movements across networks.
-- Privacy Concerns → Without IPv6 Privacy Extensions, addresses remain static, reducing anonymity compared to dynamic IPv4 addresses.
+- **Larger Attack Surface** → Both IPv4 and IPv6 require separate firewall rules, increasing complexity and risk of misconfiguration.
+- **Tracking Risks** → IPv6 can embed a device's MAC address in its IP (EUI-64 format), allowing attackers and advertisers to track device movements across networks.
+- **Privacy Concerns** → Without IPv6 Privacy Extensions, addresses remain static, reducing anonymity compared to dynamic IPv4 addresses.
 
 Since we do not need IPv6, we will completely disable it to improve security and simplify network configurations.
 
 #### 1. Disable IPv6 at System Level:
 
-Permanently disable IPv6 by modifying /etc/sysctl.conf:<br>
-`echo -e "\n# Disable IPv6:\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1" | sudo tee -a /etc/sysctl.conf > /dev/null`
+Permanently disable IPv6 by modifying `/etc/sysctl.conf`:
+```
+echo -e "\n# Disable IPv6:\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1" | sudo tee -a /etc/sysctl.conf > /dev/null`
+```
 
-Modify boot parameters in /boot/firmware/cmdline.txt to prevent IPv6 from loading at boot:<br>
-`sudo sed -i 's/$/ ipv6.disable=1/' /boot/firmware/cmdline.txt`
+Modify boot parameters in /boot/firmware/cmdline.txt to prevent IPv6 from loading at boot:
+```
+sudo sed -i 's/$/ ipv6.disable=1/' /boot/firmware/cmdline.txt
+```
 
-For the changes to take effect, reboot the system:<br>
-`sudo reboot now`
+For the changes to take effect, reboot the system:
+```
+sudo reboot now
+```
 
 #### 2. Remove IPv6 Entries from /etc/hosts:
 
-Since IPv6 is now disabled, remove any local IPv6 addresses from /etc/hosts to prevent unnecessary resolution attempts:<br>
-`sudo sed -i '/::/d' /etc/hosts`
+Since IPv6 is now disabled, remove any local IPv6 addresses from `/etc/hosts` to prevent unnecessary resolution attempts:
+```
+sudo sed -i '/::/d' /etc/hosts
+```
 
 * * *
 
