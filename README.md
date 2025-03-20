@@ -1840,7 +1840,8 @@ Now, test your setup:
 
 **CONGRATULATIONS**
 
-Your AdGuardHome installation is now fully configured and running! 🚀
-Enjoy a secure, ad-free, and privacy-focused browsing experience.
+Your *AdGuardHome* installation is now fully configured and running!
 
 * * *
+
+## 20 DNS BLOCKLISTS
