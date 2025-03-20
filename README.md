@@ -361,7 +361,7 @@ ssh term7@192.168.1.123
 
 #### 5. Set the Correct SSH Directory and File Permissions
 
-Run the following commands on your Raspberry Pi:
+In your standard user account, run the following commands on your Raspberry Pi:
 
 ```
 chmod 700 ~/.ssh
@@ -374,7 +374,12 @@ This ensures that only the user (term7) has access to the `.ssh` directory and t
 
 #### 6. Setup Warning Banner
 
-To display a security warning banner before login, download and replace the /etc/issue.net file with our pre-configured version from the repository:
+Now log into your admin account:
+```
+su admin
+```
+
+To display a security warning banner before login, download and replace the `/etc/issue.net` file with our pre-configured version from the repository:
 ```
 curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net
 ```
@@ -414,7 +419,7 @@ After making necessary changes, restart the SSH service:
 sudo systemctl restart ssh
 ```
 
-Do NOT log out yet! On your Mac, open a new terminal window and test SSH access:
+Do **NOT** log out yet! On your Mac, open a new terminal window and test SSH access:
 ```
 ssh term7@192.168.1.123 -p 6666
 ```
