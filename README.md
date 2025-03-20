@@ -577,7 +577,7 @@ wifi.scan-rand-mac-address=yes
 [connection]
 wifi.cloned-mac-address=random
 ethernet.cloned-mac-address=random
-connection.stable-id=${CONNECTION}/${BOOT}' | sudo tee ~00-randomize.conf > /dev/null
+connection.stable-id=${CONNECTION}/${BOOT}' | sudo tee /etc/NetworkManager/conf.d/00-randomize.conf > /dev/null
 ```
 
 #### 2. Apply Changes:
