@@ -278,7 +278,7 @@ If you want to allow additional commands without requiring sudo, simply edit the
 
 * * *
 
-## 05 HARDEN SSH
+## 05 HARDEN SSH CONFIGURATION
 
 By default, you can still SSH directly into your admin account, which is a security risk. To strengthen SSH security, we will modify the SSH configuration.
 
