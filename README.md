@@ -200,7 +200,9 @@ Skip the sections on user access management, SSH hardening, and firewall setup. 
 #### EXPAND FILE SYSTEM AND ENABLE PREDICTABLE INTERFACE NAMES
 
 To configure your Raspberry Pi, open the Raspberry Pi Configuration Tool by running:<br>
-`sudo raspi-config`
+````
+sudo raspi-config
+```
 
 <strong>1. Expand Filesystem</strong>
 
@@ -224,7 +226,7 @@ By enforcing the principle of least privilege (PoLP), we enhance security and mi
 
 #### 1. CREATE NEW ADMIN USER:
 
-To create a dedicated admin account, run the following command:<br>
+To create a dedicated admin account, run the following command:
 ```
 sudo adduser admin
 ```
@@ -232,25 +234,37 @@ sudo adduser admin
 The only required detail is a strong password. We highly recommend using a password manager such as KeePassXC to store and manage your credentials securely.
 
 If you prefer generating a strong password directly from the command line, use:<br>
-`openssl rand -base64 48 | cut -c1-32`
+```
+openssl rand -base64 48 | cut -c1-32
+```
 
 This command generates a 32-character random password using OpenSSL’s RNG, which follows NIST SP 800-90A/B/C standards and uses ChaCha20 (or AES-CTR in older versions), ensuring cryptographic strength. The output is unpredictable and highly resistant to brute-force attacks.
 
 Once the admin user is created, add it to all essential groups to ensure it has access to required system functions:<br>
-`sudo usermod -a -G adm,tty,dialout,cdrom,audio,video,plugdev,games,users,input,netdev,gpio,i2c,spi,sudo,term7 admin`
+```
+sudo usermod -a -G adm,tty,dialout,cdrom,audio,video,plugdev,games,users,input,netdev,gpio,i2c,spi,sudo,term7 admin
+```
 
 #### 2. REMOVE SUDO PRIVILEGES FROM THE STANDARD USER:
 
 To enhance security, remove sudo privileges from term7 and transfer them to admin, while ensuring that sudo now requires a password:
 
-`sudo sed -i 's/term7/admin/g' /etc/sudoers.d/010_pi-nopasswd`<br>
-`sudo sed -i 's/NOPASSWD: //g' /etc/sudoers.d/010_pi-nopasswd`
+```
+sudo sed -i 's/term7/admin/g' /etc/sudoers.d/010_pi-nopasswd
+```
+```
+sudo sed -i 's/NOPASSWD: //g' /etc/sudoers.d/010_pi-nopasswd
+```
 
 To enhance security, we will remove our standard user (term7 in this example) from the sudo group, ensuring it no longer has administrative privileges. First, log in as the new admin user:<br>
-`su admin`
+```
+su admin
+```
 
 Now, execute the following command to remove term7 from the sudo group (replace term7 with your actual standard username):<br>
-`sudo deluser term7 sudo`
+```
+sudo deluser term7 sudo
+```
 
 #### ALLOW THE STANDARD USER TO SHUTDOWN AND REBOOT YOUR RASPBERRY PI:
 
