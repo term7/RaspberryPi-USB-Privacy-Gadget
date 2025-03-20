@@ -659,7 +659,7 @@ sudo chown root:root /home/admin/script/randhost/hostname.sh
 #### 3. Create a System Service to Run the Script on Boot
 
 ```
-[Unit]
+echo '[Unit]
 Description=Random Hostname Generator
 Wants=network-pre.target
 After=network-pre.target
@@ -1396,7 +1396,49 @@ echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /
 echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
 ```
 
-#### 4. Enforcing Local DNS and Updating Hosts:
+#### 4. Optional: Clear Usb0 Leases at Shutdown
+
+If you have MAC randomization enabled on your Mac, the static IP address may not persist across reboots. Because Dnsmasq registers a new MAC address it wants to assign a new IP address. To prevent this from happening, we write a small script, that empties our dnsmasq-usb0.leases every time we shut down our Raspberry Pi.
+
+Create the Cleanup Script:
+
+```
+echo '#!/bin/bash
+> /var/lib/NetworkManager/dnsmasq-usb0.leases' | sudo tee ~/script/DNS/clear-usb0-leases.sh > /dev/null
+```
+
+Make the script executable:
+```
+sudo chmod +x ~/script/DNS/clear-usb0-leases.sh
+```
+
+Create a systemd service that runs this script at shutdown:
+
+```
+echo '[Unit]
+Description=Clear dnsmasq lease file at shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target' | sudo tee /etc/systemd/system/clear-dnsmasq-leases.service > /dev/null
+```
+
+Reload systemd and enable the service so it runs at every shutdown:
+```
+sudo systemctl daemon-reload
+```
+```
+sudo systemctl enable clear-dnsmasq-leases.service
+```
+
+Now, every time the Raspberry Pi shuts down, the lease file will be emptied.
+
+#### 5. Enforcing Local DNS and Updating Hosts:
 
 To ensure all DNS queries are routed through *AdGuardHome* and *Unbound*, we need to configure *NetworkManager* to use our local resolver:
 
