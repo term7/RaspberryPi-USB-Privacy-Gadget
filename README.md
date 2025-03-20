@@ -381,7 +381,7 @@ su admin
 
 To display a security warning banner before login, download and replace the `/etc/issue.net` file with our pre-configured version from the repository:
 ```
-sudo curl -L -o /etc/issue.net "https://raw.codeberg.org/term7/Going-Dark/main/Pi%20Configuration%20Files/ssh/issue.net"
+sudo curl -L -o /etc/issue.net "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/ssh/issue.net"
 ```
 
 You can edit the banner text to match your requirements:
@@ -400,7 +400,7 @@ sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 
 If anything goes wrong, you can restore the original file. To download our hardened configuration, run this command:
 ```
-sudo curl -L -o /etc/ssh/sshd_config https://raw.codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config
+sudo curl -L -o /etc/ssh/sshd_config "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/ssh/sshd_config"
 ```
 
 This overwrites your current standard SSH configuration file. **IMPORTANT**: If you use a different standard username than *term7*, you must update this line: `AllowUsers term7`
