@@ -1080,7 +1080,7 @@ Finally, we will configure the [Firewall](#17-firewall).
 Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 #### AdGuardHome:
-We will install *AdGuardHome* - a DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security by blocking unwanted content at DNS level.
+We will install *AdGuardHome* - a powerful DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security for all connected devices by blocking unwanted content at DNS level.
 
 #### NetworkManager’s Built-in Dnsmasq:
 We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHCP and DNS for the *usb0* (Ethernet Gadget) and the *wlan0* (Hotspot). This will allow all connected clients to have their DNS queries forwarded to *AdGuardHome*, ensuring filtered and secure DNS resolution.
@@ -1097,6 +1097,10 @@ We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHC
 One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
 To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
 This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in *Unbound*) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
+
+Eventually this is how the chain of DNS requests will work:
+
+*Dnsmasq*: port 53 → *AdGuardHome*: port 5357 → *Unbound*: port 7353
 
 #### 1. Install AdGuardHome:
 
@@ -1137,7 +1141,7 @@ This ensures that *NetworkManager* uses *Dnsmasq* for DHCP and DNS.
 
 *NetworkManager* uses two different configuration folders for Dnsmasq:
 
-- *Standard Interfaces* (`/etc/NetworkManager/dnsmasq.d/`) → Used for lo (localhost).
+- *Standard Interfaces* (`/etc/NetworkManager/dnsmasq.d/`) → Used for *lo* (localhost).
 - *Shared Interfaces* (`/etc/NetworkManager/dnsmasq-shared.d/`) → Used for shared networks like *wlan0* and *usb0*.
 
 We need to configure both.
@@ -1587,4 +1591,46 @@ sudo systemctl restart nginx
 
 ## 15 CONFIGURE ADGUARDHOME
 
-å
+This repository provides a pre-configured *AdGuardHome* setup, which we highly recommend using. It is specifically tailored to prevent common conflicts, such as port overlaps with *NGINX* for HTTPS. Additionally, it ensures seamless integration with our setup by:
+
+- Avoiding port overlaps with NGINX for HTTPS.
+- Assigning correct DNS ports for compatibility.
+- Pre-configuring the necessary SSL certificate paths from the previous section.
+- Using *Unbound* as the sole upstream resolver for enhanced privacy and security.
+
+Additionally, this configuration includes:
+
+- Predefined fallback DNS servers for encrypted queries.
+- Optimized caching settings for improved performance.
+- Comprehensive logging and debugging options.
+- Multiple DNS filters to block ads, trackers, and malicious domains.
+
+By using this setup, you can avoid potential issues and ensure a smooth, hassle-free deployment.
+
+#### 1. Stop AdGuardHome
+
+Before applying the new configuration, stop the AdGuardHome service:
+```
+sudo systemctl stop AdGuardHome
+```
+
+#### 2. Download the Configuration File
+
+Fetch the pre-configured setup from the repository:
+```
+sudo curl -L -o /home/admin/build/AdGuardHome/AdGuardHome.yaml "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/adguardhome/AdGuardHome.yaml"
+```
+#### 3. Change the Default Password
+
+Since this is a public repository, the default password is set to *"default"*. You must change it:
+
+```
+cd ~/build/AdGuardHome && ./AdGuardHome -s reset-password
+```
+
+#### 4. Restart AdGuardHome
+
+Once the password has been updated, restart the service:
+```
+sudo systemctl start AdGuardHome
+```
