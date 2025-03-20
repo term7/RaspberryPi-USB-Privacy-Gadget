@@ -445,16 +445,18 @@ This will restore your previous working SSH configuration.
 
 ## 06 UNATTENDED UPGRADES
 
-Keeping your Raspberry Pi up-to-date is crucial for security and stability. Instead of manually updating, we set up unattended upgrades to automatically install security and system updates. Since our Raspberry Pi is only powered on when we work on our Mac, we need to ensure updates run after every reboot. Additionally, because we will install AdGuardHome (which requires time to apply filter lists), we introduce a 5-minute delay before the update process starts.
+Keeping your Raspberry Pi up-to-date is crucial for security and stability. Instead of manually updating, we set up unattended upgrades to automatically install security and system updates. Since our Raspberry Pi is only powered on when we work on our Mac, we need to ensure updates run after every reboot. Additionally, because we will install AdGuardHome (which requires time to apply filter lists), we introduce a 2-minute delay before the update process starts.
 
 #### 1. Install Required Packages:
 
-To set up unattended upgrades, use the following command to install the required software packages:<br>
-`sudo apt install -y unattended-upgrades apt-listchanges`
+To set up unattended upgrades, use the following command to install the required software packages:
+```
+sudo apt install -y unattended-upgrades apt-listchanges
+```
 
 #### 2. Enable Raspberry Pi OS Updates:
 
-By default, Debian security updates are included. However, we need to add Raspberry Pi updates manually. Run this command to modify the 50unattended-upgrades file:
+By default, Debian security updates are included. However, we need to add Raspberry Pi updates manually. Run this command to modify the `50unattended-upgrades` file:
 
 ```
 sudo sed -i '/"origin=Debian,codename=${distro_codename}-security,label=Debian-Security";/a\
@@ -471,7 +473,7 @@ echo '[Unit]
 Description=Unattended Upgrades Timer
 
 [Timer]
-OnBootSec=5min
+OnBootSec=2min
 Unit=unattended-upgrades.service
 
 [Install]
@@ -498,17 +500,26 @@ WantedBy=multi-user.target' | sudo tee /etc/systemd/system/unattended-upgrades.s
 
 To activate the systemd timer and service, run:
 
-`sudo systemctl daemon-reload`<br>
-`sudo systemctl enable unattended-upgrades.timer`<br>
-`sudo systemctl start unattended-upgrades.timer`
+```
+sudo systemctl daemon-reload
+```
+```
+sudo systemctl enable unattended-upgrades.timer
+```
+sudo systemctl start unattended-upgrades.timer
+```
 
-After rebooting, check if the timer is active:<br>
-`systemctl list-timers --all | grep unattended-upgrades`
+After rebooting, check if the timer is active:
+```
+systemctl list-timers --all | grep unattended-upgrades
+```
 
 If you see an entry, the timer is working.
 
-To check if updates were applied, view the unattended upgrade logs:<br>
-`journalctl -u unattended-upgrades --no-pager`
+To check if updates were applied, view the unattended upgrade logs:
+```
+journalctl -u unattended-upgrades --no-pager
+```
 
 * * *
 
