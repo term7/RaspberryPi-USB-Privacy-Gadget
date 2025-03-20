@@ -200,7 +200,7 @@ Skip the sections on user access management, SSH hardening, and firewall setup. 
 #### EXPAND FILE SYSTEM AND ENABLE PREDICTABLE INTERFACE NAMES
 
 To configure your Raspberry Pi, open the Raspberry Pi Configuration Tool by running:<br>
-````
+```
 sudo raspi-config
 ```
 
