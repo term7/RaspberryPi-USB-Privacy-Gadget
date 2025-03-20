@@ -103,26 +103,26 @@ Objective Development:<br/>
 
 ## 02 FEATURES
 
-<strong>GOING DARK: This Raspberry Pi Privacy Gadget acts as a portable router, giving you complete control over all network traffic—including native Apple processes. By following our guide, your Mac’s Wi-Fi will be completely disabled. Instead, it will connect to the Raspberry Pi via USB-C, while the Raspberry Pi manages the internet connection.</strong>
+**GOING DARK: This Raspberry Pi Privacy Gadget acts as a portable router, giving you complete control over all network traffic—including native Apple processes. By following our guide, your Mac’s Wi-Fi will be completely disabled. Instead, it will connect to the Raspberry Pi via USB-C, while the Raspberry Pi manages the internet connection.**
 
-<strong>1) MODE 1: Network-Wide Filtering with AdGuardHome</strong>
+**1) MODE 1: Network-Wide Filtering with AdGuardHome**
 
  In this mode, your Ethernet Gadget filters all traffic through AdGuardHome, a self-hosted DNS sinkhole designed to block ads, trackers, and malicious domains across your entire network. To further enhance privacy, we configure Unbound as the upstream DNS resolver, ensuring that your queries are resolved privately without relying on third-party DNS providers. Additionally, we install extensive blocklists, including our own Ultimate Apple Blocklist, which blocks all domains owned by Apple. WARNING: Enabling this blocklist will break Apple services and software. Proceed with caution.
 
-<strong>2) MODE 2: Encrypted VPN Tunnel with WireGuard (Optional Setup)</strong>
+**2) MODE 2: Encrypted VPN Tunnel with WireGuard (Optional Setup)**
 
 In this mode, you can use your Raspberry Pi as a WireGuard client, allowing it to establish a secure, encrypted VPN tunnel. You can connect to your home router (RECOMMENDED - if WireGuard is installed and configured) or to any other WireGuard server of your choice (NOT RECOMMENDED). Even with the VPN enabled, AdGuardHome will continue filtering ads and trackers before forwarding DNS requests through the encrypted tunnel. This ensures both privacy and security while maintaining full network-wide ad blocking.
 
-<strong>3) MODE 3: Tor Transparent Proxy</strong>
+**3) MODE 3: Tor Transparent Proxy**
 
 In this mode, all your internet traffic is routed through a Tor Transparent Proxy, providing anonymity by passing your connections through the Tor network. Even in this setup, AdGuardHome continues filtering ads and trackers before traffic enters the Tor network, enhancing privacy and reducing unnecessary connections. Important Note: This is not necessarily the recommended approach for anonymity. If your goal is to browse the web privately, it is strongly advised to use the Tor Browser instead, as it provides additional protections that a transparent proxy cannot.
 
-<strong>4) Wireless Hotspot Support</strong>
+**4) Wireless Hotspot Support**
 
 In addition to connecting your Mac via USB, your Raspberry Pi Privacy Gadget can also function as a wireless hotspot, allowing other devices—such as smartphones—to connect and use MODE 1, MODE 2, or MODE 3 for enhanced privacy and security. Important Note: If you want to connect the Raspberry Pi to a Wi-Fi network while running a hotspot, you’ll need an additional Wi-Fi adapter.<br>
 For this tutorial, we use the [ALFA AWUS036ACM](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136), which works out of the box and provides stable dual-band Wi-Fi connectivity.
 
-<strong>5) Hardened Security</strong>
+**5) Hardened Security**
 
 To ensure maximum security, we implement multiple layers of protection:
 
@@ -131,7 +131,7 @@ To ensure maximum security, we implement multiple layers of protection:
 - User Access Control – We establish separate admin and standard user accounts, following best security practices to limit privileges and reduce risks.
 - Automated Security Updates – Unattended upgrades ensure that critical software remains up to date, minimizing vulnerabilities and enhancing system resilience.
 
-<strong>6) Randomized Device Identity</strong>
+**6) Randomized Device Identity**
 
 Whenever you connect to a public Wi-Fi network, only your Raspberry Pi Ethernet Gadget’s identity will be logged — not your Mac’s. This prevents network operators from tracking your actual device.
 
@@ -142,7 +142,7 @@ To further enhance privacy:
 
 These measures ensure that your digital footprint remains as anonymous as possible when connecting to public networks.
 
-<strong>7) Privacy Respecting NTP Server</strong>
+**7) Privacy Respecting NTP Server**
 
 To maintain accurate system time without compromising privacy, we configure the Raspberry Pi Ethernet Gadget to use privacy-respecting NTP servers from [ntppool.org](https://www.ntppool.org/en/use.html).
 
@@ -152,7 +152,7 @@ Key Features:
 - Local Time Server for Connected Devices – Clients using the Raspberry Pi Ethernet Gadget can sync their system time directly from the Pi’s built-in NTP server.
 - Optional: For even more reliability, we recommend installing a hardware clock (RTC module) to prevent synchronization issues.
 
-<strong>8) Local Web Interface</strong>
+**8) Local Web Interface**
 
 To simplify management, we set up a local web interface that allows you to:
 
@@ -176,22 +176,22 @@ An active cooling system to prevent overheating, especially during hot summer da
 
 #### INSTALL RASPBERRY Pi OS (Headless Setup)
 
-<strong>1. Download and Install the Raspberry Pi Imager</strong>
+**1. Download and Install the Raspberry Pi Imager**
 
 - Get the official [Raspberry Pi Imager](https://downloads.raspberrypi.org/imager/imager_latest.dmg)  and install Raspberry Pi OS Lite (64-bit), based on Debian Bookworm.
 
-<strong>2. Enable SSH and Configure Network</strong>
+**2. Enable SSH and Configure Network**
 
 - We recommend a headless setup, meaning you won't need an external monitor, mouse, or keyboard. Instead, you can complete the entire setup from your computer.
 - The advantage of a headless setup is that it skips the Welcome Wizard and allows you to remotely access the Raspberry Pi immediately after the first boot.
-- To achieve this, make sure to set up the username, password, and network configuration through the OS customization settings in Raspberry Pi Imager. For this tutorial we use <strong>Username: term7</strong> as username. If you choose a different username, make sure to replace it accordingly whenever it appears in this tutorial.
+- To achieve this, make sure to set up the username, password, and network configuration through the OS customization settings in Raspberry Pi Imager. For this tutorial we use **Username: term7** as username. If you choose a different username, make sure to replace it accordingly whenever it appears in this tutorial.
 - If you're unfamiliar with setting up a Raspberry Pi for the first time, follow our detailed headless installation guide: [Headless Raspberry Pi OS Setup Guide](https://term7.info/intro-raspberry-pi/#PI-IMAGER)
 
-<strong>3. Update Your System</strong>
+**3. Update Your System**
 
 - After installation, update your Raspberry Pi OS as described in the tutorial linked above. There’s no need to follow additional steps from that guide.<br>
 
-<strong>4. Additional Tweaks</strong>
+**4. Additional Tweaks**
 
 However, if you're interested, you might want to check out: [Z-Ram Tweaks](https://term7.info/intro-raspberry-pi/#Z-RAM): These optimizations can improve system performance, especially on low-memory setups.<br>
 [MOTD Tweaks](https://term7.info/intro-raspberry-pi/#MOTD): Customizing the Message of the Day (MOTD) can enhance your login experience with useful system info. Both tweaks are optional but can be beneficial.<br>
@@ -204,12 +204,12 @@ To configure your Raspberry Pi, open the Raspberry Pi Configuration Tool by runn
 sudo raspi-config
 ```
 
-<strong>1. Expand Filesystem</strong>
+**1. Expand Filesystem**
 
 - Navigate to 6. Advanced Options → A1 Expand Filesystem.
 - This ensures that the full storage capacity of your SD card is available.
 
-<strong>2. Enable Predictable Network Interface Names</strong>
+**2. Enable Predictable Network Interface Names**
 
 - Go to 6. Advanced Options → A2 Network Interface Names.
 - Enable predictable network interface names. This is crucial for this tutorial!
@@ -282,15 +282,15 @@ If you want to allow additional commands without requiring sudo, simply edit the
 
 By default, you can still SSH directly into your admin account, which is a security risk. To strengthen SSH security, we will modify the SSH configuration.
 
-<strong>Port Hardening</strong>
+**Port Hardening**
 - Change the default SSH port (to port 6666)
 
-<strong>Strong Cryptographic Algorithms:</strong>
+**Strong Cryptographic Algorithms:**
 - Cyphers for strong encryption (chacha20-poly1305, aes256-gcm)
 - Secure Key Exchange (curve25519-sha256, diffie-hellman-group16-sha512)
 - MACs to protect against cryptographic vulnerabilities (hmac-sha2-512-etm)
 
-<strong>Strict Authentication Controls</strong>
+**Strict Authentication Controls**
 - Disable direct root login
 - Restrict SSH access to specific users (term7)
 - Limits Authentication Attempts & Sessions (MaxAuthTries 2, MaxSessions 2)
@@ -298,11 +298,11 @@ By default, you can still SSH directly into your admin account, which is a secur
 - Disable Password Login
 - Disable challenge-response authentication (prevents brute-force attacks)
 
-<strong>Session Hardening</strong>
+**Session Hardening**
 - Timeout and Inactivity Control (ClientAliveInterval 300, ClientAliveCountMax 2)
 - Prevent Empty Password Logins
 
-<strong>Enhanced Logging and Monitoring</strong>
+**Enhanced Logging and Monitoring**
 - Logging: Capture failed authentication attempts, IP addresses, and suspicious activities
 - Enable Warning Banner
 
@@ -324,7 +324,7 @@ ssh-keygen -t ed25519 -C "your_email@example.com"
 
 It uses the Ed25519 algorithm, which is faster and more secure than RSA. Please use your real email for reference.
 
-<strong>Advanced Security</strong><br>
+**Advanced Security**<br>
 For an even stronger setup, consider using a hardware security key such as a [Nitrokey](https://www.nitrokey.com/products/nitrokeys) or [YubiKey](https://www.yubico.com/products/yubikey-5-overview/). However, these require additional setup and are beyond the scope of this tutorial. We might cover them in a separate guide in the future.
 
 #### 2. Copy the Public Key to Your Raspberry Pi
@@ -405,7 +405,7 @@ To check and edit the file before applying changes, open it in Nano:
 sudo nano /etc/ssh/sshd_config
 ```
 
-Find and replace `term7` with your actual username, then save (CTRL + X, then Y, then Enter).
+Find and replace `term7` with your actual username, then save (**CTRL + X**, then **Y**, then **Enter**).
 
 #### 8. Apply and Test the New SSH Configuration
 
@@ -902,8 +902,8 @@ In this section, we will configure DHCP and DNS. In the next chapter, we will se
 Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
 Finally, we will configure the [Firewall](#17-firewall).
 
-<strong>⚠ IMPORTANT:<br>
-Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.</strong>
+**⚠ IMPORTANT:<br>
+Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 #### AdGuardHome:
 We will install AdGuardHome - a DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security by blocking unwanted content at DNS level.
