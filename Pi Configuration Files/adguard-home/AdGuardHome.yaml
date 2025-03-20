@@ -152,6 +152,7 @@ filters:
     name: 'Term7: Break Apple Blocklist / Allow System Updates'
     id: 1739995786
 whitelist_filters: []
+user_rules:
   - '! Allow Tor'
   - '!'
   - '@@||check.torproject.org^$important'
