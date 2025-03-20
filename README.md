@@ -19,14 +19,17 @@ This repository is both a guide and a step-by-step tutorial for configuring a Ra
 - [10 SETUP USBC ETHERNET GADGET](#10-setup-usbc-ethernet-gadget)
 - [11 SETUP WIRELESS HOTSPOT](#11-setup-wireless-hotspot)
 - [12 SETUP NTP](#12-setup-ntp)
-- [13 PREPARE DNSMASQ UNBOUND AND ADGUARDHOME](#13-prepare-dnsmasq-unbound-and-adguardhome)
-- [14 NGINX REVERSE PROXY AND SSL](#14-nginx-reverse-proxy-and-ssl)
-- [15 FIREWALL](#15-firewall)
-- [16 CONFIGURE ADGUARDHOME](#16-configure-adguardhome)
-- [17 DNS BLOCKLISTS](#17-dns-blocklists)
-- [18 WIREGUARD VPN](#18-wireguard-vpn)
-- [19 TOR TRANSPARENT PROXY](#19-tor-transparent-proxy)
-- [20 LOCAL WEB CONTROL INTERFACE](#20-local-web-control-interface)
+- [13 PREPARE DNSMASQ](#13-prepare-dnsmasq)
+- [14 PREPARE UNBOUND](#14-prepare-unbound)
+- [15 PREPARE ADGUARDHOME](#15-prepare-adguardhome)
+- [16 SSL CERTIFICATE](#16-ssl-certificate)
+- [17 SETUP NGINX REVERSE PROXY](#17-setup-nginx-reverse-proxy)
+- [18 FIREWALL](#18-firewall)
+- [19 CONFIGURE ADGUARDHOME](#19-configure-adguardhome)
+- [20 DNS BLOCKLISTS](#20-dns-blocklists)
+- [21 WIREGUARD VPN](#21-wireguard-vpn)
+- [22 TOR TRANSPARENT PROXY](#22-tor-transparent-proxy)
+- [23 LOCAL WEB CONTROL INTERFACE](#23-local-web-control-interface)
 
 * * *
 
@@ -1070,57 +1073,23 @@ sudo systemctl restart ntpsec
 
 * * *
 
-## 13 PREPARE DNSMASQ UNBOUND AND ADGUARDHOME
+## 13 PREPARE DNSMASQ
 
-In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the *AdGuardHome* web interface and enable SSL encryption for both local HTTPS access and secure communication with *AdGuardHome’s* fallback DNS servers.<br>
-Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
-Finally, we will configure the [Firewall](#17-firewall).
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
-**⚠ IMPORTANT: Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
+In this section, we will configure NetworkManager’s built-in Dnsmasq to manage both DHCP and DNS services.
 
-#### AdGuardHome:
-We will install *AdGuardHome* - a powerful DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security for all connected devices by blocking unwanted content at DNS level.
+Our goals:
 
-#### NetworkManager’s Built-in Dnsmasq:
-We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHCP and DNS for the *usb0* (Ethernet Gadget) and the *wlan0* (Hotspot). This will allow all connected clients to have their DNS queries forwarded to *AdGuardHome*, ensuring filtered and secure DNS resolution.
+- Redirect all DNS queries from port 53 to port 5357, where *AdGuardHome* will handle them.
+- Assign DHCP leases to devices connecting via *usb0* (Ethernet Gadget) and *wlan0* (Wi-Fi Hotspot).
+- Ensure clients pass their hostnames for improved logging in *AdGuardHome*.
+- Assign a static IP address to our Mac (WORKSTATION) so that *AdGuardHome* consistently identifies it.
+- Advertise our local NTP server to all connected clients for synchronized timekeeping.
 
-#### Unbound:
-*Unbound* is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure *AdGuardHome* to use *Unbound* as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying *Unbound*, we eliminate this dependency, gaining the following advantages:
+By setting up *Dnsmasq* correctly, we will establish a secure, private, and reliable local DNS and DHCP system, ensuring smooth operation and seamless device identification.
 
-**PRIVACY:** *Unbound* performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
-
-**SPEED:** *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
-
-**DRAWBACK:** Lack of Encryption
-
-One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
-To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
-This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in *Unbound*) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
-
-Eventually this is how the chain of DNS requests will work:
-
-*Dnsmasq*: port 53 → *AdGuardHome*: port 5357 → *Unbound*: port 7353
-
-#### 1. Install AdGuardHome:
-
-Before installing *AdGuardHome*, make sure the build directory exists and navigate into it:
-```
-[ -d ~/build ] || mkdir ~/build && cd ~/build
-```
-
-Run the following command to download and extract the latest *AdGuardHome* release:
-```
-curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz
-```
-
-Then, navigate into the extracted directory and start the installation:
-```
-cd AdGuardHome && sudo ./AdGuardHome -s install
-```
-
-**Note: We will configure *AdGuardHome* later in the guide. At this stage, the installation is only preparing the system.**
-
-#### 2. Configure NetworkManager and NetworManager's built-in Dnsmasq:
+#### 1. Configure NetworkManager:
 
 To properly manage DHCP and DNS with *NetworkManager*, we first need to configure its general settings and then set up *Dnsmasq* for both standard and shared network interfaces.
 
@@ -1137,6 +1106,8 @@ managed=false' | sudo tee /etc/NetworkManager/NetworkManager.conf > /dev/null
 ```
 
 This ensures that *NetworkManager* uses *Dnsmasq* for DHCP and DNS.
+
+#### 2. Configure Dnsmasq:
 
 *NetworkManager* uses two different configuration folders for Dnsmasq:
 
@@ -1244,7 +1215,9 @@ IMPORTANT: These changes will take effect only after restarting *NetworkManager*
 
 **⚠ Do NOT reboot your Raspberry Pi at this stage!**
 
-*AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity or lock you out. Continue with the remaining setup steps before restarting.**
+*AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity. Continue with the remaining setup steps before restarting.**
+
+#### 3. WORKSTATION as Hostnam for your Mac:
 
 To ensure your Mac appears as a distinct client in AdGuardHome, we need to assign it a static IP address (see configuration above). However, because MAC address randomization is enabled on your Mac, its MAC address cannot serve as a reliable identifier. Instead, we will set a fixed hostname — **WORKSTATION** — which will allow us to consistently assign the desired static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
 
@@ -1261,11 +1234,11 @@ sudo scutil --set ComputerName WORKSTATION
 dscacheutil -flushcache
 ```
 
-#### 3. FIX: Clear USB0 Leases at Shutdown
+#### 4. FIX: Clear USB0 Leases at Shutdown
 
 When MAC address randomization is enabled, *Dnsmasq* may assign a different IP address upon reboot because it sees a new MAC address. To ensure that *AdGuardHome* consistently recognizes WORKSTATION with the correct static IP, we need to clear the `/var/lib/NetworkManager/dnsmasq-usb0.leases` file every time the Raspberry Pi shuts down.
 
-Create the Cleanup Script:
+Logged into your Raspberry Pi as *admin*, create the Cleanup Script:
 
 ```
 echo '#!/bin/bash
@@ -1301,15 +1274,39 @@ sudo systemctl daemon-reload
 sudo systemctl enable clear-dnsmasq-leases.service
 ```
 
-Now, each time the Raspberry Pi shuts down, the lease file will be emptied, ensuring that *AdGuardHome* reliably assigns the static IP to WORKSTATION.
+Now, each time the Raspberry Pi shuts down, the lease file will be emptied, ensuring that *Dnsmasq* reliably assigns the static IP to WORKSTATION.
 
-#### 4. Install and configure Unbound:
+* * *
+
+## 14 PREPARE UNBOUND
+
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
+
+*Unbound* is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure *AdGuardHome* to use *Unbound* as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying *Unbound*, we eliminate this dependency, gaining the following advantages:
+
+**PRIVACY:** *Unbound* performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
+
+**SPEED:** *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
+
+**DRAWBACK:** Lack of Encryption
+
+One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
+To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
+This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in *Unbound*) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
+
+Eventually this is how the chain of DNS requests will work:
+
+*Dnsmasq*: port 53 → *AdGuardHome*: port 5357 → *Unbound*: port 7353
+
+#### 1. Install Unbound:
 
 ```
 sudo apt install -y unbound unbound-anchor
 ```
 
 Our *Unbound* configuration is designed for a privacy-focused, high-performance recursive DNS resolver with DNSSEC validation, enhanced caching, and security hardening. Download our pre-configured *Unbound* configuration file from our repository:<br>
+
+#### 2. Unbound Main Configuration:
 
 ```
 sudo curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf"
@@ -1331,6 +1328,8 @@ sudo curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeber
 - Prefetching enabled to speed up repeated queries.
 - Optimized threading & memory usage
 - Minimizes DNS response sizes to reduce network overhead.
+
+#### 2. Unbound Local Configuration:
 
 Next, we will create a second configuration file to define local zones and enable reverse lookups for *wlan0* and *usb0*, allowing local hostname resolution within our network:
 
@@ -1368,7 +1367,9 @@ This configuration is particularly useful for the following reasons:
 *AdGuardHome* will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
 Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address.
 
-This setup does not work out of the box due to two key issues: *NetworkManager* generates a zone file that is incompatible with *Unbound’s* syntax. To resolve this, we need a script that translates the lease file into a format that *Unbound* can read.<br>
+#### 3. Translate Dnsmasq DHCP-leases into Unbound Zone File:
+
+This setup does not work out of the box due to two key issues: *Dnsmasq* generates a zone file that is incompatible with *Unbound’s* syntax. To resolve this, we need a script that translates the lease file into a format that *Unbound* can read.<br>
 Furthermore *Dnsmasq* needs to trigger this script whenever a new client connects. This ensures automatic updates to *Unbound’s* zone file, keeping hostname resolution accurate.
 
 Prepare the Script Storage Location:<br>
@@ -1438,7 +1439,7 @@ echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /
 echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
 ```
 
-#### 5. Enforcing Local DNS and Updating Hosts:
+#### 4. Enforcing Local DNS and Updating Hosts:
 
 To ensure all DNS queries are routed through *AdGuardHome* and *Unbound*, we need to configure *NetworkManager* to use our local resolver:
 
@@ -1449,42 +1450,53 @@ sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
 sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
 ```
 
-Next, we update `/etc/hosts` to define local hostname mappings to ensure that local hostnames resolve correctly:
+* * *
+
+## 15 PREPARE ADGUARDHOME 
+
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
+
+We will now install *AdGuardHome* - a powerful DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security for all connected devices by blocking unwanted content at DNS level.
+
+#### 1. Install AdGuardHome:
+
+Before installing *AdGuardHome*, make sure the build directory exists and navigate into it:
 ```
-sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home usb0.local\n192.168.37.1    hotspot.local/' /etc/hosts
+[ -d ~/build ] || mkdir ~/build && cd ~/build
 ```
+
+Run the following command to download and extract the latest *AdGuardHome* release:
+```
+curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz
+```
+
+Then, navigate into the extracted directory and start the installation:
+```
+cd AdGuardHome && sudo ./AdGuardHome -s install
+```
+
+**Note: We will configure *AdGuardHome* later in the guide. At this stage, the installation is only preparing the system.**
 
 * * *
 
-## 14 NGINX REVERSE PROXY AND SSL
+## 16 SSL CERTIFICATE
 
-In this section, we will configure *NGINX* as a reverse proxy for the *AdGuardHome* web interface. This will allow us to serve the interface securely while enabling additional customization options.
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
-#### 1. Install NGINX:
+In the previous chapters, we configured *NetworkManager's* built-in *Dnsmasq*, enabled reverse lookups via *Unbound* and installed *AdGuardHome*. Now, we need to set up encryption using a self-signed certificate, which will be used by *NGINX* to serve *adguard.home* over HTTPS.<br>
+The goal is to access the *AdguardHome Web Interface* using the local address: [https://adguard.home](https://adguard.home)<br>
+Additionally, this certificate will allow *AdGuardHome* to support encrypted DNS queries via DNS-over-HTTPS (DoH) as a fallback method alongside our *Unbound* configuration.
 
-First, install *NGINX*, a modern and lightweight web server:
-```
-sudo apt install -y nginx
-```
-
-By default, *NGINX* is configured to listen on IPv6, but since we have previously disabled IPv6 on this system, the nginx.service will fail to start. To prevent this, we need to modify the default configuration file and disable IPv6 support:<br>
-```
-sudo sed -i 's/^\(\s*listen \[::\]:80 default_server;\)/# \1/' /etc/nginx/sites-available/default
-```
-
-#### 2. Self-signed Certificate:
-
-The goal is to access AdguardHome using the local address:<br>
-[https://adguard.home](https://adguard.home)
-
-In the previous chapter, we enabled reverse lookup via *Unbound*. Now, we need to set up encryption using a self-signed certificate, which will be used by *NGINX* to serve *adguard.home* over HTTPS. Additionally, this certificate will allow *AdGuardHome* to support encrypted DNS queries via DNS over HTTPS (DoH) as a fallback method alongside our *Unbound* configuration.
+#### 1. Ensure Required Directories Exist:
 
 Run the following command to ensure the required directories exist:
 ```
 [ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/CA ] || mkdir ~/tools/CA && [ -d ~/tools/CA/SSL ] || mkdir ~/tools/CA/SSL
 ```
 
-Change into the *Certificate Authority (CA)* configuration folder:
+#### 2. Create a Self-Signed Certificate Authority (CA):
+
+Navigate to the *Certificate Authority (CA)* configuration folder:
 ```
 cd ~/tools/CA
 ```
@@ -1494,7 +1506,9 @@ Create a self-signed *Certificate Authority (CA)* key and certificate (valid for
 openssl req -x509 -new -nodes -keyout term7-CA.key -out term7-CA.pem -days 36500 -subj "/CN=term7-CA"
 ```
 
-Move into the SSL configuration folder:
+#### 3. Generate SSL Certificates for adguard.home:
+
+Move into the SSL configuration directory:
 ```
 cd ~/tools/CA/SSL
 ```
@@ -1541,7 +1555,9 @@ Create the Full-Chain Certificate:
 cat adguard.home.crt ../term7-CA.pem > adguard.home-fullchain.crt
 ```
 
-Finally we configure our system to trust the *Local Certificate Authority (CA)*. Copy the CA certificate to the system's trusted certificate directory:
+#### 4. Trust the Certificate Authority on Your Raspberry Pi
+
+Copy the CA certificate to the system's trusted certificate directory:
 ```
 sudo cp ~/tools/CA/term7-CA.pem /usr/local/share/ca-certificates/term7-CA.crt
 ```
@@ -1550,6 +1566,8 @@ Update the system's certificate store:
 ```
 sudo update-ca-certificates
 ```
+
+#### 5. Transfer the Certificate to Your Mac
 
 Since we have enforced strict user access control, root login is not allowed. To transfer the certificate to our Mac, we first copy it to our standard user account:
 ```
@@ -1561,19 +1579,41 @@ Now, on your Mac, open a new Terminal window and run the following command to se
 scp -P 8519 term7@192.168.77.1:term7-CA.pem ~/Downloads/ && ssh -p 8519 term7@192.168.77.1 "rm term7-CA.pem"
 ```
 
-Once the certificate is transferred, install it as a trusted root certificate on macOS by running the following command:
+#### 6. Install and Trust the Certificate on macOS
+
+Run the following command to add the certificate to the macOS System Keychain and mark it as trusted for all users:
 ```
 sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/Downloads/term7-CA.pem
 ```
 
-This command adds the certificate to the macOS System Keychain and marks it as trusted for all users. By doing so, it ensures that the certificate is recognized as a *Root Certificate Authority*, allowing you to access https://adguard.home without encountering security warnings.
+This ensures the certificate is recognized as a Root Certificate Authority, allowing you to access https://adguard.home without encountering security warnings.
 
 If you ever want to delete this certificate, run:
 ```
 sudo security delete-certificate -c "term7-CA" /Library/Keychains/System.keychain
 ```
 
-#### 3. Configure NGINX as a reverse proxy for AdGuardHome:
+* * *
+
+## 17 SETUP NGINX REVERSE PROXY
+
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
+
+In this section, we will configure *NGINX* as a reverse proxy for *AdGuardHome's* web interface. This will allow us to serve the interface securely while enabling additional customization options.
+
+#### 1. Install NGINX:
+
+First, install *NGINX*, a modern and lightweight web server:
+```
+sudo apt install -y nginx
+```
+
+By default, *NGINX* is configured to listen on IPv6, but since we have previously disabled IPv6 on this system, the nginx.service will fail to start. To prevent this, we need to modify the default configuration file and disable IPv6 support:<br>
+```
+sudo sed -i 's/^\(\s*listen \[::\]:80 default_server;\)/# \1/' /etc/nginx/sites-available/default
+```
+
+#### 2. Configure NGINX as a reverse proxy for AdGuardHome:
 
 Next, we configure *NGINX* to serve as a reverse proxy for the *AdGuardHome* web interface and to forward DNS-over-HTTPS (DoH) requests between connected clients and *AdGuardHome*.<br>
 Run the following command to create the configuration:
@@ -1619,12 +1659,16 @@ server {
 }' | sudo tee /etc/nginx/sites-available/nginx-adguard > /dev/null
 ```
 
-Enable the *NGINX* configuration:
+#### 3. Enable the NGINX Configuration
+
+To activate the newly created NGINX configuration:
 ```
 sudo ln -s /etc/nginx/sites-available/nginx-adguard /etc/nginx/sites-enabled/
 ```
 
-Test the configuration for syntax errors:
+#### 4. Validate and Restart NGINX
+
+Before restarting NGINX, test the configuration for syntax errors:
 ```
 sudo nginx -t
 ```
@@ -1634,11 +1678,20 @@ If the test is successful, restart *NGINX*:
 sudo systemctl restart nginx
 ```
 
-**⚠️ IMPORTANT: At this stage, the necessary services, exept are configured, but the firewall is not yet set up. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall. Complete this section first before rebooting your Raspberry Pi.**
+#### 5. Ensure Local Hostname Resolution
+
+To allow local resolution of adguard.home, update the /etc/hosts file:
+```
+sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home/' /etc/hosts
+```
+
+**⚠️ IMPORTANT: At this stage, the necessary services are configured, but the firewall is not yet set up. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall. Complete this section first before rebooting your Raspberry Pi.**
 
 * * *
 
-## 15 FIREWALL
+## 18 FIREWALL
+
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 In this section, we will configure *nftables*, a modern firewall application that is installed by default on your Raspberry Pi. , a modern firewall solution that comes pre-installed on your Raspberry Pi. Our firewall setup is designed to maximize security, prevent unauthorized access, and ensure only essential services function correctly while protecting connected devices.
 
@@ -1713,7 +1766,9 @@ sudo reboot now
 
 * * *
 
-## 16 CONFIGURE ADGUARDHOME
+## 19 CONFIGURE ADGUARDHOME
+
+**⚠ IMPORTANT: Completing chapters 13 - 19 step by step in the correct order is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.**
 
 This repository provides a pre-configured *AdGuardHome* setup, which we highly recommend using. It is specifically tailored to prevent common conflicts, such as port overlaps with *NGINX* for HTTPS. Additionally, it ensures seamless integration with our setup by:
 
@@ -1778,6 +1833,14 @@ sudo systemctl start AdGuardHome
 
 #### 5. Log into AdGuardHome's Web Interface
 
-Finally, switch off your Mac's Wi-Fi, open your browser and browse to: [https://adguard.home](https://adguard.home)
+Now, test your setup:
+
+1. Disable Wi-Fi on your Mac.
+2️. Open your browser and navigate to: [https://adguard.home](https://adguard.home). 
+
+**CONGRATULATIONS**
+
+Your AdGuardHome installation is now fully configured and running! 🚀
+Enjoy a secure, ad-free, and privacy-focused browsing experience.
 
 * * *
