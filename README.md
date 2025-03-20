@@ -755,7 +755,7 @@ Since IPv6 is disabled globally, disable it for this interface as well:
 sudo nmcli connection modify usb0-static ipv6.method disable
 ```
 
-Ensure a consistent MAC address for *usb0* (the only interface for which we want no randomization):
+Ensure a consistent MAC address for *usb0* (the only interface for which we do not want MAC randomization):
 ```
 sudo nmcli connection modify usb0-static ethernet.cloned-mac-address permanent
 ```
