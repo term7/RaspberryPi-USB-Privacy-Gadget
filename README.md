@@ -1070,7 +1070,7 @@ sudo systemctl restart ntpsec
 
 * * *
 
-## 13 DHCP AND DNS WITH UNBOUND AND ADGUARDHOME
+## 13 PREPARE DNSMASQ UNBOUND AND ADGUARDHOME
 
 In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the *AdGuardHome* web interface and enable SSL encryption for both local HTTPS access and secure communication with *AdGuardHome’s* fallback DNS servers.<br>
 Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
