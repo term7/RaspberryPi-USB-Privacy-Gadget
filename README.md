@@ -1246,7 +1246,7 @@ IMPORTANT: These changes will take effect only after restarting *NetworkManager*
 
 *AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity or lock you out. Continue with the remaining setup steps before restarting.**
 
-To ensure your Mac appears as a distinct client in *AdGuardHome*, we need to assign it a static IP address (see configuration above). However, since MAC address randomization is enabled on our laptop, we cannot use its MAC address as an identifier. Instead, we will set a fixed hostname, WORKSTATION, which will allow us to reliably assign a static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
+To ensure your Mac appears as a distinct client in AdGuardHome, we need to assign it a static IP address (see configuration above). However, because MAC address randomization is enabled on your Mac, its MAC address cannot serve as a reliable identifier. Instead, we will set a fixed hostname — **WORKSTATION** — which will allow us to consistently assign the desired static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
 
 ```
 sudo scutil --set HostName WORKSTATION
@@ -1261,7 +1261,49 @@ sudo scutil --set ComputerName WORKSTATION
 dscacheutil -flushcache
 ```
 
-#### 3. Install and configure Unbound:
+#### 3. FIX: Clear USB0 Leases at Shutdown
+
+When MAC address randomization is enabled, *Dnsmasq* may assign a different IP address upon reboot because it sees a new MAC address. To ensure that *AdGuardHome* consistently recognizes WORKSTATION with the correct static IP, we need to clear the `/var/lib/NetworkManager/dnsmasq-usb0.leases` file every time the Raspberry Pi shuts down.
+
+Create the Cleanup Script:
+
+```
+echo '#!/bin/bash
+> /var/lib/NetworkManager/dnsmasq-usb0.leases' | sudo tee ~/script/DNS/clear-usb0-leases.sh > /dev/null
+```
+
+Make the script executable:
+```
+sudo chmod +x ~/script/DNS/clear-usb0-leases.sh
+```
+
+Create a systemd service that runs this script at shutdown:
+
+```
+echo '[Unit]
+Description=Clear dnsmasq lease file at shutdown
+DefaultDependencies=no
+Before=shutdown.target reboot.target halt.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
+
+[Install]
+WantedBy=halt.target reboot.target shutdown.target' | sudo tee /etc/systemd/system/clear-dnsmasq-leases.service > /dev/null
+```
+
+Reload systemd and enable the service so it runs at every shutdown:
+```
+sudo systemctl daemon-reload
+```
+```
+sudo systemctl enable clear-dnsmasq-leases.service
+```
+
+Now, each time the Raspberry Pi shuts down, the lease file will be emptied, ensuring that *AdGuardHome* reliably assigns the static IP to WORKSTATION.
+
+#### 4. Install and configure Unbound:
 
 ```
 sudo apt install -y unbound unbound-anchor
@@ -1395,48 +1437,6 @@ echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /
 ```
 echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
 ```
-
-#### 4. Optional: Clear Usb0 Leases at Shutdown
-
-If you have MAC randomization enabled on your Mac, the static IP address may not persist across reboots. Because Dnsmasq registers a new MAC address it wants to assign a new IP address. To prevent this from happening, we write a small script, that empties our dnsmasq-usb0.leases every time we shut down our Raspberry Pi.
-
-Create the Cleanup Script:
-
-```
-echo '#!/bin/bash
-> /var/lib/NetworkManager/dnsmasq-usb0.leases' | sudo tee ~/script/DNS/clear-usb0-leases.sh > /dev/null
-```
-
-Make the script executable:
-```
-sudo chmod +x ~/script/DNS/clear-usb0-leases.sh
-```
-
-Create a systemd service that runs this script at shutdown:
-
-```
-echo '[Unit]
-Description=Clear dnsmasq lease file at shutdown
-DefaultDependencies=no
-Before=shutdown.target reboot.target halt.target
-
-[Service]
-Type=oneshot
-ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
-
-[Install]
-WantedBy=halt.target reboot.target shutdown.target' | sudo tee /etc/systemd/system/clear-dnsmasq-leases.service > /dev/null
-```
-
-Reload systemd and enable the service so it runs at every shutdown:
-```
-sudo systemctl daemon-reload
-```
-```
-sudo systemctl enable clear-dnsmasq-leases.service
-```
-
-Now, every time the Raspberry Pi shuts down, the lease file will be emptied.
 
 #### 5. Enforcing Local DNS and Updating Hosts:
 
