@@ -1,36 +1,87 @@
-# RaspberryPi: USB Privacy Gadget
+# Going Dark: USB Privacy Gadget based on a Raspberry Pi
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
-WORKING ON A MAJOR UPDATE!
+Are you aware of the growing concerns among European law enforcement about people [going dark](https://home-affairs.ec.europa.eu/networks/high-level-group-hlg-access-data-effective-law-enforcement_en)? The so-called High Level Group (HLG) is actively working to undermine end-to-end encryption, pushing for backdoor access to encrypted messaging apps, cloud storage, and email services. EDRi has dissected the critical flaws in this approach: [(https://edri.org/?s=going+dark](https://edri.org/?s=going+dark).
 
-This repository functions as a guide and as a step-by-step tutorial that will help you to configure a RaspberryPi 4 as a USB Ethernet Gadget that routes all of your Mac's internet traffic through a VPN while blocking all sorts of ads and trackers and spoofing its own device identity.
+If you haven’t gone dark yet, now is the time!
 
-## INTRODUCTION
+This repository is both a guide and a step-by-step tutorial for configuring a Raspberry Pi 4 as a USB Ethernet Gadget. It forces your computer to route all internet traffic through either a WireGuard VPN or a Tor Transparent Proxy while filtering outbound traffic, blocking ads and trackers, and spoofing its device identity for enhanced privacy.
 
-When Apple made macOS BigSur publicly available in autumn 2020, we realized that our installation of Little Snitch (a host based firewall) partially stopped working. More specifically we noticed, that all Apple Processes were not filtered anymore. Strange. When we researched this problem online we came across a blog post by Jeffrey Paul ([Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)), a security researcher based in Berlin. We strongly recommend reading this article before you decide to setup your own Raspberry Pi Privacy Gadget!
+- [01 INTRODUCTION](#01-introduction)
+- [02 FEATURES](#02-features)
+- [03 PREREQUISITES](#03-prerequisites)
+- [04 USER ACCESS CONTROL](#04-user-access-control)
+- [05 HARDEN SSH CONFIGURATION](#05-harden-ssh-configuration)
+- [06 UNATTENDED UPGRADES](#06-unattended-upgrades)
+- [07 DISABLE IPv6](#07-disable-ipv6)
+- [08 RANDOM MAC ADDRESS](#08-random-mac-address)
+- [09 RANDOM HOSTNAME](#09-random-hostname)
+- [10 SETUP USBC ETHERNET GADGET](#10-setup-usbc-ethernet-gadget)
+- [11 SETUP WIRELESS HOTSPOT](#11-setup-wireless-hotspot)
+- [12 SETUP NTP](#12-setup-ntp)
+- [13 DHCP & DNS WITH UNBOUND AND ADGUARDHOME](#13-dhcp-&-dns-with-unbound-and-adguardhome)
+- [14 NGINX REVERSE PROXY AND SSL](#14-nginx-reverse-proxy-and-ssl)
+- [15 CONFIGURE ADGUARDHOME](#15-configure-adguardhome)
+- [16 DNS BLOCKLISTS](#16-dns-blocklists)
+- [17 FIREWALL](#17-firewall)
+- [18 WIREGUARD VPN](#18-wireguard-vpn)
+- [19 TOR TRANSPARENT PROXY](#19-tor-transparent-proxy)
+- [20 LOCAL WEB CONTROL INTERFACE](#20-local-web-control-interface)
 
-A very short summary: modern macOS operating systems have the capability to bypass internal firewalls and VPN's, a possibility that is built into the operating system. Furthermore, each Apple Computer constantly connects to both Apple Servers and 3rd parties (i.e. Akamai) to transmit hashes of apps that are being used - whenever they are being used. Apple uses these hashes to prevent any malicious apps (and other *blacklisted apps*) from launching, if the online certificate check fails. Apple claims that this is only a security feature to combat malicious apps. While this might be true, it also means that Apple always knows when you are online, where you are while you are online, for how long you use specific software, i.e. Photoshop, or whenever you start the Tor Browser. Over time this practice amounts to a tremendous amount of data that paints a pretty accurate picture of your digital life and habits, physical movements and activity patterns. All this data can potentially be correlated with other big data, collected by corporations like Google, Microsoft, Facebook, etc. As Jeffrey Paul correctly points out:
+* * *
+
+## 01 INTRODUCTION
+
+We first came up with the idea for this Raspberry Pi Ethernet Gadget five years ago, when Apple publicly released macOS Big Sur in the fall of 2020. During the transition, we noticed that our installation of Little Snitch—a host-based firewall—had partially stopped working. More specifically, all Apple processes were no longer being filtered. Strange.
+
+As we investigated the issue online, we came across a blog post by security researcher Jeffrey Paul, titled ([Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)). His findings shed light on the problem, and we highly recommend reading this article before setting up your own Raspberry Pi Privacy Gadget.
+
+In short: modern macOS versions have a built-in capability to bypass internal firewalls and VPNs. Additionally, every Apple computer continuously connects to both Apple’s servers and third parties (such as Fastly) to transmit hashes of apps being used—every time they are launched.<br>
+Apple claims this feature exists solely to prevent malicious or blacklisted apps from running if an online certificate check fails. While this may be true, it also means Apple can always determine when you’re online, where you are, how long you use specific software (e.g., VMWare Fusion), and even when you launch privacy-focused tools like the Tor Browser.<br>
+Over time, this data collection builds a highly detailed profile of your digital habits, physical movements, and activity patterns. Worse, this information can potentially be correlated with other big data sources from corporations like Google, Microsoft, and Facebook. As Jeffrey Paul aptly points out:
 
 *Since October of 2012, Apple is a partner in the US military intelligence community’s PRISM spying program, which grants the US federal police and military unfettered access to this data without a warrant, any time they ask for it.*
 
-We think this is a very upsetting development, another dangerous move toward surveillance captilism, that violates the privacy of all Apple Users.
+We see this as a deeply concerning development: yet another step toward surveillance capitalism that undermines the privacy of all Apple users.
 
-Admittedly there was huge critzism toward Apple, which is why some of these intrusions, i.e. the ContentFilterExclusionList that allowed native Apple Apps to bypass local Firewalls and VPN's, has since been revoked ([A Wall without a Hole](https://blog.obdev.at/a-wall-without-a-hole/)).
+To be fair, Apple has faced significant criticism for these practices. As a result, some of these intrusions, such as the ContentFilterExclusionList, which allowed native Apple apps to bypass local firewalls and VPNs—have since been revoked: ([A Wall without a Hole](https://blog.obdev.at/a-wall-without-a-hole/)).
 
 According to Apple, [privacy](https://www.apple.com/privacy/) is a fundamental human right:
 
 *Privacy is a fundamental human right. At Apple, it’s also one of our core values. Your devices are important to so many parts of your life. What you share from those experiences, and who you share it with, should be up to you. We design Apple products to protect your privacy and give you control over your information. It’s not always easy. But that’s the kind of innovation we believe in.*
 
-Yet we think claiming to deeply care about user privacy, while being part of programs like [PRISM](https://en.wikipedia.org/wiki/PRISM_(surveillance_program)#Extent_of_the_program), shows a double-standard that should not be tolerated.
+Yet, claiming to deeply care about user privacy while participating in programs like [PRISM](https://en.wikipedia.org/wiki/PRISM_(surveillance_program)#Extent_of_the_program), exposes a double-standard that should not be tolerated.
 
-Who guarantees that something like a ContentFilterExclusionList won't suddenly re-surface with the next update?
-We think Apple cannot be trusted with our user data, which is the reason why we set up a Raspberry Pi Ethernet Gadget as a portable external network filtering device to make data-harvesting as difficult as as possible.
+Who’s to say something like the ContentFilterExclusionList won’t quietly return in a future update?
+We believe Apple cannot be trusted with our data. That’s why we built the Raspberry Pi Ethernet Gadget—a portable external network filtering device designed to make data harvesting as difficult as possible.
 
-As Jeffrey Paul points out: Your computer is not yours.
+As Jeffrey Paul rightly points out: Your computer is not yours.
 But it should be!
 
+* * *
+
+On February 21, 2025, Apple disabled its Advanced Data Protection (ADP) feature for UK customers, likely in response to a secretive UK government directive issued under the Investigatory Powers Act of 2016. ​Already on 7 February 2025, the [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/) reported on a leaked document that anticipated Apple's move.
+
+This directive, known as a Technical Capability Notice, compelled Apple to provide backdoor access to encrypted iCloud data, effectively undermining the end-to-end encryption that ADP offers. In compliance, Apple ceased offering this feature to new UK users and announced plans to disable it for existing users. 
+
+*"The UK Government has given themselves the power to serve companies anywhere in the world notices that order them to undermine the security of their users, products, or services in secret. The company can’t tell anyone, they can’t even publicly say they’ve received one. They can’t say if they disagree, they can’t let users know they’ve been affected, and they can’t question the power in open court because the secret order is, well, secret. The notice affects millions of people, who aren’t allowed to find out it exists.”*
+
+[Privacy International](https://privacyinternational.org/news-analysis/5530/apple-and-long-secret-arm-uk-government)
+
+Apple has since filed an [appeal](https://www.ft.com/content/3d8fe709-f17a-44a6-97ae-f1bbe6d0dccd?utm_source=chatgpt.com) with the Investigatory Powers Tribunal, challenging the legality of the government's order. The outcome of this appeal could have significant implications for user privacy and the extent of government surveillance powers in the UK. 
+
+However, this effectively means that all data stored in the cloud by UK customers is no longer end-to-end encrypted. Instead, Apple retains the encryption keys, meaning the company must hand them over upon receiving a warrant.
+
+This is not just a policy change: it is an outright assault on encryption and online privacy as a whole.
 
 #### RECOMMENDED READING:
+
+Privacy International:<br>
+[https://privacyinternational.org/news-analysis/5530/apple-and-long-secret-arm-uk-government](https://privacyinternational.org/news-analysis/5530/apple-and-long-secret-arm-uk-government)
+[https://privacyinternational.org/explainer/5531/pis-opinion-how-uk-government-making-security-harder-everyone](https://privacyinternational.org/explainer/5531/pis-opinion-how-uk-government-making-security-harder-everyone)
+
+The Washington Post:<br>
+[https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/)
 
 Jeffrey Paul:<br/>
 [https://sneak.berlin/20201112/your-computer-isnt-yours/#updates](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)
@@ -48,1671 +99,1184 @@ Objective Development:<br/>
 [https://blog.obdev.at/a-hole-in-the-wall/](https://blog.obdev.at/a-hole-in-the-wall/)
 <br/><br/>
 
-<p align="center">
-  <img src="/png/Privacy_Gadget.png" title="Privacy Gadget">
-</p>
+* * *
 
-*Portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
+## 02 FEATURES
 
-## WHAT THIS RASPBERRY PI USB ETHERNET GADGET DOES:
+GOING DARK: This Raspberry Pi Privacy Gadget acts as a portable router, giving you complete control over all network traffic—including native Apple processes. By following our guide, your Mac’s Wi-Fi will be completely disabled. Instead, it will connect to the Raspberry Pi via USB-C, while the Raspberry Pi manages the internet connection.
 
-This Raspberry Pi Privacy Gadget functions like a portable router that allows you to monitor and controll all network traffic, including native Apple processes. If you follow our guide, your Mac will be connected via USB-C to the Raspberry Pi, while the Raspberry Pi connects to the internet.
+1) MODE 1: Network-Wide Filtering with AdGuardHome
 
-FEATURES:
+ In this mode, your Ethernet Gadget filters all traffic through AdGuardHome, a self-hosted DNS sinkhole designed to block ads, trackers, and malicious domains across your entire network. To further enhance privacy, we configure Unbound as the upstream DNS resolver, ensuring that your queries are resolved privately without relying on third-party DNS providers. Additionally, we install extensive blocklists, including our own Ultimate Apple Blocklist, which blocks all domains owned by Apple. WARNING: Enabling this blocklist will break Apple services and software. Proceed with caution.
 
-1) VPN: Setup your etherent gadget to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN features a built-in killswitch to prevent leaks. It has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws. However, feel free to use any VPN provider you [trust](https://privacytools.io/providers/vpn/), i.e. install a Wireguard VPN on a Virtual Private Server and become your own VPN provider - or configure your Ethernet Gadget to route all traffic through Tor. It is your choice.
-2) Enhanced Tracking Protection: We use an existing project, the [Pi-hole](https://pi-hole.net/), as a DNS filter that blocks all requests to Apple servers, Akami, iCloud, etc. It is easy to disable, re-enable, fine-tune and configure these filters via a Web-Interface. I.e. we want to allow software updates. An additional benefit is the original purpose of the Pi-hole: It was designed as an ad blocker. As such it allows you to install blocklists that block known ads and trackers. Further you can  create your own custom blocklists and allowlists.
-3) Encrypted DNS: We implement encrypted DOT (DNS-over-TLS) via [Stubby](https://dnsprivacy.org/dns_privacy_daemon_-_stubby/) and [CZ.NIC](https://www.nic.cz/odvr/). Stubby encrypts DNS queries sent from the Raspberry Pi to increase user privacy.
-4) Hidden Wifi Hotspot: In our configuration we use an additional external Wifi Antenna. This frees our built-in Wifi card to be configured as a hidden hotspot that can be used to share the same internet connection, including the VPN on the Raspberry Pi, with your other devices (i.e. your smartphone). The hotspot is configured via [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) (which is already included in a Pi-hole installation) and [hostapd](https://undeadly.org/cgi?action=article&sid=20051008150710).
-5) Firewall: IP-tables.
-6) Randomized Device Identity: Any public Wifi you connect to, from now on will only log the MAC Address and the hostname of your Ethernet Gadget, instead of your Mac's MAC Address. We randomize its MAC-Address during each reboot to further enhance your privacy. During each reboot our USB Ethernet Gadget also picks a random hostname from a dictionary.
+2) MODE 2: Encrypted VPN Tunnel with WireGuard (Optional Setup)
 
-This proposed setup only works reliable if all internet connectios are routed through the Raspberry Pi USB Ethernet Gadget, which is why we include additional instructions for a simple launch daemon that will switch off your Mac's wifi as soon as possible during the boot process (by default your Mac is configured in such a way that it starts Wifi every time you boot your machine).
+In this mode, you can use your Raspberry Pi as a WireGuard client, allowing it to establish a secure, encrypted VPN tunnel. You can connect to your home router (RECOMMENDED - if WireGuard is installed and configured) or to any other WireGuard server of your choice (NOT RECOMMENDED). Even with the VPN enabled, AdGuardHome will continue filtering ads and trackers before forwarding DNS requests through the encrypted tunnel. This ensures both privacy and security while maintaining full network-wide ad blocking.
 
+3) MODE 3: Tor Transparent Proxy
 
-## SETUP
+In this mode, all your internet traffic is routed through a Tor Transparent Proxy, providing anonymity by passing your connections through the Tor network. Even in this setup, AdGuardHome continues filtering ads and trackers before traffic enters the Tor network, enhancing privacy and reducing unnecessary connections. Important Note: This is not necessarily the recommended approach for anonymity. If your goal is to browse the web privately, it is strongly advised to use the Tor Browser instead, as it provides additional protections that a transparent proxy cannot.
 
-- [01 - Prerequisites](#01---Prerequisites)
-- [02 - Initial Setup](#02---Initial-Setup)
-- [03 - Configure external Wifi Adapter](#03---Configure-external-Wifi-Adapter)
-- [04 - VPN](#04---VPN)
-- [05 - Setup USB-Ethernet Gadget](#05---Setup-USB-Ethernet-Gadget)
-- [06 - Install Pi-Hole](#06---Install-Pi-Hole)
-- [07 - Encrypted DNS](#07---Encrypted-DNS)
-- [08 - Setup Blocklists](#08---Setup-Blocklists)
-- [09 - Hidden Wifi Access Point](#09---Hidden-Wifi-Access-Point)
-- [10 - Firewall](#10---Firewall)
-- [11 - Randomized Device Identity](#11---Randomized-Device-Identity)
-- [12 - Optional Custom Login Information](#12---Optional-Custom-Login-Information)
-- [13 - Disable Wifi on MacOS](#13---Disable-Wifi-on-MacOS)
-- [14 - To Do](#14---To-Do)
+4) Wireless Hotspot Support
 
+In addition to connecting your Mac via USB, your Raspberry Pi Privacy Gadget can also function as a wireless hotspot, allowing other devices—such as smartphones—to connect and use MODE 1, MODE 2, or MODE 3 for enhanced privacy and security. Important Note: If you want to connect the Raspberry Pi to a Wi-Fi network while running a hotspot, you’ll need an additional Wi-Fi adapter.<br>
+For this tutorial, we use the [ALFA AWUS036ACM](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136), which works out of the box and provides stable dual-band Wi-Fi connectivity.
 
-# 01 - Prerequisites
+5) Hardened Security
+
+To ensure maximum security, we implement multiple layers of protection:
+
+- Firewall Protection with nftables – We configure nftables as a robust firewall, dynamically managed via NetworkManager’s dispatcher to seamlessly adapt between MODE 1, MODE 2, and MODE 3, ensuring secure and reliable operation.
+- Hardened SSH Configuration – Secure access is enforced through a carefully hardened SSH setup, reducing attack vectors and improving overall system integrity.
+- User Access Control – We establish separate admin and standard user accounts, following best security practices to limit privileges and reduce risks.
+- Automated Security Updates – Unattended upgrades ensure that critical software remains up to date, minimizing vulnerabilities and enhancing system resilience.
+
+6) Randomized Device Identity:
+
+Whenever you connect to a public Wi-Fi network, only your Raspberry Pi Ethernet Gadget’s identity will be logged — not your Mac’s. This prevents network operators from tracking your actual device.
+
+To further enhance privacy:
+
+- MAC Address Randomization – The Ethernet Gadget generates a new, random MAC address on every reboot, making device tracking significantly harder.
+- Random Hostname Generation – On each reboot, the Ethernet Gadget selects a random hostname from a predefined dictionary, preventing easy identification.
+
+These measures ensure that your digital footprint remains as anonymous as possible when connecting to public networks.
+
+7) Privacy Respecting NTP Server:
+
+To maintain accurate system time without compromising privacy, we configure the Raspberry Pi Ethernet Gadget to use privacy-respecting NTP servers from [ntppool.org](https://www.ntppool.org/en/use.html).
+
+Key Features:<
+- Privacy-Focused Time Synchronization – Ensures system time is updated via trusted NTP servers while avoiding centralized, privacy-invasive time sources.
+- Extended Offline Support – Configured to handle longer periods of downtime, allowing the device to reconnect to the internet even after being switched off for an extended period.
+- Local Time Server for Connected Devices – Clients using the Raspberry Pi Ethernet Gadget can sync their system time directly from the Pi’s built-in NTP server.
+- Optional: For even more reliability, we recommend installing a hardware clock (RTC module) to prevent synchronization issues.
+
+8) Local Web Interface:
+
+To simplify management, we set up a local web interface that allows you to:
+
+- Easily switch between MODE 1, MODE 2, and MODE 3
+- Connect the Raspberry Pi to external Wi-Fi networks without using terminal commands
+- Enable or disable the Hotspot with a single click
+
+This intuitive interface provides seamless control over your Raspberry Pi Ethernet Gadget, making it easy to configure settings directly from your browser.
+
+* * *
+
+## 03 PREREQUISITES
 
 #### HARDWARE:
 
-We use a Raspberry Pi 4B (8Gb). The USB-C cable needs to be of good quality and support fast data transfers. We use the USB-C cable of an external SSD drive (G-DRIVE). Further we use this tiny Wifi-Adapter: [Alfa AWUS036ACS](https://www.alfa.com.tw/products/awus036acs?variant=36473965969480). It is fast and reliable. If you choose to use this adapter you will have to compile the required kernel module. We included the necessary steps in this guide. However, there are other wifi adapters that work natively on the Raspberry Pi. Further you will need a fast SD Card (i.e. 32GB by SanDisk).
+For this setup, we use a Raspberry Pi 4B (8GB). To ensure stable performance, it's essential to use a high-quality USB-C cable that supports fast data transfer. Additionally, we use the [ALFA AWUS036ACM WiFi adapter](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136). If you choose a different external WiFi adapter, ensure it is compatible with Raspberry Pi OS and update the interface name in this tutorial accordingly! A reliable microSD card is crucial for smooth operation. Avoid cheap, low-quality brands. We highly recommend SanDisk A1-rated cards, as they offer excellent performance. High-endurance microSD cards are also a great option—they are fast enough and provide outstanding durability based on our experience. A 32GB card is more than sufficient for this setup.
 
 #### OPTIONAL:
 
-A case for the Raspberry Pi and a cooling system. We can recommend the [Pibow Case](https://shop.pimoroni.com/products/pibow-coupe-4) and the lightweight [Fanshim](https://shop.pimoroni.com/products/fan-shim?_pos=1&_sid=bc5f6629a&_ss=r) by Pimoroni.
+An active cooling system to prevent overheating, especially during hot summer days. We recommend the [EP-0163 Ice Tower](https://wiki.52pi.com/index.php?title=EP-0163) for efficient cooling. A Real-Time Clock (RTC) module, such as the [RV3028](https://shop.pimoroni.com/products/rv3028-real-time-clock-rtc-breakout?variant=27926940549203), is useful for maintaining accurate time synchronization, especially when the Raspberry Pi stays switched off or offline for a prolonged period of time. It fits neatly alongside the EP-0163 Ice Tower.
 
-#### OPERATING SYSTEM:
+#### INSTALL RASPBERRY Pi OS (Headless Setup)
 
-You will need a clean install of *Raspberry Pi OS - Lite* without desktop environment. Instructions how to install it on a micro SD-Card can be found [on this site](https://www.raspberrypi.org/software/). To complete this guide with a Raspberry Pi 4, we recommend you download the latest 64bit system [here](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit).
+1. Download and Install the [Raspberry Pi Imager](https://downloads.raspberrypi.org/imager/imager_latest.dmg) 
+- Get the official Raspberry Pi Imager and install Raspberry Pi OS Lite (64-bit), based on Debian Bookworm.
+2. Enable SSH and Configure Network
+- We recommend a headless setup, meaning you won't need an external monitor, mouse, or keyboard. Instead, you can complete the entire setup from your computer.
+- The advantage of a headless setup is that it skips the Welcome Wizard and allows you to remotely access the Raspberry Pi immediately after the first boot.
+- To achieve this, make sure to set up the username, password, and network configuration through the OS customization settings in Raspberry Pi Imager. For this tutorial we use <strong>Username: term7</strong> as username. If you choose a different username, make sure to replace it accordingly whenever it appears in this tutorial.
+3. More Information
+- If you're unfamiliar with setting up a Raspberry Pi for the first time, follow our detailed headless installation guide: [Headless Raspberry Pi OS Setup Guide](https://term7.info/intro-raspberry-pi/#PI-IMAGER)
+4. Update Your System
+- After installation, update your Raspberry Pi OS as described in the tutorial linked above. There’s no need to follow additional steps from that guide.<br>
+However, if you're interested, you might want to check out: [Z-Ram Tweaks](https://term7.info/intro-raspberry-pi/#Z-RAM): These optimizations can improve system performance, especially on low-memory setups.<br>
+[MOTD Tweaks](https://term7.info/intro-raspberry-pi/#MOTD): Customizing the Message of the Day (MOTD) can enhance your login experience with useful system info. Both tweaks are optional but can be beneficial.<br>
+Skip the sections on user access management, SSH hardening, and firewall setup. These will be fully covered in this tutorial!
 
-# 02 - Initial Setup
+#### EXPAND FILE SYSTEM AND ENABLE PREDICTABLE INTERFACE NAMES
 
-#### CONNECT TO THE INTERNET AND UPDATE:
-
-After flushing the operating system onto your SD-Card, open the Terminal.app on your Mac and execute the following command to enable ssh access:
-`touch /Volumes/boot/ssh`
-
-Then enable internet connectivity by creating this file:
-`nano /Volumes/boot/wpa_supplicant.conf`
-
-Insert:
-
-```
-ctrl_interface=/var/run/wpa_supplicant GROUP=netdev
-update_config=1
-country=de
-
-network={
-    ssid="your-network"
-    scan_ssid=1
-    psk="your-wifi-password"
-    key_mgmt=WPA-PSK
-    priority=1
-}
-```
-
-IMPORTANT: Change the value *your-network* to the network you want to connect to, and *your-wifi-password* to the required Wifi password and adjust the country code (in this example *de*) to your location!
-
-Also before you insert the SD-card into your Raspberry Pi, you need to create a user and a password. The former standard user *pi* has been deprecated by the Rasperry Pi Foundation. Because we are doing a headless setup without desktop environment your user has to be created before the first boot. Execute these four commands to create your new user (replace *username* and *password* with a username and a password of your choice):
-
-`echo 'username:' > /Volumes/boot/tmp.txt`<br>
-`echo 'password' | openssl passwd -6 -stdin >> /Volumes/boot/tmp.txt`<br>
-`tr -d '\n' < /Volumes/boot/tmp.txt > /Volumes/boot/userconf.txt`<br>
-`rm /Volumes/boot/tmp.txt`
-
-Next insert the SD-Card into your Raspberry Pi and boot it up.
-There are several ways to find your Raspberry Pi on your local network. You could log into your router and look up its address.
-One way to find the Raspberry Pi on your network is this command:<br>
-`arp -a`
-
-Once you find the local IP address of your Pi, open a terminal window and connect via ssh, i.e.:<br>
-`ssh username@192.168.8.168` (Username and password are the username and password you set up in the previous step).
-
-#### ADDITIONAL STEPS:
-
-You might want to update your timezone and locales by executing the following commands:
-
-`export LANGUAGE="en_GB.UTF-8"`<br>
-`export LANG="en_GB.UTF-8"`<br>
-`export LC_ALL="en_GB.UTF-8"`
-
-Also select your desired locales with this command:<br>
-`sudo dpkg-reconfigure locales`
-
-Then edit */etc/default/locale*:<br>
-`sudo nano /etc/default/locale`
-
-For British English, insert:
-
-```
-LANG=en_GB.UTF-8
-LC_ALL=en_GB.UTF-8
-LANGUAGE=en_GB.UTF-8
-```
-
-To set your timezone, i.e.:<br>
-`sudo timedatectl set-timezone Europe/Berlin`
-
-#### UPDATE YOUR PI:
-
-Before you proceed, update your Raspberry Pi:<br>
-`sudo apt update && sudo apt upgrade -y`
-
-#### AUTOMATIC LOGIN:
-
-To make sure your user will be logged in on boot, run:
-
+To configure your Raspberry Pi, open the Raspberry Pi Configuration Tool by running:<br>
 `sudo raspi-config`
 
-Navigate to *1 System Options* and select *Boot / Auto login*. Select *Console Autologin*.
-Please note that [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) is constantly being developed. The location of the required menu item might change! Then, reboot your Raspberry Pi.
+1. Expand Filesystem
 
-#### A VIEW SECURITY RECOMMENDATIONS:
+- Navigate to 6. Advanced Options → A1 Expand Filesystem.
+- This ensures that the full storage capacity of your SD card is available.
 
-SSH:
+2. Enable Predictable Network Interface Names
 
-We strongly recommend you tighten your SSHD login security.
-Change the default SSH port from 22 to an unused port of your choice.
+- Go to 6. Advanced Options → A2 Network Interface Names.
+- Enable predictable network interface names. This is crucial for this tutorial!
 
+We are working with the built-in WiFi (wlan0) and an external WiFi adapter (wlx00c0caae6319), which is the predictable interface name for the ALFA AWUS036ACM. By enabling predictable network interface names, we can reliably distinguish between the built-in and external WiFi adapters. Without this setting, the external WiFi card might occasionally be assigned wlan0 instead of the built-in WiFi, which could cause issues with our firewall and routing configurations.
+
+* * *
+
+## 04 USER ACCESS CONTROL
+
+We establish separate admin and standard user accounts, following best security practices to limit privileges and reduce risks. The admin account (admin) is reserved for system maintenance and configuration, while the standard user account (term7) is used for everyday tasks with minimal permissions.
+
+By enforcing the principle of least privilege (PoLP), we enhance security and minimize potential attack vectors: This setup allows us to disable root login via SSH, adding an extra layer of defense. Even if an attacker manages to gain access, they won’t have admin rights by default, significantly reducing the risk of system compromise.
+
+#### 1. CREATE NEW ADMIN USER:
+
+To create a dedicated admin account, run the following command:<br>
+`sudo adduser admin`
+
+The only required detail is a strong password. We highly recommend using a password manager such as KeePassXC to store and manage your credentials securely.
+
+If you prefer generating a strong password directly from the command line, use:<br>
+`openssl rand -base64 48 | cut -c1-32`
+
+This command generates a 32-character random password using OpenSSL’s RNG, which follows NIST SP 800-90A/B/C standards and uses ChaCha20 (or AES-CTR in older versions), ensuring cryptographic strength. The output is unpredictable and highly resistant to brute-force attacks.
+
+Once the admin user is created, add it to all essential groups to ensure it has access to required system functions:<br>
+`sudo usermod -a -G adm,tty,dialout,cdrom,audio,video,plugdev,games,users,input,netdev,gpio,i2c,spi,sudo,term7 admin`
+
+#### 2. REMOVE SUDO PRIVILEGES FROM THE STANDARD USER:
+
+To enhance security, remove sudo privileges from term7 and transfer them to admin, while ensuring that sudo now requires a password:
+
+`sudo sed -i 's/term7/admin/g' /etc/sudoers.d/010_pi-nopasswd`
+`sudo sed -i 's/NOPASSWD: //g' /etc/sudoers.d/010_pi-nopasswd`
+
+To enhance security, we will remove our standard user (term7 in this example) from the sudo group, ensuring it no longer has administrative privileges. First, log in as the new admin user:<br>
+`su admin`
+
+Now, execute the following command to remove term7 from the sudo group (replace term7 with your actual standard username):<br>
+`sudo deluser term7 sudo`
+
+#### ALLOW THE STANDARD USER TO SHUTDOWN AND REBOOT YOUR RASPBERRY PI:
+
+Although term7 no longer has full sudo access, we want to allow it to reboot and shut down the Raspberry Pi without switching to admin. Run the following command to create a new sudo policy file:<br>
+`echo "term7 ALL = NOPASSWD: /usr/sbin/reboot, /usr/sbin/shutdown" | sudo tee /etc/sudoers.d/common_users > /dev/null`
+
+This grants term7 password-free access to the reboot and shutdown commands. If you want to allow additional commands without requiring sudo, simply edit the file: `/etc/sudoers.d/common_users`
+
+* * *
+
+## 05 HARDEN SSH
+
+By default, you can still SSH directly into your admin account, which is a security risk. To strengthen SSH security, we will modify the SSH configuration.
+
+Port Hardening:<br>
+- Change the default SSH port (to port 6666)
+
+Strong Cryptographic Algorithms:<br>
+- Cyphers for strong encryption (chacha20-poly1305, aes256-gcm)
+- Secure Key Exchange (curve25519-sha256, diffie-hellman-group16-sha512)
+- MACs to protect against cryptographic vulnerabilities (hmac-sha2-512-etm)
+
+Strict Authentication Controls:<br>
+- Disable direct root login
+- Restrict SSH access to specific users (term7)
+- Limits Authentication Attempts & Sessions (MaxAuthTries 2, MaxSessions 2)
+- Enforce SSH key authentication
+- Disable Password Login
+- Disable challenge-response authentication (prevents brute-force attacks)
+
+Session Hardening:<br>
+- Timeout and Inactivity Control (ClientAliveInterval 300, ClientAliveCountMax 2)
+- Prevent Empty Password Logins
+
+Enhanced Logging and Monitoring:<br>
+- Logging: Capture failed authentication attempts, IP addresses, and suspicious activities
+- Enable Warning Banner
+
+#### Preparation: Setting Up SSH Key Authentication for Secure Access
+
+SSH key authentication is more secure than password-based authentication. It uses a pair of cryptographic keys:
+
+Private key → Stays securely on your Mac.<br>
+Public key → Is copied to your Raspberry Pi.
+
+Once configured, only your Mac can log into the Raspberry Pi—unless your private key is compromised.
+
+#### 1. Generate a New SSH Key Pair on Your Mac
+
+Open Terminal on your Mac and run:<br>
+`ssh-keygen -t ed25519 -C "your_email@example.com"`
+
+It uses the Ed25519 algorithm, which is faster and more secure than RSA. Please use your real email for reference.
+
+Advanced Security:
+For an even stronger setup, consider using a hardware security key such as a [Nitrokey](https://www.nitrokey.com/products/nitrokeys) or [YubiKey](https://www.yubico.com/products/yubikey-5-overview/). However, these require additional setup and are beyond the scope of this tutorial. We might cover them in a separate guide in the future.
+
+#### 2. Copy the Public Key to Your Raspberry Pi
+
+Run this command, replacing 192.168.1.123 with your Raspberry Pi’s actual local IP address:<br>
+`ssh-copy-id -i ~/.ssh/id_ed25519.pub term7@192.168.1.123`
+
+If ssh-copy-id is not installed on macOS, manually copy the key using:<br>
+`cat ~/.ssh/id_ed25519.pub | ssh term7@192.168.1.123 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'`
+
+#### 3. Configure SSH on Your Mac for Easier Access
+
+Edit your SSH configuration file:<br>
+`nano ~/.ssh/config`
+
+Make sure this line is present:<br>
+`IdentityFile ~/.ssh/id_ed25519`
+
+This ensures your Mac always uses the correct private key (id_ed25519) for authentication and prevents SSH from prompting for a password if key authentication is set up correctly.
+
+#### 4. Log Back into Your Raspberry Pi Standard User Account
+
+After setting up SSH key authentication, you need to set the correct permissions on your .ssh directory and the authorized_keys file to ensure SSH works securely:<br>
+`ssh term7@192.168.1.123`
+
+(Replace 192.168.1.123 with your actual Raspberry Pi IP.)
+
+#### 5. Set the Correct SSH Directory and File Permissions
+
+Run the following commands on your Raspberry Pi:
+
+`chmod 700 ~/.ssh`<br>
+`chmod 600 ~/.ssh/authorized_keys`
+
+This ensures that only the user (term7) has access to the .ssh directory and that only the user can read and write the authorized_keys file.
+
+#### 6. Setup Warning Banner
+
+To display a security warning banner before login, download and replace the /etc/issue.net file with our pre-configured version from the repository:<br>
+`curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net`
+
+You can edit the banner text to match your requirements:<br>
+`sudo nano /etc/issue.net`
+
+#### 7. Harden SSH configuration
+
+The fastest way to harden your SSH configuration is to replace it with our pre-configured file from this repository.
+
+However, before making any changes, create a backup to avoid getting locked out in case anything goes wrong. Run this command to create a backup:<br>
+`sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak`
+
+If anything goes wrong, you can restore the original file. To download our hardened configuration, run this command:<br>
+`curl -L -o /etc/ssh/sshd_config https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config`
+
+This overwrites your current standard SSH configuration file. IMPORTANT: If you use a different standard username than term7, you must update this line:<br>
+`AllowUsers term7`
+
+To check and edit the file before applying changes, open it in Nano:<br>
 `sudo nano /etc/ssh/sshd_config`
 
-Find and change this line:
-`#port 22`
+Find and replace term7 with your actual username, then save (CTRL + X, then Y, then Enter).
 
-Also we suggest you enable key-based authentication instead of password based authetication. This tutorial should get you started:
-[https://pimylifeup.com/raspberry-pi-ssh-keys/](https://pimylifeup.com/raspberry-pi-ssh-keys/)
+#### 8. Apply and Test the New SSH Configuration
 
-Even better: get a hardwarekey (Nitrokey or Yubikey)
+After making necessary changes, restart the SSH service:<br>
+`sudo systemctl restart ssh`
 
-Another option is two-factor authentication:
-[https://pimylifeup.com/setup-2fa-ssh/](https://pimylifeup.com/setup-2fa-ssh/)
+Do NOT log out yet! On your Mac, open a new terminal window and test SSH access:<br>
+`ssh term7@192.168.1.123 -p 6666`
 
-SUDO:
+If the connection works fine, your new hardened SSH configuration is successfully applied!
 
-We recommend you ask for a password when you use sudo:<br>
-`sudo nano /etc/sudoers.d/010_pi-nopasswd`
+#### 9. Recover from an Issue (If Needed)
 
-Replace its content with (*username* is the username you set up earlier):<br>
-`username ALL=(ALL) PASSWD: ALL`
+If something goes wrong and you get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Type the following commands:
 
-# 03 - Configure external Wifi Adapter
+`sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config`<br>
+`sudo systemctl restart ssh`
 
-If you use an external wifi adapter that works out of the box, you can skip this step.
+This will restore your previous working SSH configuration.
 
-Our external Wifi Adapter is the [Alfa AWUS036ACS](https://www.alfa.com.tw/products/awus036acs?variant=36473965969480). This wifi adapter is small and unobtrusive. But we want to use this wifi adapter mainly for one reason: a good wifi adapter that supports USB3 connected to one of the Raspberry Pi's USB3 ports is faster and performs better than the built in wifi card. Unfortunately this wifi antenna does not work out of the box. We need to compile its drivers. If you want to use another wifi adapter than the Alfa AWUS036ACS, that does not work out of the box you will have to research online how to compile the required driver.
+* * *
 
-Install dependencies:<br>
-`sudo apt install git raspberrypi-kernel-headers dkms -y`
+## 06 UNATTENDED UPGRADES
 
-Then clone the required git repository:
+Keeping your Raspberry Pi up-to-date is crucial for security and stability. Instead of manually updating, we set up unattended upgrades to automatically install security and system updates. Since our Raspberry Pi is only powered on when we work on our Mac, we need to ensure updates run after every reboot. Additionally, because we will install AdGuardHome (which requires time to apply filter lists), we introduce a 5-minute delay before the update process starts.
 
-`mkdir Compile`<br>
-`cd Compile`<br>
-`git clone -b v5.6.4.2 https://github.com/aircrack-ng/rtl8812au.git`<br>
-`cd rtl*`
+#### 1. Install Required Packages:
 
-You will need to run those commands below which builds the ARM64 arch driver. If you run a 32-bit version of Raspian OS, you can find detailed instructions [here](https://github.com/aircrack-ng/rtl8812au).
+To set up unattended upgrades, use the following command to install the required software packages:<br>
+`sudo apt install -y unattended-upgrades apt-listchanges`
 
-`sed -i 's/CONFIG_PLATFORM_I386_PC = y/CONFIG_PLATFORM_I386_PC = n/g' Makefile`<br>
-`sed -i 's/CONFIG_PLATFORM_ARM64_RPI = n/CONFIG_PLATFORM_ARM64_RPI = y/g' Makefile`<br>
-`export ARCH=arm`<br>
-`sed -i 's/^MAKE="/MAKE="ARCH=arm\ /' dkms.conf`<br>
-`sudo make && sudo make install`
+#### 2. Enable Raspberry Pi OS Updates:
 
-If you ever need to uninstall this driver:
-
-`cd Compile/rtl*`<br>
-`sudo make dkms_remove`
-
-#### IMPORTANT:
-
-After every update of the *raspberrypi-kernel-headers* you will have to recompile this driver, because each update of the *raspberrypi-kernel-headers* will delete it!
-
-DRIVER OPTIONS:
-
-Driver options for example let you turn off the blinking LED of the Wifi-Adapter. More importantly they enable you to switch the adapter to use USB3 instead of USB2. The following file contains possible options and instructions of how to use them. Read it!
-
-Create */etc/modprobe.d/88XXau.conf*:<br>
-`sudo nano /etc/modprobe.d/88XXau.conf`
-
-Insert:
+By default, Debian security updates are included. However, we need to add Raspberry Pi updates manually. Run this command to modify the 50unattended-upgrades file:
 
 ```
-# /etc/modprobe.d/88XXau.conf
-#
-# Purpose: Allow easy access to specific driver options.
-# To see all options that are available:
-#
-# -----
-#
-# $ ls /sys/module/88XXau/parameters/
-#
-# Edit the following line to change options:
-options 88XXau rtw_drv_log_level=0 rtw_led_ctrl=1 rtw_vht_enable=1 rtw_power_mgnt=1 rtw_switch_usb_mode=1
-#
-# After editing is complete, save this file and reboot to activate the changes.
-#
-# Documentation:
-#
-# -----
-#
-# Log level options: ( rtw_drv_log_level )
-#
-# 0 = NONE (default)
-# 1 = ALWAYS
-# 2 = ERROR
-# 3 = WARNING
-# 4 = INFO
-# 5 = DEBUG
-# 6 = MAX
-#
-# Note: You can save a log file that only includes RTW log entries by running the following in a terminal:
-#
-# $ sudo ./save-log.sh
-#
-# -----
-#
-# LED control options: ( rtw_led_ctrl )
-#
-# 0 = Always off
-# 1 = Normal blink (default)
-# 2 = Always on
-#
-# -----
-#
-# VHT enable options: ( rtw_vht_enable )
-#
-#  0 = Disable
-#  1 = Enable (default)
-#  2 = Force auto enable (use caution)
-#
-# Notes:
-# - Unless you know what you are doing, don't change the default for rtw_vht_enable.
-# - A non-default setting can degrade performance greatly in some operational modes.
-# - For 5 GHz band AP mode, setting this option to 2 will allow 80 MHz channel width.
-#
-# -----
-#
-# Power saving options: ( rtw_power_mgnt )
-#
-# 0 = Disable power saving
-# 1 = Power saving on, minPS (default)
-# 2 = Power saving on, maxPS
-#
-# Note: Extensive testing has shown that the default setting works well.
-#
-# -----
-#
-# USB mode options: ( rtw_switch_usb_mode )
-#
-# 0 = No switch
-# 1 = Switch from usb 2.0 to usb 3.0
-# 2 = Switch from usb 3.0 to usb 2.0 (default)
-``` 
-
-
-#### ASSIGN PERSISTENT NAMES TO WIFI ADAPTERS:
-
-We noticed, that sometimes the external wifi adapter is called *wlan0*, sometimes *wlan1*. However we want to assign a persistent reliable names across reboots. To achieve this we decided we always plug our wifi adapter into the upper USB3 port. We need to change udev rules to ensure it is always called *wlan1* and the built-in wifi is always called *wlan0*:
-
-`sudo ln -nfs /dev/null /etc/systemd/network/99-default.link`
-
-Next create a new rule */etc/udev/rules.d/70-persistent-net.rules*:
-
-`sudo nano /etc/udev/rules.d/70-persistent-net.rules`
-
-Insert:
-
-```
-# Layout Raspberry Pi 4B:
-#
-# +-------+-------+-----+
-# |       | wlan1 |     |
-# +-------+-------+ RJ45|
-# | wlan3 | wlan2 |     |
-# +-------+-------+-----+
-# | wlan0 | ............. => (onboard wifi)
-#
-# Based on output: udevadm info -a /sys/class/net/wlan1
-
-
-ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="sdio", KERNELS=="mmc1:0001:1", NAME="wlan0"
-ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.1",       NAME="wlan1"
-#ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.2",       NAME="wlan2"
-#ACTION=="add", SUBSYSTEM=="net", SUBSYSTEMS=="usb",  KERNELS=="1-1.4",       NAME="wlan3"
+sudo sed -i '/"origin=Debian,codename=${distro_codename}-security,label=Debian-Security";/a\
+        "origin=Raspbian,codename=${distro_codename},label=Raspbian";\
+        "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";' /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
-This ensures that the onboard wifi will always be called *wlan0* and any wifi adapter plugged into the upper USB3 port will be called *wlan1*.
+#### 3. Ensure Updates Run After Every Reboot:
 
-Now insert your wifi adapter into the upper USB3 port and reboot your Raspberry Pi.
-
-Reboot:<br>
-`sudo reboot now`
-
-#### RESOURCES:<br>
-[https://github.com/aircrack-ng/rtl8812au](https://github.com/aircrack-ng/rtl8812au)
-
-
-# 04 - VPN
-
-Next we configure our Raspberry Pi to route all traffic, without exception, through a VPN. We use [ProtonVPN](https://protonvpn.com/) as an example. ProtonVPN has been [independently audited](https://protonvpn.com/blog/open-source/) and is protected by strong Swiss privacy laws.
-If you want to use ProtonVPN as well, you first have to visit their [website](https://protonvpn.com/) and open account. You can use a [free account](https://protonvpn.com/support/how-to-create-free-vpn-account/) or choose one of the paid options. There is a [commandline tool](https://protonvpn.com/support/linux-vpn-tool-early-access/) by ProtonVPN, however it does not work on a Raspberry Pi, which is why we use the community build.
-
-To install ProtonVPN, execute the following two commands:<br>
-`sudo apt install openvpn dialog python3-pip python3-setuptools -y`<br>
-`sudo pip3 install protonvpn-cli`
-
-Further we need to install *iptables*, which we will later also use to setup our Firewall:<br>
-`sudo DEBIAN_FRONTEND=noninteractive apt install -y netfilter-persistent iptables-persistent`
-
-To forward all traffic through the VPN we also need to setup the required iptable rule:<br>
-`sudo iptables -t nat -A POSTROUTING -o proton0 -j MASQUERADE`<br>
-`sudo netfilter-persistent save`
-
-You need to initialize ProtonVPN only once. In future your RaspberryPi will connect automatically:<br>
-`sudo protonvpn init`
-
-You will be asked to enter your ProtonVPN username, your password and to choose your ProtonVPN subscription plan (enter whatever plan you purchased, i.e. *Free*, *Basic* or *Plus*) to complete the initialization.
-
-To configure ProtonVPN run the following command:<br>
-`sudo protonvpn configure`
-
-Here you can change all of your settings, i.e. change the DNS Management of your VPN service or change the default protocol (we recommend TCP), etc. Please consider that the *Kill Switch* may later interfere with your *Pi-hole* in a negative way. If you suddenly cannot connect anymore, we recommend you disable the *Kill Switch* and try again. The *Pi-hole* will most likely bypass your VPN's DNS-settings if you disable the *Kill Switch* (we did not test this).
-
-To check the connection status of ProtonVPN, execute:<br>
-`protonvpn status`
-
-#### CREATE SYSTEM SERVICE TO START PROTONVPN AT BOOT:
-
-`sudo nano /etc/systemd/system/protonvpn.service`
-
-Insert:
+Create a systemd timer that waits 5 minutes after boot before running updates:
 
 ```
-[Unit]
-Description=Proton VPN
-After=syslog.target network-online.target
-Wants=network-online.target
+echo '[Unit]
+Description=Unattended Upgrades Timer
 
-[Service]
-Type=forking
-ExecStart=/usr/local/bin/protonvpn c --sc
-ExecStop=/usr/local/bin/protonvpn d
-ExecReload=/usr/local/bin/protonvpn c --sc
-Environment=SUDO_USER=username
-Restart=always
-RestartSec=2
+[Timer]
+OnBootSec=5min
+Unit=unattended-upgrades.service
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target' | sudo tee /etc/systemd/system/unattended-upgrades.timer > /dev/null
 ```
 
-Please don't forget to adjust the `username` in the Line `Environment=SUDO_USER=username` to your username!
-
-
-#### PLEASE NOTICE:
-
-Unless you subscribed for a *Plus Membership* the above system service won't work, as it attempts to use ProtonVPN's [secure core](https://protonvpn.com/support/secure-core-vpn/) which is only available to paying *Plus Members*. If you always want to connect to the fastest server (any membership), insert these lines instead:
+This prevents updates from running too early while AdGuardHome is still initializing.<br>
+Now, create the systemd service that will execute unattended upgrades:
 
 ```
-[Unit]
-Description=Proton VPN
-After=syslog.target network-online.target
-Wants=network-online.target
-
-[Service]
-Type=forking
-ExecStart=/usr/local/bin/protonvpn c --fastest
-ExecStop=/usr/local/bin/protonvpn d
-ExecReload=/usr/local/bin/protonvpn c --fastest
-Environment=SUDO_USER=username
-Restart=always
-RestartSec=2
-
-[Install]
-WantedBy=multi-user.target
-```
-Again - Please don't forget to adjust the `username` in the Line `Environment=SUDO_USER=username` to your username!
-You change the protonvpn command in this System Service according to your own preferences. I.e. if you always want to connect to a random server, replace *--fastest* with *--random*. To see all available options, run:<br>
-`protonvpn -h`
-
-Enable and start *protonvpn.service*:
-
-```sudo systemctl enable protonvpn.service```<br>
-```sudo systemctl start protonvpn.service```
-
-#### IMPORTANT:
-
-If all DNS requests were handled by *ProtonVPN* (i.e. if you keep *DNS-leak Protection* and *Kill Switch* enabled), your *Pi-hole* might missbehave. This is the reason why we recommend to disable the *Kill Switch* in this specific setup. Also we recommend you disable *DNS Managment* in the ProtonVPN settings because we want our *Pi-hole* to manage all DNS requests to filter ads, trackers and malware - even while we use our VPN Service. We will configure our *Pi-hole* to listen on ALL INTERFACES.
-
-#### TIME SERVER:
-
-This step also is very important. The Raspberry Pi has no on-board realtime clock and needs an internet connection to synchronise time. However, if you set up a VPN we noticed that our Pi tries to sync time through the VPN after it booted. But because the time is off (we had ist switched off over night) the VPN refused to connect, which means we were not able to connect to the interent anymore. Further, aou may want to connect to a privacy respecting time server, i.e. from [dismail.de](https://dismail.de/). To use custom timeservers edit this file:<br>
-`sudo nano /etc/systemd/timesyncd.conf`
-
-Below `[Time]`, insert (example: timeservers by [dismail.de](https://dismail.de/)):<br>
-`NTP=ntp1.dismail.de ntp2.dismail.de ntp3.dismail.de`
-
-Further we need to enable split tunneling in our VPN configuration and exclude the IP's of our timeserver from using the VPN:<br>
-`sudo protonvpn configure`
-
-Select *6) Split Tunneling* and enter the following IP's:<br>
-`213.136.94.10`<br>
-`80.241.218.68`<br>
-`78.46.223.134`
-
-If you want to use IPv6 as well, enter the following IP6 too:<br>
-`2a02:c207:3000:6091::1`<br>
-`2a02:c205:3001:4558::1`<br>
-`2a01:4f8:c17:e5e::2`
-
-Reboot your device to make your changes take effect.
-
-Other configuration options we do recommend:<br>
-`sudo protonvpn configure`
-
-Select *4) DNS Management* and then *3) Disable DNS Management*
-
-Further:<br>
-`sudo protonvpn configure`
-
-Select *5) Kill Switch* and then *3) Disable Kill Switch*
-
-#### OPTIONAL:
-
-IPv6 may be a privacy risk (we neither confirm nor oppose this claim). If you are unsure, you may disable IPv6 altogether to prevent DNS leaks:<br>
-`sudo nano /etc/sysctl.conf`
-
-Insert at the end:
-```
-# Disable IPv6
-
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-```
-
-To make your changes take effect, run this command or reboot your device:
-`sudo sysctl -p`
-
-# 05 - Setup USB-Ethernet Gadget
-
-Now we will configure the Raspberry Pi as a USB-Ethernet device that connects to your Mac via USB-C. We need to configure the Pi to load additional modules so that usb0 (the direct connection to our Mac via USB-C) becomes available as a network interface. Further we assign a static IP-address to this interface.
-For the usb0 interface to become available with each reboot we also need to create a script and a system service that executes this script every time the Raspberry Pi boots up.
-
-#### INSTALL DEPENDENCIES AND CONFIGURE REQUIRED MODULES:
-
-Make sure *rpi-eeprom* is installed:
-
-`sudo apt install rpi-eeprom -y`<br>
-
-First edit */boot/config.txt*:<br>
-`sudo nano /boot/config.txt`
-
-Insert this line at the end of the file:<br>
-`dtoverlay=dwc2`
-
-Next edit */boot/cmdline.txt*:<br>
-`sudo nano /boot/cmdline.txt`
-
-Insert:<br>
-`modules-load=dwc2`
-
-IMPORTANT:<br>
-Do not start a new line. Insert at the end of the long line after *rootwait*. The only separation should be a single space.
-
-Then edit */etc/modules*:<br>
-`sudo nano /etc/modules`
-
-Insert at the bottom in a new line:<br>
-`libcomposite`
-
-#### CONFIGURE ROUTING, MASQUERADING AND STATIC IP:
-
-Now we have defined the required modules. Next we assign a static IP-address to *usb0* by editing */etc/dhcpcd.conf*:<br>
-`sudo nano /etc/dhcpcd.conf`
-
-Insert at the end of the file:
-
-```
-interface usb0
-    static ip_address=192.168.77.1/24
-```
-
-Now we need to enable routing and masquerading to forward internet traffic from wlan1 to other interfaces.
-
-`sudo nano /etc/sysctl.d/routed-ap.conf`
-
-Insert:
-
-```
-# Enable IPv4 routing
-net.ipv4.ip_forward=1
-```
-
-Also find and uncomment this line in */etc/sysctl.conf*:<br>
-`sudo nano /etc/sysctl.conf`
-
-Edit:<br>
-`net.ipv4.ip_forward=1`
-
-We already enabled forwarding to our VPN interface. As a fallback, enable forwarding from wlan1 and eth0 with the required iptable rule:<br>
-```sudo iptables -t nat -A POSTROUTING -o wlan1 -j MASQUERADE```
-```sudo netfilter-persistent save```
-
-The Raspberry Pi is supposed to function similiar to a portable router. To achieve this we will use *dnsmasq* as a DNS forwarder and DHCP server. However, we have to keep in mind that we also want to use the *Pi-hole* (see next step) as an ad blocker and network filter. The *Pi-hole* comes bundled with its own version of *dnsmasq*, which will be in conflict with any other existing installation of *dnsmasq*. Thus, for now we will only set up our configuration files without installing *dnsmasq*. This also means, that the USB-Ethernet Gadget will not yet be able to connect to your Mac to the internet. It will only be able to connect to the internet after you install *Pi-hole*. Then it will forward all traffic between *usb0* and *proton0* according to the iptable rule we set up for our VPN.
-
-Create configuration folder and main configuration file:<br>
-`sudo mkdir /etc/dnsmasq.d`<br>
-`sudo nano /etc/dnsmasq.conf`
-
-Insert:<br>
-`conf-dir=/etc/dnsmasq.d`
-
-Next create the configuration file for *usb0*:<br>
-`sudo nano /etc/dnsmasq.d/00-dnsmasq.conf`
-
-Insert:
-
-```
-# USB Gadget
-interface=usb0  # USB interface
-dhcp-range=set:usb0,192.168.77.2,192.168.77.254,255.255.255.0,24h
-dhcp-option=set:usb0,3,192.168.77.1
-                # Default Gateway
-address=/access.tardigrade/192.168.77.1
-                # Alias for this router
-```
-
-
-#### SCRIPT AND SYSTEM SERVICE TO ENABLE USB0 AT BOOT:
-
-Finally we also need to create a script that enables our *usb0* interface:<br>
-`sudo nano /root/usb.sh`
-
-Insert:
-
-```
-#!/bin/bash
-
-cd /sys/kernel/config/usb_gadget/
-mkdir -p pi4
-cd pi4
-echo 0x1d6b > idVendor # Linux Foundation
-echo 0x0104 > idProduct # Multifunction Composite Gadget
-echo 0x0100 > bcdDevice # v1.0.0
-echo 0x0200 > bcdUSB # USB2
-echo 0xEF > bDeviceClass
-echo 0x02 > bDeviceSubClass
-echo 0x01 > bDeviceProtocol
-mkdir -p strings/0x409
-echo "fedcba9877543777" > strings/0x409/serialnumber
-echo "Term7" > strings/0x409/manufacturer
-echo "Tardigrade" > strings/0x409/product
-mkdir -p configs/c.1/strings/0x409
-echo "Config 1: ECM network" > configs/c.1/strings/0x409/configuration
-echo 250 > configs/c.1/MaxPower
-# Add functions here
-# see gadget configurations below
-# End functions
-mkdir -p functions/ecm.usb0
-HOST="00:dc:c8:f7:75:14" # "HostPC"
-SELF="00:dd:dc:eb:6d:a1" # "BadUSB"
-echo $HOST > functions/ecm.usb0/host_addr
-echo $SELF > functions/ecm.usb0/dev_addr
-ln -s functions/ecm.usb0 configs/c.1/
-udevadm settle -t 5 || :
-ls /sys/class/udc > UDC
-
-# Start USB Gadget
-ifconfig usb0 up
-```
-
-Make */root/usb.sh* executable:<br>
-`sudo chmod +X /root/usb.sh`
-
-Before we create a System Service that brings up the USB interface at boot time, perform a reboot and bring up your USB interface manually:<br>
-```sudo reboot now```<br>
-```sudo ifconfig usb0 up```<br>
-
-We do this before we install and configure our Pi-Hole, so that we get the option during its setup process to use `usb0` as our listening interface.
-
-Now create System Service to bring up USB interface on boot:<br>
-`sudo nano /lib/systemd/system/usb.service`
-
-Insert:
-
-```
-[Unit]
-Description=USB Gadget
+echo '[Unit]
+Description=Unattended Upgrades
 After=network.target
 
 [Service]
-ExecStart=/bin/bash /root/usb.sh
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable service and unblock wlan:
-
-`sudo systemctl enable usb.service`<br>
-`sudo rfkill unblock wlan`
-
-It is important, that you install the Pi-Hole now and do not reboot your Pi before the Pi-Hole is installed!
-
-#### RESOURCES:
-
-For this part of this guide we used these two resources:
-
-Official Raspberry Pi documentation:
-[https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md](https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md)
-
-Tutorial by Ben Hardill:
-[https://www.hardill.me.uk/wordpress/2019/11/02/pi4-usb-c-gadget/](https://www.hardill.me.uk/wordpress/2019/11/02/pi4-usb-c-gadget/)
-
-We would like to thank the Raspberry Pi Foundation and Ben Hardill for the great tutorials that made this privacy gadget possible!
-
-
-# 06 - Install Pi-hole
-
-*Pi-hole is a Linux network-level advertisement and Internet tracker blocking application which acts as a DNS sinkhole and in our configuration also as a DHCP server, intended for use on a private network. It is designed for low-power embedded devices with network capability, such as the Raspberry Pi.*<br>
-[Pi-hole](https://pi-hole.net/)
-
-#### INITIAL SETUP:
-
-`cd Compile`<br>
-`git clone --depth 1 https://github.com/pi-hole/pi-hole.git Pi-hole`<br>
-`cd "Pi-hole/automated install/"`<br>
-`sudo bash basic-install.sh`<br>
-
-During the installation process you will be asked to enter your preferred DNS Provider, IPv4 address, default gateway, DHCP-Range, etc.
-Please enter the following information when prompted:
-
-<p align="center">
-  <img src="/png/Pi-hole_01.png" title="Welcome">
-</p>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_02.png" title="About">
-</p>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_03.png" title="Static IP Needed">
-</p>
-Ok: We already configured our static IP!<br>
-Select YES
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_04.png" title="Select Interface">
-</p>
-Select usb0: it is configured to the interface that connects our Computer to the Raspberry Pi. <br>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_05.png" title="Custom DNS">
-</p>
-Select: No    Set static IP using custom values <br>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_06.png" title="Enter IPv4 Address">
-</p>
-Enter IPv4 Address: 192.168.77.1/24 *(This is the static IP we assigned to USB0)*<br>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_07.png" title="Default Gateway">
-</p>
-Enter default gateway: 192.168.77.1<br>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_08.png" title="Settings Correct?">
-</p>
-YES
-<br><br>
-
-
-
-<p align="center">
-  <img src="/png/Pi-hole_09.png" title="Custom DNS">
-</p>
-DNS Provider, Select Custom: we will change this later, but for now we stick with CZ.NIC (which is a good DNS porvider that respects your privacy)<br>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_10.png" title="Upstream DNS Provider">
-</p>
-Insert the IP's of CZ.NIC, our temporary DNS Provider: 193.17.47.1, 185.43.135.1<br>
-Ok
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_11.png" title="Is DNS correct?">
-</p>
-Select Yes
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_12.png" title="Blocklists">
-</p>
-OK: We will add more later!
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_13.png" title="Admin Interface">
-</p>
-Select On<br>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_14.png" title="Web Server">
-</p>
-Select On<br>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_15.png" title="log queries">
-</p>
-Select On: *(We want to see what addresses our Mac connects to!)*<br>
-OK
-<br><br>
-
-<p align="center">
-  <img src="/png/Pi-hole_16.png" title="privacy mode">
-</p>
-Select 0: Show everything *(We want to see everything. There are no other users in this setup which is why this is ok!)*<br>
-OK
-<br><br>
-
-After a short installation period you will see this window:
-
-<p align="center">
-  <img src="/png/Pi-hole_17.png" title="passwd">
-</p>
-Write down your password!<br>
-OK
-
-To enable your Pi-hole as your dhcp server, execute the following command:<br>
-`sudo pihole -a enabledhcp "192.168.77.1" "192.168.77.255" "192.168.77.1" "24" "username"`
-
-If you want to change the password of your Pi-hole, execute this comand:<br>
-`pihole -a -p`
-
-To update the Pi-hole, execute this command:<br>
-`pihole -up`
-
-To update all blocklists, execute this command:<br>
-`pihole -g`
-
-#### REBOOT:
-
-Now it is time to reboot your Raspberry Pi:<br>
-`sudo reboot now`
-
-On your Mac, open System Preferences -> Network Settings
-After a short while your Raspberry Pi should show up as *Tardigrade*. If it appears with a green dot (*Connected*), you should be able to browse the internet with all your traffic being sent through ProtonVPN, even if your Mac's WI-FI is switched off. To check if your traffic is routed through your VPN, browse to [https://dnsleaktest.com](https://dnsleaktest.com) and compare the IP-address that is shown with the output of this command:<br>
-```protonvpn status```
-
-All your traffic should now be routed through your VPN.
-
-<p align="center">
-  <img src="/png/Network-Settings.png" title="Network-Settings">
-</p>
-
-You should now be able to log into your Privacy Gadget directly via SSH with either of these commands:
-
-`ssh username@192.168.77.1`<br>
-`ssh username@access.tardigrade`
-
-#### RESOURCES:
-
-A very big THANK YOU to the developers of the Pi-hole. This is a great project!
-[https://pi-hole.net/](https://pi-hole.net/)
-
-
-# 07 - Encrypted DNS
-
-Right now use *unbound* as a recursive resolver for encrypted DNS requests and to validate DNSSEC. Finally we will configure our *Pi-hole* to use *unbound* for all DNS requests and to use DNSSEC. 
-
-Install *unbound*:
-
-`sudo apt install unbound -y`
-
-#### CONFIGURE UNBOUND:
-
-
-Create the configuration file for *unbound*:<br>
-`/etc/unbound/unbound.conf.d/pi-hole.conf`
-
-Insert:
-
-```
-server:
-    # If no logfile is specified, syslog is used
-    # logfile: "/var/log/unbound/unbound.log"
-    verbosity: 0
-
-    interface: 127.0.0.1
-    port: 5335
-    do-ip4: yes
-    do-udp: yes
-    do-tcp: yes
-
-    # May be set to yes if you have IPv6 connectivity
-    do-ip6: no
-
-    # You want to leave this to no unless you have *native* IPv6. With 6to4 and
-    # Terredo tunnels your web browser should favor IPv4 for the same reasons
-    prefer-ip6: no
-
-    # Use this only when you downloaded the list of primary root servers!
-    # If you use the default dns-root-data package, unbound will find it automatically
-    root-hints: "/var/lib/unbound/root.hints"
-
-    # Trust glue only if it is within the server's authority
-    harden-glue: yes
-
-    # Require DNSSEC data for trust-anchored zones, if such data is absent, the zone becomes BOGUS
-    harden-dnssec-stripped: yes
-
-    # Don't use Capitalization randomization as it known to cause DNSSEC issues sometimes
-    # see https://discourse.pi-hole.net/t/unbound-stubby-or-dnscrypt-proxy/9378 for further details
-    use-caps-for-id: no
-
-    # Reduce EDNS reassembly buffer size.
-    # IP fragmentation is unreliable on the Internet today, and can cause
-    # transmission failures when large DNS messages are sent via UDP. Even
-    # when fragmentation does work, it may not be secure; it is theoretically
-    # possible to spoof parts of a fragmented DNS message, without easy
-    # detection at the receiving end. Recently, there was an excellent study
-    # >>> Defragmenting DNS - Determining the optimal maximum UDP response size for DNS <<<
-    # by Axel Koolhaas, and Tjeerd Slokker (https://indico.dns-oarc.net/event/36/contributions/776/)
-    # in collaboration with NLnet Labs explored DNS using real world data from the
-    # the RIPE Atlas probes and the researchers suggested different values for
-    # IPv4 and IPv6 and in different scenarios. They advise that servers should
-    # be configured to limit DNS messages sent over UDP to a size that will not
-    # trigger fragmentation on typical network links. DNS servers can switch
-    # from UDP to TCP when a DNS response is too big to fit in this limited
-    # buffer size. This value has also been suggested in DNS Flag Day 2020.
-    edns-buffer-size: 1232
-
-    # Perform prefetching of close to expired message cache entries
-    # This only applies to domains that have been frequently queried
-    prefetch: yes
-
-    # One thread should be sufficient, can be increased on beefy machines. In reality for most users running on small networks or on a single machine, it should be unnecessary to seek performance enhancement by increasing num-threads above 1.
-    num-threads: 1
-
-    # Ensure kernel buffer is large enough to not lose messages in traffic spikes
-    so-rcvbuf: 1m
-
-    # Ensure privacy of local IP ranges
-    private-address: 192.168.0.0/16
-    private-address: 169.254.0.0/16
-    private-address: 172.16.0.0/12
-    private-address: 10.0.0.0/8
-    private-address: fd00::/8
-    private-address: fe80::/10
-```
-
-We also want to download the the current root hints file:<br>
-`wget https://www.internic.net/domain/named.root -qO- | sudo tee /var/lib/unbound/root.hints`
-
-Do avoid dnsmasq warnings ain your Pi-Hole about *reducing DNS packet size for nameserver 127.0.0.1 to 1232* add this configuration file:<br>
-`sudo nano /etc/dnsmasq.d/99-edns.conf`
-
-Insert:
-
-```
-edns-packet-max=1232
-```
-
-Finally, make sure that *unbound* is used globally on all outward facing network interfaces:<br>
-`sudo nano /etc/dhcpcd.conf`
-
-Insert at the end:
-
-```
-interface wlan1
-    static domain_name_servers=127.0.0.1
-
-interface eth0
-    static domain_name_servers=127.0.0.1
-```
-
-Next we want to disable *resolvconf* for *unbound* because it is interfering with the static domain name server setting in `/etc/dhcpcd.conf`:
-
-`sudo systemctl disable unbound-resolvconf.service`
-`sudo systemctl stop unbound-resolvconf.service`
-
-Futher you can tell *ProtonVPN* to use *unbound* for DNS resloution:<br>
-`sudo protonvpn configure`
-
-Select *4) DNS Management*, then *2) Configure Custom DNS Servers* and enter:<br>
-`127.0.0.1`
-
-Reboot:
- 
-`sudo reboot now`
-
-#### TEST YOUR DNS CONFIGURATION:
-
-Check which nameserver is used:<br>
-`cat /etc/resolv.conf`
-
-If you see only this *nameserver*, your configuration is correct:<br>
-`nameserver 127.0.0.1`
-
-Run the dig command to test DNS resolution. You should see the status as “NOERROR” with an IP address for the pi-hole.net server:<br>
-`dig pi-hole.net @127.0.0.1 -p 5335`
-
-<p align="center">
-  <img src="/png/dig_pihole.net.png" title="dig Pi-Hole">
-</p>
-
-The final test is to ensure that DNSSEC is working properly. If the following commands are returned properly, DNSSEC is properly working.
-
-This command should return SERVFAIL with NO IP address:<br>
-`dig sigfail.verteiltesysteme.net @127.0.0.1 -p 5335`
-
-<p align="center">
-  <img src="/png/dig_SIGFAIL.png" title="SERVFAIL">
-</p>
-
-This command should return NOERROR WITH an IP address:<br>
-`dig sigok.verteiltesysteme.net @127.0.0.1 -p 5335`
-
-<p align="center">
-  <img src="/png/dig_SIGOK.png" title="SIGOK">
-</p>
-
-
-#### CONFIGURE PI-HOLE TO USE UNBOUND:
-
-To configure *Pi-hole* to use *stubby*, we log into the *pi-hole web interface*. Here you can also install additional blocklists, setup your own custom blocklists, view query logs, etc.
-
-To log into your *Pi-hole*, open your Mac's web browser and enter this address into the address bar:<br>
-`http://192.168.77.1/admin/index.php?login`
-
-<p align="center">
-  <img src="/png/Pi-hole_Login.png" title="Pi-hole Login">
-</p>
-
-To log in, enter the password that was generated at the final step of the *Pi-hole* installation process, unless you already changed your password earlier.
-
-Then, navigate to *Settings*. Since you are already in *Settings*, you can change in *API / Web Interface* the appearance of the web interface if you like, i.e. to *Star Trek LCARS theme (dark)*:
-
-<p align="center">
-  <img src="/png/Pi-hole_Interfaces.png" title="Pi-hole Interfaces">
-</p>
-
-
-Click on *Setting* and select *DNS*. Make sure all boxes for pre-configured DNS providers are unchecked!<br>
-Further, delete all Upstream DNS Servers. Then enter the local address of your *unbound* installation as your only Custom DNS Server and tick the box that says *Use DNSSEC*:<br>
-`127.0.0.1#5335`
-
-<p align="center">
-  <img src="/png/Pi-hole_DNS.png" title="Pi-hole DNS">
-</p>
-
-<p align="center">
-  <img src="/png/Pi-hole_DNSSEC.png" title="Pi-hole DNS">
-</p>
-
-#### POSSIBLE ERROR:
-
-Your *Pi-Hole* might notify you after each reboot that interface *usb0* does not currently exist. This happens because *Pi-Hole* gets started before the interface becomes available. There is nothing to worry about. However, if it annoys you, try to add a delay before *Pi-Hole* starts:<br>
-`sudo nano /etc/pihole/pihole-FTL.conf`
-
-Insert:<br>
-`DELAY_STARTUP=7`
-
-#### RESOURCES:
-
-Unbound:
-[https://nlnetlabs.nl/projects/unbound/about/](https://nlnetlabs.nl/projects/unbound/about/)<br>
-Pihole-Unbound: [https://docs.pi-hole.net/guides/dns/unbound/](https://docs.pi-hole.net/guides/dns/unbound/)<br>
-DNSSEC: [https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en](https://www.icann.org/resources/pages/dnssec-what-is-it-why-important-2019-03-05-en)
-
-
-
-# 08 - Setup Blocklists
-
-Still in your *Pi-hole* web interface, navigate to *Group Management / Adlists*. Here you can add new blocklists. We strongly recommend [Steven Black's](https://github.com/StevenBlack/hosts) blocklist for fakenews, gambling, social trackers:
-
-[https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts](https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts)
-
-Further we can recommend the following blocklists:
-
-- [https://phishing.army/download/phishing_army_blocklist_extended.txt](https://phishing.army/download/phishing_army_blocklist_extended.txt)
-- [https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/malware-nl.txt)
-- [https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt](https://blocklistproject.github.io/Lists/alt-version/ransomware-nl.txt)
-- [https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt](https://blocklistproject.github.io/Lists/alt-version/phishing-nl.txt.txt)
-- [https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt](https://curben.gitlab.io/malware-filter/urlhaus-filter-domains.txt)
-- [    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware](    https://raw.githubusercontent.com/ShadowWhisperer/BlockLists/master/Lists/Malware)
-- [    https://v.firebog.net/hosts/Prigent-Phishing.txt](    https://v.firebog.net/hosts/Prigent-Phishing.txt)
-- [https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt](https://www.github.developerdan.com/hosts/lists/amp-hosts-extended.txt)
-
-<p align="center">
-  <img src="/png/Pi-hole_Adlists.png" title="Pi-hole Adlists">
-</p>
-
-Under *Blacklist Management* you can set your own custom blocklists. In this example we block ALL CONNECTIONS to apple servers and related 3rd parties.
-We use RegEx filters for:
-
-*apple, icloud, apple-cloudkit, mzstatic, aaplimg, oscp*
-
-<p align="center">
-  <img src="/png/Pi-hole_Blocklists.png" title="Pi-hole Blocklists">
-</p>
-
-#### IMPORTANT - PLEASE NOTICE:
-
-If you block *apple, icloud, apple-cloudkit, mzstatic, aaplimg, oscp* via RegEx, your Mac won't be able to check for Updates, download Updates, connect to iCloud or to  the App-Store. FaceTime, Messages and other native macOS Apps won't be able to connect. This may be exactly what you want, but probably not. It requires a lot of patience, work and effort to fine-tune your custom filters. I.e. check your Query Log reqularly when you try to check for updates, to see which connections are blocked. Then try to whitelist specific processes which are required to perform an update.
-Alternatively you could also log into your `Ph-hole` web interface and temporarily disable all RegEx Filters, then check for updates and re-enable your custom blocklists once you are done.
-
-To update all blocklists, execute this command:<br>
-`pihole -g`
-
-
-# 09 - Hidden Wifi Access Point
-
-Sometimes, i.e. when you wiggle the USB-C cable, your connection to the RaspberryPi Privacy Gadget may become interrupted. If there was also a *Hidden Wifi Access Point*, you would still be able to connect to your *Privacy Gadget*, even if the USB-C connection was interrupted.
-Another benefit of a *Hidden Wifi Access Point* is, that you could share the internet conenction of the *Privacy Gadget*, i.e. with your Smartphone as well. Simply log in and all traffic on your Smartphone will be filtered and routed through your VPN.
-Also you could connect your *Privacy Gadget* to a power bank in your backback, connect to its *Hidden Wifi Access Point* and enjoy all its benefits.
-In out setup we use the RaspberryPi's built-in Wifi Card as Access Point.
-
-Install the required software:<br>
-`sudo apt install hostapd -y`
-
-Then execute these commands:<br>
-`sudo rfkill unblock wlan`<br>
-`sudo systemctl unmask hostapd`
-
-Next, add the wifi interface to *dhcpcd.conf*:<br>
-`sudo nano /etc/dhcpcd.conf`
-
-Add these lines at the end:
-
-```
-interface wlan0
-    static ip_address=192.168.79.1/24
-    nohook wpa_supplicant
-```
-
-We also need to add the interface to our *Pi-hole* configuration (*dnsmasq*):<br>
-`sudo nano /etc/dnsmasq.d/00-dnsmasq.conf`
-
-Insert at the end:
-
-```
-# Wifi-AP
-interface=wlan0 # Access Point
-dhcp-range=set:wlan0,192.168.79.2,192.168.79.22,255.255.255.0,24h
-                # Pool of IP addresses served via DHCP
-dhcp-option=wlan0,3,192.168.79.1
-                # Default Gateway
-```
-
-Finally we configure our *Hidden Wifi Access Point*:<br>
-`sudo nano /etc/hostapd/hostapd.conf`
-
-Insert:
-
-```
-interface=wlan0
-hw_mode=g
-channel=7
-macaddr_acl=0
-auth_algs=1
-ignore_broadcast_ssid=2
-wpa=2
-wpa_key_mgmt=WPA-PSK
-wpa_pairwise=TKIP
-rsn_pairwise=CCMP
-country_code=DE
-ssid=HiddenAP
-wpa_passphrase=Passphrase_for_my_hidden_AP!
-```
-
-Change the country code to your location and pick an ssid and wpa_passphrase of your choice!
-In this setup your Wifi hotspot will be hidden. This means it will not automatically show up in your list of available networks. Instead you need to select *other* in your Mac's Network list and type both, *Network Name* and *Password* in order to connect.
-If you want your *Hidden Wifi Access Point* to be a *Visible Wifi Access Point*, change the parameter behind `ignore_broadcast_ssid` to `0`.
-
-#### OPTIONAL: DISABLE AUTOMATIC WIFI ACCESS POINT
-
-To disable your Wifi Access Point from starting automatically run this command:<br>
-`sudo systemctl disable hostapd.service`
-
-To switch it on and off manually:
-
-`sudo systemctl start hostapd.service`<br>
-`sudo systemctl start hostapd.service`
-
-Configure your Pi-hole to listen on all interfaces:<br>
-```pihole -a -i all```
-
-
-#### RESOURCES:
-
-Official Raspberry Pi documentation:<br>
-[https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md](https://www.raspberrypi.org/documentation/configuration/wireless/access-point-routed.md)
-
-
-# 10 - Firewall
-
-It is important to secure your Raspberry Pi. For that purpose we configure a firewall via iptables. To make it easier for you we set up iptable scripts that you can run at any moment to enable your firewall rules, and also to delete them if you run into connectivity problems. We cover some firewall rules we think are important. Feel free to edit and expand on these scripts. We provide a separate script for both IPv4 and IPv6 connections.
-
-`mkdir Script`<br>
-`mkdir Script/iptables`<br>
-`sudo nano Script/iptables/iptables.sh`
-
-Insert:
-
-```
-#/bin/sh
-
-# Since there only can be a wired connection between the Pi and your computer, allow all traffic on usb0:
-iptables -I INPUT -i usb0 -j ACCEPT
-
-# Accept also input on Wifi-Hotspot (we keep it hidden):
-iptables -I INPUT -i wlan0 -j ACCEPT
-
-# Allow DNS needed for name resolution (Pi-hole):
-iptables -A INPUT -p tcp --destination-port 53 -j ACCEPT
-iptables -A INPUT -p udp --destination-port 53 -j ACCEPT
-
-# Allow SSH only via USB and Wifi-AP:
-iptables -A INPUT -i wlan0 -p tcp --destination-port 7666 -j ACCEPT
-
-# Allow TCP/IP to do three-way handshakes:
-iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-# Allow loopback traffic:
-iptables -I INPUT -i lo -j ACCEPT
-
-# Reject all access from anywhere else:
-iptables -P INPUT DROP
-
-# Block HTTPS advertisements to improve blocking ads that are loaded via HTTPS and also deal with QUIC:
-
-iptables -A INPUT -p udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
-iptables -A INPUT -p tcp --dport 443 -j REJECT --reject-with tcp-reset
-iptables -A INPUT -p udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
-
-# Block Ping Requests:
-iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
-
-# Save iptables
-netfilter-persistent save
-```
-
-For IPv6:
-`sudo nano Script/iptables/ip6tables.sh`
-
-Insert:
-
-```
-#/bin/sh
-
-# Since there only can be one wired connection between the Pi and your computer, allow all traffic on usb0:
-ip6tables -I INPUT -i usb0 -j ACCEPT
-
-# Accept also input on Wifi-Hotspot (we keep it hidden):
-ip6tables -I INPUT -i wlan0 -j ACCEPT
-
-# Allow DNS and HTTP needed for name resolution (Pi-hole) and accessing the Web interface on Wifi-Hotspot::
-ip6tables -A INPUT -p tcp --destination-port 53 -j ACCEPT
-ip6tables -A INPUT -p udp --destination-port 53 -j ACCEPT
-ip6tables -A INPUT -i wlan0 -p tcp --destination-port 80 -j ACCEPT
-
-# Allow SSH only via USB and Wifi-AP (change port 22 to your SSH port):
-ip6tables -A INPUT -i wlan0 -p tcp --destination-port 22 -j ACCEPT
-
-# Allow TCP/IP to do three-way handshakes:
-ip6tables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-# Allow loopback traffic:
-ip6tables -I INPUT -i lo -j ACCEPT
-
-# Reject all access from anywhere else:
-ip6tables -P INPUT DROP
-
-# Block HTTPS advertisements to improve blocking ads that are loaded via HTTPS and also deal with QUIC:
-
-ip6tables -A INPUT -p udp --dport 80 -j REJECT --reject-with icmp6-port-unreachable
-ip6tables -A INPUT -p tcp --dport 443 -j REJECT --reject-with tcp-reset
-ip6tables -A INPUT -p udp --dport 443 -j REJECT --reject-with icmp6-port-unreachable
-
-# Block Ping Requests:
-ip6tables -A INPUT -p icmp -j DROP
-
-# Save ip6tables
-netfilter-persistent save
-```
-
-This script will flush all your IPv4 firewall rules:
-`sudo nano Script/iptables/flush-iptables.sh`
-
-Insert:
-
-```
-#bin/sh
-
-# Accept all traffic first to avoid ssh lockdown  via iptables firewall rules #
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
-
-# Flush All Iptables Chains/Firewall rules #
-iptables -F
-
-# Delete all Iptables Chains #
-iptables -X
-
-# Flush all counters too #
-iptables -Z
-
-# Uncomment to flush and delete all nat and mangle #
-#iptables -t nat -F
-#iptables -t nat -X
-#iptables -t mangle -F
-#iptables -t mangle -X
-#iptables iptables -t raw -F
-#iptables -t raw -X
-
-# Save iptables
-netfilter-persistent save
-```
-
-The same for IPv6:
-`sudo nano Script/iptables/flush-ip6tables.sh`
-
-Insert:
-
-```
-#bin/sh
-
-# Accept all traffic first to avoid ssh lockdown  via iptables firewall rules #
-ip6tables -P INPUT ACCEPT
-ip6tables -P FORWARD ACCEPT
-ip6tables -P OUTPUT ACCEPT
-
-# Flush All Iptables Chains/Firewall rules #
-ip6tables -F
-
-# Delete all Iptables Chains #
-ip6tables -X
-
-# Flush all counters too #
-ip6tables -Z
-
-# Uncomment to flush and delete all nat and mangle #
-#ip6tables -t nat -F
-#ip6tables -t nat -X
-#ip6tables -t mangle -F
-#ip6tables -t mangle -X
-#ip6tables iptables -t raw -F
-#ip6tables -t raw -X
-
-# Save ip6tables
-netfilter-persistent save
-```
-
-Make all scripts executable:<br>
-`sudo chmod +x Script/iptables/iptables.sh`<br>
-`sudo chmod +x Script/iptables/ip6tables.sh`<br>
-`sudo chmod +x Script/iptables/flush-iptables.sh`<br>
-`sudo chmod +x Script/iptables/flush-ip6tables.sh`
-
-Finally, to enable your firewall run these two commands:<br>
-`sudo sh Script/iptables/iptables.sh`<br>
-`sudo sh Script/iptables/ip6tables.sh`
-
-#### USEFUL IPTABLES COMMANDS:
-
-View current iptables routing rules:<br>
-`sudo iptables -t nat -v -L -n --line-number`<br>
-`sudo ip6tables -t nat -v -L -n --line-number`
-
-View current iptables rules:<br>
-`sudo iptables -L -n -v`<br>
-`sudo ip6tables -L -n -v`
-
-# 11 - Randomized Device Identity
-
-If you are connected to a public Wifi, the service provider may log your devices MAC address and its hostname. Over time this information can be used to profile and to track you. If you are using a VPN, the service provider won't be able anymore to see which websites you visit - only that you use a VPN. To further anonymize our Privacy Gadget we decided to spoof its MAC address with every reboot. Further we wrote a short script that picks a random word from a dictionary as a hostname during each reboot.
-
-
-#### SPOOF MAC ADDRESS:
-
-Download *macchanger*:<br>
-`sudo apt install macchanger -y`
-
-IMPORTANT!
-During the installation process: select `<NO>` when asked if *macchanger* should automatically generate new MAC addresses. We will set up a system service that does this job better:<br>
-`sudo nano /etc/systemd/system/spoofmac@.service`
-
-Insert:
-
-```
-[Unit]
-Description=changes mac for %I
-Wants=network.target
-Before=network.target
-BindsTo=sys-subsystem-net-devices-%i.device
-After=sys-subsystem-net-devices-%i.device
-
-[Service]
 Type=oneshot
-ExecStart=/usr/bin/macchanger -r %I
-RemainAfterExit=yes
+ExecStart=/usr/bin/unattended-upgrade -d
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.target' | sudo tee /etc/systemd/system/unattended-upgrades.service > /dev/null
 ```
 
-Now we enable the System Service to individually randomize the MAC Addresses of all Wifi-Cards and your ethernet interface:
+#### 4. Enable and Start the Timer
 
-`sudo systemctl enable spoofmac@wlan0.service`<br>
-`sudo systemctl enable spoofmac@wlan1.service`<br>
-`sudo systemctl enable spoofmac@eth0.service`
+To activate the systemd timer and service, run:
 
+`sudo systemctl daemon-reload`<br>
+`sudo systemctl enable unattended-upgrades.timer`<br>
+`sudo systemctl start unattended-upgrades.timer`
 
-#### RANDOMIZE HOSTNAME:
+After rebooting, check if the timer is active:<br>
+`systemctl list-timers --all | grep unattended-upgrades`
 
-First we download a dictionary and move it to the required location:
+If you see an entry, the timer is working.
 
-`wget http://gwicks.net/textlists/ukenglish.zip`<br>
-`unzip ukenglish.zip`<br>
-`rm ukenglish.zip`<br>
-`sudo mv ukenglish.txt /usr/share/dict/`
+To check if updates were applied, view the unattended upgrade logs:<br>
+`journalctl -u unattended-upgrades --no-pager`
 
-Create a script that randomized the hostname:<br>
-`sudo nano /root/hostname.sh`
+* * *
 
-Insert:
+## 07 DISABLE IPv6
+
+While IPv6 offers advantages, using both IPv4 and IPv6 (dual-stack networking) significantly complicates firewall configurations and increases security risks.
+
+#### Why diable IPv6?
+
+Security & Privacy Concerns:
+
+- Larger Attack Surface → Both IPv4 and IPv6 require separate firewall rules, increasing complexity and risk of misconfiguration.
+- Tracking Risks → IPv6 can embed a device's MAC address in its IP (EUI-64 format), allowing attackers and advertisers to track device movements across networks.
+- Privacy Concerns → Without IPv6 Privacy Extensions, addresses remain static, reducing anonymity compared to dynamic IPv4 addresses.
+
+Since we do not need IPv6, we will completely disable it to improve security and simplify network configurations.
+
+#### 1. Disable IPv6 at System Level:
+
+Permanently disable IPv6 by modifying /etc/sysctl.conf:<br>
+`echo -e "\n# Disable IPv6:\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1" | sudo tee -a /etc/sysctl.conf > /dev/null`
+
+Modify boot parameters in /boot/firmware/cmdline.txt to prevent IPv6 from loading at boot:<br>
+`sudo sed -i 's/$/ ipv6.disable=1/' /boot/firmware/cmdline.txt`
+
+For the changes to take effect, reboot the system:<br>
+`sudo reboot now`
+
+#### 2. Remove IPv6 Entries from /etc/hosts:
+
+Since IPv6 is now disabled, remove any local IPv6 addresses from /etc/hosts to prevent unnecessary resolution attempts:<br>
+`sudo sed -i '/::/d' /etc/hosts`
+
+* * *
+
+## 08 RANDOM MAC ADDRESS
+
+By default, modern Raspberry Pi OS uses NetworkManager to handle network interfaces, DHCP, and Wi-Fi settings. To enhance privacy and prevent tracking, we will enable MAC address randomization using NetworkManager’s built-in functionality.
+
+#### 1. Enable MAC Address Randomization:
+
+Create a configuration file to enable random MAC addresses for both Wi-Fi and Ethernet:
 
 ```
-#!/bin/bash
+echo '[device]
+wifi.scan-rand-mac-address=yes
+
+[connection]
+wifi.cloned-mac-address=random
+ethernet.cloned-mac-address=random
+connection.stable-id=${CONNECTION}/${BOOT}' | sudo tee ~00-randomize.conf > /dev/null
+```
+
+#### 2. Apply Changes:
+
+Restart NetworkManager to apply the new configuration:<br>
+`sudo systemctl restart NetworkManager`
+
+#### 3. Verify MAC Address Randomization:
+
+To check if the MAC address is changing dynamically, run:<br>
+`sudo nmcli device show | grep GENERAL.HWADDR`
+
+Run this command before and after a reboot to confirm that the MAC address changes. If the MAC address is different after each reboot, the setup is working correctly.
+
+* * *
+
+## 09 RANDOM HOSTNAME
+
+Many networks log hostnames alongside MAC addresses and IP addresses. If your hostname remains static, it creates a consistent fingerprint that can be used to track your device across different networks. This means, even if MAC address randomization is enabled, a fixed hostname could still be used to identify your device. This is why we use an English Dictionary to pick a random word for our Raspberry Pi at each reboot before the network becomes online.
+
+#### 1. Prepare File Locations and Download Dictionary
+
+First we create the folders where we want to store our scripts and our dictionary:
+
+`[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/dict ] || mkdir ~/tools/dict`<br>
+`[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost`
+
+Download our UK English dictionary:<br>
+`curl -L -o ~/tools/dict/ukenglish.zip https://codeberg.org/term7/Going-Dark/raw/branch/main/misc/Dictionary/ukenglish.zip`
+
+#### 2. Create the Script to Randomize the Hostname
+
+Create the hostname randomization script:
+
+```
+echo '#!/bin/bash
 
 # Random Hostname Generator
+ALL_NON_RANDOM_WORDS=/home/admin/tools/dict/ukenglish.txt
 
-ALL_NON_RANDOM_WORDS=/usr/share/dict/ukenglish.txt
-non_random_words=`cat $ALL_NON_RANDOM_WORDS | wc -l`
+# Count the number of words in the dictionary
+non_random_words=$(wc -l < "$ALL_NON_RANDOM_WORDS")
 
-NEW_HOSTNAME=$(WORD=`od -N3 -An -i /dev/urandom |
-awk -v f=0 -v r="$non_random_words" '{printf "%i\n", f + r * $1 / 16777216}'` 
-sed `echo $WORD`"q;d" $ALL_NON_RANDOM_WORDS
-  let "X = X + 1")
+# Generate a random index and select a word
+WORD_INDEX=$(od -N3 -An -i /dev/urandom | awk -v r="$non_random_words" "{print int(1 + r * \$1 / 16777216)}")
+NEW_HOSTNAME=$(sed -n "${WORD_INDEX}p" "$ALL_NON_RANDOM_WORDS")
 
 # Change Static Hostname
-hostnamectl set-hostname $NEW_HOSTNAME
-head -n -1 /etc/hosts > /etc/tmp
-mv /etc/tmp /etc/hosts
-echo -e "127.0.1.1      $NEW_HOSTNAME" >> /etc/hosts
+hostnamectl set-hostname "$NEW_HOSTNAME"
+
+# Update /etc/hosts safely
+sed -i "/127.0.1.1/c\127.0.1.1       $NEW_HOSTNAME" /etc/hosts' | sudo tee /home/admin/script/randhost/hostname.sh > /dev/null
 ```
 
-Make this script executable:<br>
-`sudo chmod +X /root/hostname.sh`
+Ensure the script has the correct ownership and permissions:
 
-Then we create a System Service that runs our script each time you boot up the RaspberryPi:<br>
-`sudo nano /etc/systemd/system/hostname.service`
+`sudo chmod 700 /home/admin/script/randhost/hostname.sh`
+`sudo chown root:root /home/admin/script/randhost/hostname.sh`
 
-Insert:
+#### 3. Create a System Service to Run the Script on Boot
 
 ```
-[Unit]
-Description=Random Hostname
+echo '[Unit]
+Description=Random Hostname Generator
 Wants=network-pre.target
 Before=network-pre.target
 
 [Service]
-ExecStart=/bin/bash /root/hostname.sh
+Type=oneshot
+ExecStart=/usr/bin/bash /home/admin/script/randhost/hostname.sh
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=network-pre.target' | sudo tee /etc/systemd/system/hostname.service > /dev/null
 ```
+#### 4. Enable and Start the Service and Verify the New Hostname
 
-Finally enable the service:<br>
+Enable service:
+
+`sudo systemctl daemon-reload`<br>
 `sudo systemctl enable hostname.service`
 
+After rebooting, check the current hostname:<br>
+`hostname`
 
-# 12 - Optional Custom Login Information
+* * *
 
-#### MESSAGE OF THE DAY
+## 10 SETUP USBC ETHERNET GADGET
 
-We use a dynamic message of the day to display system information once we log into our Privacy Gadget via ssh.
+In this section we will configure your Raspberry Pi as a USB-C Ethernet Gadget, allowing it to share its internet connection with your computer over USB.
 
-<p align="center">
-  <img src="/png/motd.png" title="motd">
-</p>
+To configure your Raspberry Pi as a USB-C Ethernet Gadget, we need to:
 
-To set up dynamic *motd* run the following commands:
+- Enable the DWC2 USB controller and configure kernel boot parameters.
+- Allow NetworkManager to manage the USB interface (usb0).
+- Configure usb0 with a static IP and disable IPv6.
+- Enable IPv4 forwarding for network sharing.
 
-`cd /etc/update-motd.d`<br>
-`sudo touch 00-header && sudo touch 10-sysinfo && sudo touch 90-footer`<br>
-`sudo chmod +x /etc/update-motd.d/*`<br>
-`sudo rm /etc/motd`<br>
-`sudo rm /etc/update-motd.d/10-uname`<br>
-`sudo ln -s /var/run/motd /etc/motd `
+#### 1. Enable the DWC2 USB Controller
 
-We use figlet to display our hostname:<br>
-`sudo apt install figlet -y`
+To enable USB-C Ethernet Gadget mode, we need to enable the DWC2 USB controller and configure kernel boot parameters. Append the required overlay to /boot/firmware/config.txt:<br>
+`sudo sed -i '$a\dtoverlay=dwc2' /boot/firmware/config.txt`
 
-Next edit:<br>
-`sudo nano /etc/pam.d/ssh`
+Modify /boot/firmware/cmdline.txt to load the required kernel modules:<br>
+`sudo sed -i 's/$/ rootwait modules-load=dwc2,g_ether quiet/' /boot/firmware/cmdline.txt`
 
-Insert:
+#### 2. Allow NetworkManager to Manage usb0
 
-```
-session    optional     pam_motd.so  motd=/run/motd.dynamic
-# session    optional     pam_motd.so noupdate
-```
+By default, NetworkManager may ignore the gadget interface (usb0). We need to modify udev rules to allow it. Copy and modify udev rules to allow NetworkManager to manage the gadget interface:
 
-Now we create the dynamic *motd header*:<br>
-`sudo nano /etc/update-motd.d/00-header`
+`sudo cp /usr/lib/udev/rules.d/85-nm-unmanaged.rules /etc/udev/rules.d/85-nm-unmanaged.rules`<br>
+`sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' -i /etc/udev/rules.d/85-nm-unmanaged.rules`
 
-Insert:
+#### 3. Configure usb0 as a Static Interface in NetworkManager
 
-```
-#!/bin/sh
-[ -r /etc/lsb-release ] ; /etc/lsb-release
+We will assign a static IP (192.168.77.1/24) to usb0 and enable network sharing.<br>
+Create and configure the interface:
 
-if [ -z "$DISTRIB_DESCRIPTION" ] ; [ -x /usr/bin/lsb_release ]; then
-        # Fall back to using the very slow lsb_release utility
-        DISTRIB_DESCRIPTION=$(lsb_release -s -d)
-fi
+`sudo nmcli con add type ethernet ifname usb0 con-name usb0-static`<br>
+`sudo nmcli con modify usb0-static ipv4.addresses 192.168.77.1/24 ipv4.method shared`<br>
+`sudo nmcli con modify usb0-static connection.autoconnect yes connection.autoconnect-priority 50`
 
-echo "--------------------------------------------------------------------------------"
+Since IPv6 is disabled globally, disable it for this interface as well:<br>
+`sudo nmcli connection modify usb0-static ipv6.method disable`
 
-printf "\n"
-figlet $(hostname)
-printf "* %s (%s).\n" "$DISTRIB_DESCRIPTION" "$(uname -rm)"
-printf "\n"
+Ensure a consistent MAC address for usb0 (no randomization):<br>
+`sudo nmcli connection modify usb0-static ethernet.cloned-mac-address permanent`
 
-echo "--------------------------------------------------------------------------------
+#### 4. Enable IPv4 Forwarding
 
-                                                     ..
-                                     .ckdl'        .oKO;
-                                      .kWMMKxxkkkxkXMWd.
-                              .      .:OWMMMWNXKXXNMMW0l.
-                            ,k0d.    ;OWMNKkl;'....,cdKWWKo..'coo'
-                            ,0WWk. .dXMNx,.           .lKMWK0NMWXc
-                           .;kWMW0kXWW0:        .;cl;.  ,0MMWKd:.
-                  .'.   .lOXWMMMWWNKkc.        .xNMMWO'  :XMNl
-                 oXNKOxxXMWKxlc::;'.           'OWMMMK;  '0MWo
-                 'lx0XWMMXo.              ..    'oxkd,   ,KMWx.
-                    .cXMWo      .'.    .cOKKOl.         .xWMMNKkd;.
-                     ,KMNc     ,ONXo.  '0MMMMK,        'kWMXkk0XW0'
-                     .kWMO'    'xK0c    ,dkkd;       .lKMWO,  ..'.
-                      ,0MWKl.    ..                'oKWMXo.
-                    .:xXMMMWKxc,.             .':oONMMMMK;
-                   'OMWXOdokXWMNKOkdolllllooxOKNWMN0dlkWMK;
-                    ,c:.    .:o0WMMWWWMMMMMMMNKkdc,.  .dXXl
-                     '        .dWMKc,;;;l0WMM0;         ..
-                              ;KMNl      ,d0MWx.
-                              .ld:.        'ox:.
+To allow internet sharing from Raspberry Pi's Wi-Fi to the connected computer, enable IPv4 forwarding. Modify /etc/sysctl.conf to enable IPv4 forwarding:<br>
+`sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf`
 
+This allows forwarding network packets for sharing internet via usb0.
 
---------------------------------------------------------------------------------"
-```
+#### 5. Apply Changes and Reboot
 
-Below the header we insert some system information:<br>
-`sudo nano /etc/update-motd.d/10-sysinfo`
+All changes take effect after reboot:<br>
+`sudo reboot now`
 
-Insert:
+#### 6. Verify Internet Access via Raspberry Pi USB-C Ethernet Gadget
 
-```
-#!/bin/bash
+After reboot, you should be able to connect to the Raspberry Pi via USB and access the internet.
 
-date=`date`
-load=`cat /proc/loadavg | awk '{print $1}'`
-memory_usage=`free -m | awk '/Mem:/ { total=$2; used=$3 } END { printf("%3.1f%%", used/total*100)}'`
-processes=`ps aux | wc -l`
-swap_usage=`free -m | awk '/Swap/ { printf("%3.1f%%", $3/$2*100) }'`
-temperature=`/usr/bin/vcgencmd measure_temp | cut -c "6-9"`
-time=`uptime | grep -ohe 'up .*' | sed 's/,/\ hours/g' | awk '{ printf $2" "$3 }'`
+ Connect via SSH using usb0:<br>
+`ssh term7@192.168.77.1 -p 6666`
 
-echo
-echo "System Information: $date"
-echo
-printf "\e[1;36mSystem Load:\t%s\t     Memory Usage:\t%s\n" $load $memory_usage
-printf "Processes:\t%s\t     Swap Usage:\t%s\n" $processes $swap_usage
-printf "CPU Temp.:\t%s°C\t     System Uptime:\t%s\n\e[0m" $temperature "$time"
-echo
-```
+Verify the connection on your computer: Go to System Settings → Network and look for RNDIS/Ethernet Gadget. You should see a green dot with the status: Connected.
 
-Finally we create the *motd footer*:<br>
-`sudo nano /etc/update-motd.d/90-footer`
+Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi.
 
-Insert:
+* * *
 
-```
-#!/bin/sh
+## 11 SETUP WIRELESS HOTSPOT
 
-[ -f /etc/motd.tail ] ; cat /etc/motd.tail || true
+In this setup, we want to configure wlan0 as a wireless hotspot that can be started manually rather than running continuously. This provides greater control over network availability and helps optimize system performance.
 
-echo "--------------------------------------------------------------------------------"
-```
+Since we do not want wlan0 to be used for internet access, we will configure our external Wi-Fi adapter — the ALFA AWUS036ACM — to handle the internet connection instead.
 
+#### Why Use an External Wi-Fi Adapter?
 
-#### CUSTOM BASH_PROFILE
+The ALFA AWUS036ACM provides significantly better bandwidth compared to the Raspberry Pi’s built-in Wi-Fi (wlan0), especially when connected to a USB 3.0 port. Using an external adapter ensures faster speeds and improved stability, making it the preferred choice for connecting to the internet.
 
-Further we edited a publicly available *.bash_profile* to display information related to VPN connectivity status, Wifi-AP, external IP-Address. etc. once we log into our Privacy Gadget via ssh. Further we added an *Alias* that allows you to switch your Wifi-AP on and off with two simple commands: *ap-on* and *ap-off*. Here you can insert your own *Aliases* as shortcuts to more complex commands.
+Because we enabled predictable network interface names (see [03 - PREREQUISITES](#03-prerequisites)), our external Wi-Fi adapter is assigned the interface name: wlx00c0caae6319
 
-`sudo nano .bash_profile`
+Important: If you are using a different external Wi-Fi adapter, its interface name will be different. You should replace wlx00c0caae6319 with your actual interface name throughout this tutorial, in all firewall configuration files and any network-related commands or settings.
 
-Insert:
+#### 1. Verify Your External Wi-Fi Adapter:
 
-```
-#!/bin/sh
-# GWII (global web interface info)
+Before proceeding, make sure your external Wi-Fi adapter is plugged in and properly connected to your Raspberry Pi. To find out the interface name of your Wi-Fi adapters, run the following command:<br>
+`nmcli device status`
 
-if [ -s ~/.bashrc ]; then
-    source ~/.bashrc;
-fi
+Look for your external Wi-Fi adapter in the output. It will typically have a name starting with wlx or wlan. If you're unsure which one is your external adapter, compare it to the built-in Wi-Fi (wlan0), as the external one should have a different name.
 
-#ALIASES:
+#### 2. Rename Preconfigured External Connections and Disable IPv6:
 
-# Wifi-AP
-alias ap-on="if ! ifconfig wlan0 &> /dev/null; then printf '\nWifi-AP Disconnected! Please attach the required USB Dongle...\n\n'; else sudo systemctl start hostapd.service; fi"
-alias ap-off="if ! ifconfig wlan0 &> /dev/null; then printf '\nWifi-AP Disconnected! Please attach the required USB Dongle...\n\n'; else sudo systemctl stop hostapd.service; fi"
+To standardize connection names and disable IPv6, run:
 
-protonvpn status > ~/.tmp
-if [ "$(head -1 ~/.tmp)" = "Status:       Connected" ]; then sed -i -e 's/Status:       //g' -e 's/Server:       //g' -e 's/Country:      //g' -e '2,3d;5,7d;9,12d' ~/.tmp; fi;
-if [ "$(head -1 ~/.tmp)" = "Status:     Disconnected" ]; then sed -i -e 's/Status:     //g' -e '2 c\ ' -e '3 c\ ' ~/.tmp; fi
-if [ "$(head -1  ~/.tmp | cut -c -3)" = "[!]" ]; then sed -i -e '1 c\ERROR' -e '2,12d' ~/.tmp && echo -e "\n \n " >> ~/.tmp; fi
+`sudo nmcli con modify preconfigured connection.id "Wi-Fi"`<br>
+`sudo nmcli con modify "Wired connection 1" connection.id "Ethernet"`
 
-echo
-echo "   .~~.   .~~.      $(tput setaf 1)VPN................: $(head -1 ~/.tmp) ($(sed '3q;d' ~/.tmp) : $(sed '2q;d' ~/.tmp))";
-echo "$(tput setaf 2)  '. \ ' ' / .'$(tput setaf 1)";
-echo "   .~ .~~~..~.      IP Addresses.......: usb0   `ip -4 addr show usb0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`";
-echo "  : .~.'~'.~. :                          eth0   `ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`";
-echo " ~ (   ) (   ) ~                         wlan0  `ip -4 addr show wlan0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'`";
-echo "( : '~'.~.'~' : )                        wlan1  `if [ "$(cat /sys/class/net/wlan1/operstate)" = "dormant" ]; then printf Dormant; elif [ "$(cat /sys/class/net/wlan1/operstate)" = "down" ]; then printf Down; elif [ "$(cat /sys/class/net/wlan1/operstate)" = "up" ]; then printf %s "$(ip -4 addr show wlan1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')"; fi`";
-echo " ~ .~ (   ) ~. ~                         ext    `if [ "$(cat /sys/class/net/eth0/operstate)" = "up" ]; then printf %s "$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)"; elif [ "$(cat /sys/class/net/wlan1/operstate)" = "dormant" ]; then printf Disconnected; elif [ "$(cat /sys/class/net/wlan1/operstate)" = "down" ]; then printf Disconnected; elif [ "$(cat /sys/class/net/wlan1/operstate)" = "up" ]; then printf %s "$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)"; fi`";
-echo "  (  : '~' :  )";
-echo "   '~ .~~~. ~'      Wifi-AP............: `if [ $(systemctl is-active hostapd) =  'active' ]; then printf  Connected; else printf Disconnected; fi` (wlan0 : OctoBaer)";
-echo "       '~'          Wifi-AP............: ap-on/off";
-echo
-echo
-printf "\e[0;32m--------------------------------------------------------------------------------\n"
-echo
+Disable IPv6 on both connections:
 
-rm ~/.tmp
-```
+`sudo nmcli connection modify Ethernet ipv6.method disable`<br>
+`sudo nmcli connection modify Wi-Fi ipv6.method disable`
 
-#### LOGIN WARNING BANNER
+#### 3. Configure External Wi-Fi Adapter (wlx00c0caae6319) for Internet Access:
 
-A simple banner that warns against unauthorized access:<br>
-`sudo nano /etc/issue.net`
+Modify the Wi-Fi connection to use the external adapter:
 
-Insert:
+`sudo nmcli con down Wi-Fi`<br>
+`sudo nmcli con modify Wi-Fi ifname wlx00c0caae6319`
 
-```
-            / Unauthorized access to this machine is prohibited /
+Start the external Wi-Fi connection:<br>
+`sudo nmcli con up Wi-Fi`
 
-################################################################################
-#                                                                              #
-#   Welcome...                                                                 #
-#           ...all connections to this machine are monitored and recorded...   #
-#                                                                              #
-#                     Disconnect IMMEDIATELY unless you are AUTHORIZED!        #
-#                                                                              #
-#                                                                              #
-################################################################################
+Now, your external Wi-Fi adapter should be handling the internet connection.
 
-            / Unless authorized you will be disconnected shortly /
-```
+#### 4. Create the wlan0 Hotspot:
+
+Add a new hotspot connection (ONION):<br>
+`sudo nmcli con add con-name Hotspot ifname wlan0 type wifi ssid "ONION"`
+
+ Configure the hotspot as an access point with network sharing:
+
+`sudo nmcli con modify Hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared`<br>
+`sudo nmcli con modify Hotspot ipv4.addresses 192.168.37.1/24`
+
+Set up Wi-Fi security for the hotspot:
+
+`sudo nmcli con modify Hotspot wifi-sec.key-mgmt wpa-psk`
+`sudo nmcli con modify Hotspot wifi-sec.proto rsn`
+`sudo nmcli con modify Hotspot wifi-sec.pairwise ccmp`
+`sudo nmcli con modify Hotspot wifi-sec.group ccmp`
+`sudo nmcli con modify Hotspot wifi-sec.auth-alg open`
+`sudo nmcli con modify Hotspot wifi-sec.pmf optional`
+`sudo nmcli con modify Hotspot wifi-sec.psk "your-own-strong-wifi-password"`
+
+Disable IPv6 for the hotspot:<br>
+`sudo nmcli connection modify Hotspot ipv6.method disable`
+
+Prevent automatic connection at startup:<br>
+`sudo nmcli connection modify Hotspot connection.autoconnect no`
+
+The hotspot is now configured, but will only start when manually enabled.
+
+#### 5. Connect Your Devices to the Hotspot:
+
+To start the hotspot:<br>
+`sudo nmcli con up Hotspot`
+
+To stop the hotspot:<br>
+`sudo nmcli con down Hotspot`
+
+Your Raspberry Pi is now acting as a manually controlled wireless hotspot.<br>
+After starting the hotspot, you can connect your smartphone or other devices using:
+
+- SSID: ONION
+- Password: "your-own-strong-wifi-password"
+
+* * *
+
+## 12 SETUP NTP
+
+By default, the Raspberry Pi synchronizes time using the Debian NTP pool servers. However, we want to set up a local NTP server on the Raspberry Pi to provide network time synchronization for connected clients Additionally, we will configure our Raspberry Pi to use privacy-respecting external NTP servers from ntppool.org, ensuring accurate and secure time synchronization.
+
+For more details, visit: [NTP Pool Project](https://www.ntppool.org/en/use.html)
+
+#### 1. Download & Apply NTP Configuration:
+
+To simplify the setup, download our pre-configured NTP configuration file from our repository:<br>
+`curl -L -o /etc/ntpsec/ntp.conf https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ntp/ntp.conf`
+
+This configuration:<br>
+- Sets up the Raspberry Pi as an NTP server for local network clients.
+- Uses multiple external time servers for redundancy.
+- Prevents major time synchronization issues after long offline periods.
 
 
-# 13 - Disable Wifi on MacOS
+#### 2. Potential Issues:
 
-If you want to make sure that all your internet traffic is only routed through your RaspberryPi Privacy Gadget, we recomend you disable your Mac's Wifi on boot (you can always switch it on manually). This cannot be done via your Mac's System Settings. Your Mac will always automatically switch on your Wifi and try to connect to known networks.
-This is why we need to configure a *startup deamon* on our Mac that switches off Wifi before it can try to connect to known networks.
+If the Raspberry Pi remains offline for an extended period, its internal clock may drift significantly. Our current settings prevent NTP from rejecting its own local clock after long downtimes. Without these settings, a large time discrepancy could cause the Raspberry Pi to become unable to connect to the internet.<br>
+If the Raspberry Pi loses internet access, it will continue serving time to local clients based on the last known good sync. However, over time, clock drift errors may accumulate, potentially affecting internet connectivity and secure connections (e.g., TLS/SSL certificates may become invalid due to incorrect system time). To mitigate this issue, we strongly recommend installing a Real-Time Clock (RTC) module, that keeps track of time even when the device is powered off.
 
-On your Mac, open a Terminal window and type the following command:<br>
-`sudo nano /Library/LaunchAgents/off.networksetup.plist`
+Even though local clients are allowed to sync from the Raspberry Pi, they may still prefer external NTP servers such as Apple, Google, or Microsoft. To ensure all network devices use the Raspberry Pi for time synchronization, we will later configure NetworkManager to use its built-in dnsmasq as a DHCP server. This setup broadcasts the Raspberry Pi's NTP settings to all DHCP clients, ensuring they automatically use the Raspberry Pi for time synchronization. It should eliminate the need for manual configuration on each device.
 
-Insert:
+However, if you want to configure your Mac to use the Raspberry Pi as its NTP server, open a new terminal window and disable automatic time setting for the moment:<br>
+`sudo systemsetup -setusingnetworktime off`
+
+Note: This command may produce 'Error:-99' due to Apple's System Integrity Protection (SIP). However, despite this error, our testing has shown that the setting is still applied correctly.
+
+The next command is a bit of a hack because Apple does not document support for multiple lines in this command. Officially, systemsetup -setnetworktimeserver only accepts a single line. However, despite being undocumented, this method does not produce errors and correctly formats the configuration file in our experience. We want to set up the [NTP Pool Project](https://www.ntppool.org/en/use.html) as secondary servers if the Raspberry Pi Ethernet Gadget is not available:
 
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>off.networksetup</string>
-    <key>LaunchOnlyOnce</key>
-    <true/>
-    <key>ProgramArguments</key>
-    <array>
-        <string>networksetup</string>
-        <string>-setairportpower</string>
-        <string>en0</string>
-        <string>off</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-</dict>
-</plist>
+sudo systemsetup -setnetworktimeserver "192.168.77.1
+server 0.pool.ntp.org
+server 1.pool.ntp.org
+server 2.pool.ntp.org
+server 3.pool.ntp.org"
 ```
 
-At last we set file ownership and permissions:
+If you prefer to avoid this undocumented method, you can manually enter multiple time servers in System Settings > Date & Time. Separate each entry with a comma and end each with a period, e.g.:
+192.168.77.1, 0.pool.ntp.org, 1.pool.ntp.org, 2.pool.ntp.org, 3.pool.ntp.org
 
-`sudo chown root:wheel /Library/LaunchAgents/off.networksetup.plist`<br>
-`sudo chmod 644 /Library/LaunchAgents/off.networksetup.plist`<br>
+If you only want to synchronise time via your Raspberry Pi and adhere to the correct syntax as documented by Apple, use this command:<br>
+`sudo systemsetup -setnetworktimeserver "192.168.77.1"`
 
-You do not need to load this *daemon* now. If you do, it will switch off your Mac's Wifi adapter immideately. From now on, will be loaded automatically during each reboot. However, if you want to try it out, execute the following command:
+Finally re-enable automatic time setting: <br>
+`sudo systemsetup -setusingnetworktime off`
 
-`sudo launchctl load /Library/LaunchAgents/off.networksetup.plist`
+Verify whether automatic time setting is enabled:<br>
+`sudo systemsetup -getusingnetworktime`
 
-# 14 - To Do
+To check if macOS is using the correct settings, run:<br>
+`sudo systemsetup -getnetworktimeserver`
 
-We are planning to create a simple web interface that makes it easy for you to connect to new Wifi-Networks, block and allow IP-Address Ranges with an [ASN_IPFire_Script](https://notabug.org/maloe/ASN_IPFire_Script). etc.
+However, this command only returns the first server in the list!
+
+#### 3. Optional - Install an RTC Module for Reliable Offline Timekeeping:
+
+In this guide, we will set up the [RV3028 RTC Module](https://shop.pimoroni.com/products/rv3028-real-time-clock-rtc-breakout?variant=27926940549203). If you use a different RTC module, follow the respective installation instructions.
+
+Install required packages:<br>
+`sudo apt install -y git python3-smbus`
+
+Create a build directory and navigate into it:<br>
+`[ -d ~/build ] || mkdir ~/build && cd ~/build`
+
+Clone & Install the RV3028 Python Library:
+
+`git clone https://github.com/pimoroni/rv3028-python`<br>
+`cd rv3028-python`<br>
+`sudo ./install.sh --unstable`
+
+Move example scripts to a dedicated folder:
+
+`sudo mv ~/Pimoroni/* ~/build/rv3028-python/examples`<br>
+`sudo rm -R /home/admin/Pimoroni`
+
+Enable I2C communication:<br>
+`sudo sed -i 's/^#dtparam=i2c_arm=on/dtparam=i2c_arm=on/' /boot/firmware/config.txt`
+
+Furthermore, to enable the RV3028 RTC, we need to load the correct kernel overlay. Run the following command to append the required overlay to /boot/firmware/config.txt:<br>
+`sudo sed -i '$a\dtoverlay=i2c-rtc,rv3028,backup-switchover-mode=1' /boot/firmware/config.txt`
+
+Reboot your Raspberry Pi for changes to take effect:<br>
+`sudo reboot now`
+
+The Raspberry Pi uses a fake hardware clock (software-based) by default. Since we now have a real RTC, remove it to avoid conflicts:
+
+`sudo apt -y remove fake-hwclock`<br>
+`sudo update-rc.d -f fake-hwclock remove`
+
+Finally, configure NTP (ntpsec) to read time from the RTC module:<br>
+`sudo sed -i 's/^#rtcfile \/dev\/rtc0/rtcfile \/dev\/rtc0/' /etc/ntpsec/ntp.conf`
+
+Restart NTP to apply changes:<br>
+`sudo systemctl restart ntpsec`
+
+* * *
+
+## 13 DHCP & DNS WITH UNBOUND AND ADGUARDHOME
+
+In this section, we will configure DHCP and DNS. In the next chapter, we will set up [NGINX as a Reverse Proxy](#14-nginx-reverse-proxy-and-ssl) to serve the AdGuardHome web interface and enable SSL encryption for both local HTTPS access and secure communication with AdGuardHome’s fallback DNS servers.<br>
+Following that, we will walk you through the full configuration of [AdGuardHome](#15-configure-adguardhome), followed by a brief discussion on blocklists.<br>
+Finally, we will configure the [Firewall](#17-firewall).
+
+<strong>⚠ IMPORTANT:<br>
+Completing these chapters correctly is crucial! Any misconfiguration could cause DNS issues, potentially leading to loss of internet connectivity for your Raspberry Pi and its connected clients — or even lock you out completely. Even small mistakes or skipped steps may result in certain aspects of the setup not working as expected. Proceed carefully and follow each step precisely.</strong>
+
+#### AdGuardHome:
+We will install AdGuardHome - a DNS sinkhole that filters ads, tracking domains, and malicious websites. It enhances privacy and security by blocking unwanted content at DNS level.
+
+#### NetworkManager’s Built-in Dnsmasq:
+We will configure NetworkManager and its built-in dnsmasq to manage both DHCP and DNS for the usb0 Ethernet Gadget and the wlan0 Hotspot. This will allow all connected clients to have their DNS queries forwarded to AdGuardHome, ensuring filtered and secure DNS resolution.
+
+#### Unbound:
+Unbound is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure AdGuardHome to use Unbound as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying Unbound, we eliminate this dependency, gaining the following advantages:
+
+Privacy: Unbound performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
+
+Speed: AdGuardHome already includes a built-in DNS cache, but combining it with Unbound’s advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
+
+The Drawback: Lack of Encryption:
+
+One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
+To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
+This means that if we choose to avoid third-party DNS resolvers, we must also forgo encryption. That said, DNSSEC (enabled in Unbound) still provides security benefits by ensuring that DNS responses are authentic (coming from the legitimate DNS server) and untampered (ensuring data integrity). While this does not encrypt queries, it does prevent DNS spoofing and man-in-the-middle attacks by verifying that responses are legitimate.
+
+#### 1. Install AdGuardHome:
+
+Before installing AdGuardHome, create a build directory and navigate into it:<br>
+`[ -d ~/build ] || mkdir ~/build && cd ~/build`
+
+Run the following command to download and extract the latest AdGuardHome release:
+`curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz`
+
+Then, navigate into the extracted directory and start the installation:
+`cd AdGuardHome && sudo ./AdGuardHome -s install`
+
+Note: We will configure AdGuardHome later in the guide. At this stage, the installation is only preparing the system.
+
+#### 2. Configure NetworkManager and NetworManager's built-in Dnsmasq:
+
+To properly manage DHCP and DNS with NetworkManager, we first need to configure its general settings and then set up Dnsmasq for both standard and shared network interfaces.
+
+Run the following command to create and update /etc/NetworkManager/NetworkManager.conf:
+
+```
+echo '[main]
+plugins=ifupdown,keyfile
+dns=dnsmasq
+dhcp=dnsmasq
+
+[ifupdown]
+managed=false' | sudo tee /etc/NetworkManager/NetworkManager.conf > /dev/null
+```
+
+This ensures that NetworkManager uses Dnsmasq for DHCP and DNS.
+
+NetworkManager uses two different configuration folders for Dnsmasq:
+
+- Standard Interfaces (/etc/NetworkManager/dnsmasq.d/) → Used for lo (localhost).
+- Shared Interfaces (/etc/NetworkManager/dnsmasq-shared.d/) → Used for shared networks like wlan0 and usb0.
+
+We need to configure both.
+
+Create the following configuration file to ensure that all DNS requests are forwarded to AdGuardHome and apply security features:
+
+```
+echo '# Redirect DNS to Adguard (localhost)
+proxy-dnssec
+server=127.0.0.1#5357
+no-resolv
+edns-packet-max=1232
+
+# Prevent DNS leaks and block Bogus Private IP Responses
+domain-needed
+bogus-priv
+
+# Prevent DNS rebinding attacks
+stop-dns-rebind
+
+# Prevent External Access to Local DNS
+local-service
+
+# Ensure Hostnames Resolve Properly
+expand-hosts' | sudo tee /etc/NetworkManager/dnsmasq.d/00_dnsmasq-adguard.conf > /dev/null
+```
+
+Create a configuration file for shared interfaces to redirect DNS queries to AdGuardHome and enable EDNS Client Subnet (ECS):
+
+```
+echo '# Redirect DNS to Adguard
+proxy-dnssec
+server=127.0.0.1#5357
+no-resolv
+
+# Enable EDNS Client Subnet (ECS) to pass client details
+add-mac
+add-subnet=32,128
+edns-packet-max=1232
+
+# Prevent DNS leaks and block Bogus Private IP Responses
+domain-needed
+bogus-priv
+
+# Prevent DNS rebinding attacks
+stop-dns-rebind
+
+# Prevent External Access to Local DNS
+local-service
+
+# Ensure Hostnames Resolve Properly
+expand-hosts' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
+```
+
+Set up DHCP settings for usb0 (single-client device) and wlan0 (Wi-Fi hotspot):
+
+```
+echo '########################################
+# DHCP/DNS for usb0 -> ONlY ONE CLIENT #
+########################################
+
+# Assign static IP to WORKSTATION:
+dhcp-host=WORKSTATION,192.168.77.77
+
+# DHCP range:
+dhcp-range=set:usb0,192.168.77.10,192.168.77.255,255.255.255.0,24h
+
+# Default Gateway:
+dhcp-option=tag:usb0,3,192.168.77.1
+
+# DNS server:
+dhcp-option=tag:usb0,6,192.168.77.1
+
+# NTP server:
+dhcp-option=tag:usb0,option:ntp-server,192.168.77.1
+
+# Request hostnames:
+dhcp-option=tag:usb0,12
+
+############################################
+# DHCP/DNS for wlan0 -> REQUEST  HOSTNAMES #
+############################################
+
+# DHCP range:
+dhcp-range=set:wlan0,192.168.37.10,192.168.37.250,255.255.255.0,24h
+
+# Default Gateway:
+dhcp-option=tag:wlan0,3,192.168.37.1
+
+# DNS server:
+dhcp-option=tag:wlan0,6,192.168.37.1
+
+# NTP server:
+dhcp-option=tag:wlan0,option:ntp-server,192.168.37.1
+
+# Request hostnames:
+dhcp-option=tag:wlan0,12' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/01_usb0-wlan0.conf > /dev/null
+```
+
+To ensure your Mac appears as a distinct client in AdGuardHome, we need to assign it a static IP address (see configuration above). However, since MAC address randomization is enabled on our laptop, we cannot use its MAC address as an identifier. Instead, we will set a fixed hostname, WORKSTATION, which will allow us to reliably assign a static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
+
+`sudo scutil --set HostName WORKSTATION`
+`sudo scutil --set LocalHostName WORKSTATION`
+`sudo scutil --set ComputerName WORKSTATION`
+`dscacheutil -flushcache`
+
+#### 3. Install and configure Unbound:
+
+sudo apt install -y unbound unbound-anchor
+
+Our Unbound configuration is designed for a privacy-focused, high-performance recursive DNS resolver with DNSSEC validation, enhanced caching, and security hardening. Download our pre-configured Unbound configuration file from our repository:<br>
+`curl -L -o /etc/ntpsec/ntp.conf https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf`
+
+Privacy & Security Features:
+
+- Eliminates reliance on external DNS providers by performing full recursive resolution (queries start at root servers).
+- Prevents DNS leaks by blocking queries for local/private IPs.
+- Enhances DNSSEC validation to ensure authenticity of DNS responses.
+- Defends against DNS spoofing and rebinding attacks.
+- Limits query data exposure to upstream servers with QNAME minimization.
+- Blocks metadata requests to obscure server details.
+- Implements rate limiting to prevent abuse.
+
+Performance Enhancements:
+
+- Aggressive caching with long TTLs.
+- Prefetching enabled to speed up repeated queries.
+- Optimized threading & memory usage
+- Minimizes DNS response sizes to reduce network overhead.
+
+Next, we will create a second configuration file to define local zones and enable reverse lookups for wlan0 and usb0, allowing local hostname resolution within our network:
+
+```
+echo 'server:
+    # Serve static local websites:
+    local-zone: "adguard.home." static
+    local-data: "adguard.home. IN A 192.168.77.1"
+
+    #PTR Record for localhost
+    local-data-ptr: "127.0.0.1 localhost"
+    
+    # Allow reverse lookups for wlan0 (192.168.37.x)
+    local-zone: "37.168.192.in-addr.arpa." transparent
+    local-data-ptr: "192.168.37.1 hotspot.local"
+
+    # Allow reverse lookups for usb0 (192.168.77.x)
+    local-zone: "77.168.192.in-addr.arpa." transparent
+    local-data-ptr: "192.168.77.1 usb0.local"
+
+# Allow Unbound to read hostnames from DHCP leases
+auth-zone:
+    name: "37.168.192.in-addr.arpa."
+    zonefile: "/var/lib/unbound/unbound-wlan0.zone"
+        fallback-enabled: yes
+
+auth-zone:
+    name: "77.168.192.in-addr.arpa."
+    zonefile: "/var/lib/unbound/unbound-usb0.zone"
+    fallback-enabled: yes' | sudo tee /etc/unbound/unbound.conf.d/local-zones.conf > /dev/null
+```
+
+This configuration is particularly useful for the following reasons:<br>
+AdGuardHome will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
+Later in this guide, we will configure an Nginx reverse proxy to serve the AdGuardHome web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address:
+
+This setup does not work out of the box due to two key issues: NetworkManager generates a zone file that is incompatible with Unbound’s syntax. To resolve this, we need a script that translates the lease file into a format that Unbound can read.<br>
+Furthermore Dnsmasq needs to trigger this script whenever a new client connects. This ensures automatic updates to Unbound’s zone file, keeping hostname resolution accurate.
+
+Prepare the Script Storage Location:<br>
+`[ -d ~/script ] || mkdir ~/script && [ -d ~/script/DNS ] || mkdir ~/script/DNS`
+
+Now, create the script that translates NetworkManager’s lease file into an Unbound-compatible format:
+
+```
+echo '#!/bin/bash
+
+# Loop through each interface (wlan0 and usb0)
+for iface in wlan0 usb0; do
+    # Define lease file and corresponding Unbound zone file paths for the interface
+    LEASE_FILE="/var/lib/NetworkManager/dnsmasq-${iface}.leases"
+    UNBOUND_ZONE_FILE="/var/lib/unbound/unbound-${iface}.zone"
+
+    # If the lease file doesn't exist or is empty, create a placeholder zone file
+    if [[ ! -s "$LEASE_FILE" ]]; then
+        echo "; Unbound generated zone file - No active leases found" > "$UNBOUND_ZONE_FILE"
+        continue
+    fi
+
+    # Initialize a new Unbound zone file with a header comment
+    echo "; Unbound generated zone file from dnsmasq leases" > "$UNBOUND_ZONE_FILE"
+
+    # Process each lease entry in the lease file
+    while read -r LEASE_TIME MAC_ADDR IP HOSTNAME CLIENTID; do
+        # Skip the entry if the IP address is missing
+        if [[ -z "$IP" ]]; then
+            continue
+        fi
+
+        # Set hostname to 'UNKNOWN' if it's missing or a placeholder '*'
+        if [[ -z "$HOSTNAME" || "$HOSTNAME" == "*" ]]; then
+            HOSTNAME="UNKNOWN"
+        fi
+
+        # Convert the IP address into PTR record format (reverse order)
+        PTR_IP=$(echo "$IP" | awk -F. '{print $4"."$3"."$2"."$1}')
+        # Append the PTR record to the Unbound zone file
+        echo "$PTR_IP.in-addr.arpa. 86400 IN PTR $HOSTNAME." >> "$UNBOUND_ZONE_FILE"
+    done < "$LEASE_FILE"
+done
+
+# Reload Unbound to apply the updated zone files
+systemctl reload unbound' | sudo tee /home/admin/script/DNS/update-unbound-leases.sh > /dev/null
+```
+
+Make this script executable:<br>
+`sudo chmod +x ~/script/DNS/update-unbound-leases.sh`
+
+Configure dnsmasq to run the script automatically whenever a client connects:
+
+`echo "" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`<br>
+`echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`<br>
+`echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null`
+
+#### 4. Enforcing Local DNS and Updating Hosts:
+
+To ensure all DNS queries are routed through AdGuardHome and Unbound, we need to configure NetworkManager to use our local resolver:
+
+`sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1`<br>
+`sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1`
+
+Next, we update /etc/hosts to define local hostname mappings to ensure that local hostnames resolve correctly:<br>
+`sudo sed -i '/127.0.0.1/s/$/\n192.168.77.1    adguard.home usb0.local\n192.168.37.1    hotspot.local/' /etc/hosts`
+
+* * *
+
+## 14 NGINX REVERSE PROXY AND SSL
+
+In this section, we will configure NGINX as a reverse proxy for the AdGuardHome web interface. This will allow us to serve the interface securely while enabling additional customization options.
+
+#### 1. Install NGINX:
+
+First, install NGINX, a modern and lightweight web server:<br>
+`sudo apt install -y nginx`
+
+By default, NGINX is configured to listen on IPv6, but since we have previously disabled IPv6 on this system, the nginx.service will fail to start. To prevent this, we need to modify the default configuration file and disable IPv6 support:<br>
+`sudo sed -i 's/^\(\s*listen \[::\]:80 default_server;\)/# \1/' /etc/nginx/sites-available/default`
+
+#### 2. Self-signed Certificate:
+
+The goal is to access AdguardHome using the local address:<br>
+https://adguard.home
+
+In the previous chapter, we enabled reverse lookup via Unbound. Now, we need to set up encryption using a self-signed certificate, which will be used by NGINX to serve adguard.home over HTTPS. Additionally, this certificate will allow AdGuardHome to support encrypted DNS queries via DNS over HTTPS (DoH) as a fallback method alongside our Unbound configuration.
+
+Run the following command to ensure the required directories exist:<br>
+`[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/CA ] || mkdir ~/tools/CA && [ -d ~/tools/CA/SSL ] || mkdir ~/tools/CA/SSL`
+
+Change into the Certificate Authority (CA) configuration folder:<br>
+`cd ~/tools/CA`
+
+Create a self-signed Certificate Authority (CA) key and certificate (valid for 100 years):<br>
+`openssl req -x509 -new -nodes -keyout term7-CA.key -out term7-CA.pem -days 36500 -subj "/CN=term7-CA"`
+
+Move into the SSL configuration folder:<br>
+`cd ~/tools/CA/SSL`
+
+Create an OpenSSL configuration file for adguard.home:
+
+```
+echo '[ req ]
+default_bits       = 2048
+default_md         = sha256
+prompt             = no
+distinguished_name = req_distinguished_name
+req_extensions     = v3_req
+
+[ req_distinguished_name ]
+CN = adguard.home
+
+[ v3_req ]
+subjectAltName = @alt_names
+extendedKeyUsage = serverAuth
+
+[ alt_names ]
+DNS.1 = adguard.home
+IP.1 = 192.168.77.1' | sudo tee /home/admin/tools/CA/SSL/openssl-san.cnf > /dev/null
+```
+
+Now, generate the private key for adguard.home:<br>
+`openssl genrsa -out adguard.home.key 2048`
+
+Create a Certificate Signing Request (CSR):<br>
+`openssl req -new -key adguard.home.key -out adguard.home.csr -config openssl-san.cnf``
 
 
+Sign the Certificate Signing Request (CSR) with the Local Certificate Authority (CA):<br>
+´openssl x509 -req -in adguard.home.csr -CA ../term7-CA.pem -CAkey ../term7-CA.key -CAcreateserial -out adguard.home.crt -days 36500 -extensions v3_req -extfile openssl-san.cnf´
 
+Create the Full-Chain Certificate:<br>
+`cat adguard.home.crt ../term7-CA.pem > adguard.home-fullchain.crt`
 
+Finally we configure our system to trust the Local Certificate Authority (CA). Copy the CA certificate to the system's trusted certificate directory:<br>
+`sudo cp ~/tools/CA/term7-CA.pem /usr/local/share/ca-certificates/term7-CA.crt`
 
-## MIT License
+Update the system's certificate store:<br>
+`sudo update-ca-certificates`
 
-Copyright (c) 2022 term7
+Since we have enforced strict user access control, root login is not allowed. To transfer the certificate, we first copy it to our standard user account:<br>
+`sudo cp ~/tools/CA/term7-CA.pem /home/term7/`
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Now, on your Mac, open a new Terminal window and run the following command to securely copy the certificate to your Downloads folder. Once the transfer is complete, we immediately delete it from the Raspberry Pi:<br>
+`scp -P 8519 term7@192.168.77.1:term7-CA.pem ~/Downloads/ && ssh -p 8519 term7@192.168.77.1 "rm term7-CA.pem"`
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Once the certificate is transferred, install it as a trusted root certificate on macOS by running the following command:<br>
+`sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ~/Downloads/term7-CA.pem`
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+This command adds the certificate to the macOS System Keychain and marks it as trusted for all users. By doing so, it ensures that the certificate is recognized as a Root Certificate Authority, allowing you to access https://adguard.home without encountering security warnings.
+
+#### 3. Configure NGINX as a reverse proxy for AdGuardHome:
+
+Next, we configure NGINX to serve as a reverse proxy for the AdGuardHome web interface and to forward DNS-over-HTTPS (DoH) requests between connected clients and AdGuardHome.<br>
+Run the following command to create the configuration:
+
+```
+echo 'server {
+    listen 443 ssl http2;
+
+    server_name adguard.home;
+
+    ssl_certificate /home/admin/tools/CA/SSL/adguard.home.crt;
+    ssl_certificate_key /home/admin/tools/CA/SSL/adguard.home.key;
+
+    # Proxy AdGuardHome Web Interface
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Proxy DNS-over-HTTPS (DoH) Requests to AdGuardHome
+    location /dns-query {
+        proxy_pass https://127.0.0.1:7443/dns-query$is_args$args;
+        proxy_ssl_server_name on;
+        proxy_ssl_verify off;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # Preserve query strings
+        proxy_redirect off;
+    }
+}
+
+server {
+    listen 80;
+    server_name adguard.home;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}' | sudo tee /etc/nginx/sites-available/nginx-adguard > /dev/null
+```
+
+Enable the NGINX configuration:<br>
+`sudo ln -s /etc/nginx/sites-available/nginx-adguard /etc/nginx/sites-enabled/`
+
+Test the configuration for syntax errors:<br>
+`sudo nginx -t`
+
+If the test is successful, restart NGINX:<br>
+`sudo systemctl restart nginx`
+
+* * *
+
+## 15 CONFIGURE ADGUARDHOME
+
+å

@@ -1,0 +1,14 @@
+[Unit]
+Description=Random Hostname Generator
+Wants=network-pre.target
+Before=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /home/admin/script/randhost/hostname.sh
+RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=network-pre.target

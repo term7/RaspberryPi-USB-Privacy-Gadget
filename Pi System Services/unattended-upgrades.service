@@ -1,0 +1,10 @@
+[Unit]
+Description=Unattended Upgrades
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/unattended-upgrade -d
+
+[Install]
+WantedBy=multi-user.target

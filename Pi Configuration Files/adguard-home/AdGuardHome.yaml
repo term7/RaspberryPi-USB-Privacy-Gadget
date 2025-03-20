@@ -1,0 +1,259 @@
+http:
+  pprof:
+    port: 6060
+    enabled: false
+  address: 127.0.0.1:3000
+  session_ttl: 720h
+users:
+  - name: term7
+    password: uhFTPfY9yUHfdWZwDtm5V~YJzZTnh9$^uwNveC`jVx2YvF9Pg&cNErE2nHF7
+auth_attempts: 5
+block_auth_min: 15
+http_proxy: ""
+language: en
+theme: dark
+dns:
+  bind_hosts:
+    - 0.0.0.0
+  port: 5357
+  anonymize_client_ip: false
+  ratelimit: 20
+  ratelimit_subnet_len_ipv4: 24
+  ratelimit_subnet_len_ipv6: 56
+  ratelimit_whitelist: []
+  refuse_any: true
+  upstream_dns:
+    - 127.0.0.1:7353
+  upstream_dns_file: ""
+  bootstrap_dns:
+    - 127.0.0.1:7353
+    - 176.103.130.130
+    - 194.242.2.3
+    - 91.239.100.100
+  fallback_dns:
+    - https://doh.mullvad.net/dns-query
+    - https://dns.digitale-gesellschaft.ch/dns-query
+    - https://anycast.uncensoreddns.org/dns-query
+    - https://unicast.uncensoreddns.org/dns-query
+    - https://doh.libredns.gr/dns-query
+    - https://odvr.nic.cz/dns-query
+    - https://doh.ffmuc.net/dns-query
+  upstream_mode: load_balance
+  fastest_timeout: 1s
+  allowed_clients: []
+  disallowed_clients: []
+  blocked_hosts:
+    - version.bind
+    - id.server
+    - hostname.bind
+    - devices.resolving.planetlab.google.com
+    - whoami.ultradns.net
+    - whoami.akamai.net
+    - debug.opendns.com
+    - resolver.dnscrypt.info
+    - edns-client-subnet.test-ipv6.com
+    - test.dnssec-or-not.net
+    - porttest.dns-oarc.net
+  trusted_proxies:
+    - 127.0.0.0/8
+  cache_size: 1000
+  cache_ttl_min: 0
+  cache_ttl_max: 86400
+  cache_optimistic: true
+  bogus_nxdomain: []
+  aaaa_disabled: true
+  enable_dnssec: true
+  edns_client_subnet:
+    custom_ip: ""
+    enabled: true
+    use_custom: false
+  max_goroutines: 1000
+  handle_ddr: true
+  ipset: []
+  ipset_file: ""
+  bootstrap_prefer_ipv6: false
+  upstream_timeout: 10s
+  private_networks: []
+  use_private_ptr_resolvers: true
+  local_ptr_upstreams:
+    - 127.0.0.1:7353
+  use_dns64: false
+  dns64_prefixes: []
+  serve_http3: false
+  use_http3_upstreams: false
+  serve_plain_dns: true
+  hostsfile_enabled: true
+tls:
+  enabled: true
+  server_name: ""
+  force_https: false
+  port_https: 7443
+  port_dns_over_tls: 853
+  port_dns_over_quic: 853
+  port_dnscrypt: 0
+  dnscrypt_config_file: ""
+  allow_unencrypted_doh: false
+  certificate_chain: ""
+  private_key: ""
+  certificate_path: /home/admin/tools/CA/SSL/adguard.home-fullchain.crt
+  private_key_path: /home/admin/tools/CA/SSL/adguard.home.key
+  strict_sni_check: false
+querylog:
+  dir_path: ""
+  ignored: []
+  interval: 2160h
+  size_memory: 1000
+  enabled: true
+  file_enabled: true
+statistics:
+  dir_path: ""
+  ignored: []
+  interval: 2160h
+  enabled: true
+filters:
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/tif.txt
+    name: 'Hagezi: Threat Intelligence Feeds'
+    id: 1739807655
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/ultimate.txt
+    name: 'Hagezi: Multi ULTIMATE'
+    id: 1739807656
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/gambling.txt
+    name: 'Hagezi: Gambling DNS Blocklist'
+    id: 1739820125
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/fake.txt
+    name: 'Hagezi: Fake DNS Blocklist'
+    id: 1739820126
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/popupads.txt
+    name: 'Hagezi: Pop-Up Ads DNS Blocklist'
+    id: 1739820127
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/doh-vpn-proxy-bypass.txt
+    name: 'Hagezi: DoH/VPN/TOR/Proxy Bypass'
+    id: 1739820128
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.amazon.txt
+    name: 'Hagezi: Amazon Tracker DNS Blocklist'
+    id: 1739820129
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.winoffice.txt
+    name: 'Hagezi: Windows/Office Tracker DNS Blocklist'
+    id: 1739820130
+  - enabled: true
+    url: https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.apple.txt
+    name: 'Hagezi: Apple Tracker DNS Blocklist'
+    id: 1739820131
+  - enabled: true
+    url: https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt
+    name: 'Term7: Break Apple Blocklist / Allow System Updates'
+    id: 1739995786
+whitelist_filters: []
+  - '! Allow Tor'
+  - '!'
+  - '@@||check.torproject.org^$important'
+dhcp:
+  enabled: false
+  interface_name: ""
+  local_domain_name: lan
+  dhcpv4:
+    gateway_ip: ""
+    subnet_mask: ""
+    range_start: ""
+    range_end: ""
+    lease_duration: 86400
+    icmp_timeout_msec: 1000
+    options: []
+  dhcpv6:
+    range_start: ""
+    lease_duration: 86400
+    ra_slaac_only: false
+    ra_allow_slaac: false
+filtering:
+  blocking_ipv4: ""
+  blocking_ipv6: ""
+  blocked_services:
+    schedule:
+      time_zone: Local
+    ids: []
+  protection_disabled_until: null
+  safe_search:
+    enabled: false
+    bing: true
+    duckduckgo: true
+    ecosia: true
+    google: true
+    pixabay: true
+    yandex: true
+    youtube: true
+  blocking_mode: nxdomain
+  parental_block_host: family-block.dns.adguard.com
+  safebrowsing_block_host: standard-block.dns.adguard.com
+  rewrites: []
+  safe_fs_patterns:
+    - /home/admin/build/AdGuardHome/userfilters/*
+  safebrowsing_cache_size: 1048576
+  safesearch_cache_size: 1048576
+  parental_cache_size: 1048576
+  cache_time: 30
+  filters_update_interval: 1
+  blocked_response_ttl: 10
+  filtering_enabled: true
+  parental_enabled: false
+  safebrowsing_enabled: false
+  protection_enabled: true
+clients:
+  runtime_sources:
+    whois: true
+    arp: true
+    rdns: true
+    dhcp: true
+    hosts: true
+  persistent:
+    - safe_search:
+        enabled: false
+        bing: true
+        duckduckgo: true
+        ecosia: true
+        google: true
+        pixabay: true
+        yandex: true
+        youtube: true
+      blocked_services:
+        schedule:
+          time_zone: Local
+        ids: []
+      name: localhost
+      ids:
+        - 127.0.0.1
+      tags:
+        - device_other
+        - os_linux
+      upstreams: []
+      uid: 019510d2-eed0-72ae-a6f9-6c69d5ce4f38
+      upstreams_cache_size: 0
+      upstreams_cache_enabled: false
+      use_global_settings: true
+      filtering_enabled: false
+      parental_enabled: false
+      safebrowsing_enabled: false
+      use_global_blocked_services: true
+      ignore_querylog: false
+      ignore_statistics: false
+log:
+  enabled: true
+  file: /home/admin/build/AdGuardHome/adguardhome.log
+  max_backups: 0
+  max_size: 100
+  max_age: 3
+  compress: false
+  local_time: false
+  verbose: true
+os:
+  group: ""
+  user: ""
+  rlimit_nofile: 0
+schema_version: 29

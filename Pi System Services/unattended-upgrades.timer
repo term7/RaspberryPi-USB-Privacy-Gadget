@@ -1,0 +1,9 @@
+[Unit]
+Description=Unattended Upgrades Timer
+
+[Timer]
+OnBootSec=5min
+Unit=unattended-upgrades.service
+
+[Install]
+WantedBy=multi-user.target

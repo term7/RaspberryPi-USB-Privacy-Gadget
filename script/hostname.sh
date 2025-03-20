@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Random Hostname Generator
+ALL_NON_RANDOM_WORDS=/home/admin/tools/dict/ukenglish.txt
 
-ALL_NON_RANDOM_WORDS=/usr/share/dict/ukenglish.txt
-non_random_words=`cat $ALL_NON_RANDOM_WORDS | wc -l`
+# Count the number of words in the dictionary
+non_random_words=$(wc -l < "$ALL_NON_RANDOM_WORDS")
 
-NEW_HOSTNAME=$(WORD=`od -N3 -An -i /dev/urandom |
-awk -v f=0 -v r="$non_random_words" '{printf "%i\n", f + r * $1 / 16777216}'`
-sed `echo $WORD`"q;d" $ALL_NON_RANDOM_WORDS
-  let "X = X + 1")
+# Generate a random index and select a word
+WORD_INDEX=$(od -N3 -An -i /dev/urandom | awk -v r="$non_random_words" '{print int(1 + r * $1 / 16777216)}')
+NEW_HOSTNAME=$(sed -n "${WORD_INDEX}p" "$ALL_NON_RANDOM_WORDS")
 
 # Change Static Hostname
-hostnamectl set-hostname $NEW_HOSTNAME
-head -n -1 /etc/hosts > /etc/tmp
-mv /etc/tmp /etc/hosts
-echo -e "127.0.1.1      $NEW_HOSTNAME" >> /etc/hosts
+hostnamectl set-hostname "$NEW_HOSTNAME"
+
+# Update /etc/hosts safely
+sed -i "/127.0.1.1/c\127.0.1.1       $NEW_HOSTNAME" /etc/hosts
