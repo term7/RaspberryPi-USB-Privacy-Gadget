@@ -1517,6 +1517,11 @@ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keyc
 
 This command adds the certificate to the macOS System Keychain and marks it as trusted for all users. By doing so, it ensures that the certificate is recognized as a *Root Certificate Authority*, allowing you to access https://adguard.home without encountering security warnings.
 
+If you ever want to delete this certificate, run:
+```
+sudo security delete-certificate -c "term7-CA" /Library/Keychains/System.keychain
+```
+
 #### 3. Configure NGINX as a reverse proxy for AdGuardHome:
 
 Next, we configure *NGINX* to serve as a reverse proxy for the *AdGuardHome* web interface and to forward DNS-over-HTTPS (DoH) requests between connected clients and *AdGuardHome*.<br>
