@@ -743,7 +743,8 @@ Create and configure the interface:
 ```
 sudo nmcli con add type ethernet ifname usb0 con-name usb0-static
 ```
-```sudo nmcli con modify usb0-static ipv4.addresses 192.168.77.1/24 ipv4.method shared
+```
+sudo nmcli con modify usb0-static ipv4.addresses 192.168.77.1/24 ipv4.method shared
 ```
 ```
 sudo nmcli con modify usb0-static connection.autoconnect yes connection.autoconnect-priority 50
