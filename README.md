@@ -363,43 +363,61 @@ ssh term7@192.168.1.123
 
 Run the following commands on your Raspberry Pi:
 
-```chmod 700 ~/.ssh```
-```chmod 600 ~/.ssh/authorized_keys```
+```
+chmod 700 ~/.ssh
+```
+```
+chmod 600 ~/.ssh/authorized_keys
+```
 
 This ensures that only the user (term7) has access to the `.ssh` directory and that only the user can read and write `authorized_keys`.
 
 #### 6. Setup Warning Banner
 
 To display a security warning banner before login, download and replace the /etc/issue.net file with our pre-configured version from the repository:
-```curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net```
+```
+curl -L -o /etc/issue.net https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/issue.net
+```
 
 You can edit the banner text to match your requirements:
-```sudo nano /etc/issue.net```
+```
+sudo nano /etc/issue.net
+```
 
 #### 7. Harden SSH configuration
 
 The fastest way to harden your SSH configuration is to replace it with our pre-configured file from this repository.
 
 However, before making any changes, create a backup to avoid getting locked out in case anything goes wrong. Run this command to create a backup:
-```sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak```
+```
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+```
 
 If anything goes wrong, you can restore the original file. To download our hardened configuration, run this command:
-```curl -L -o /etc/ssh/sshd_config https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config```
+```
+curl -L -o /etc/ssh/sshd_config https://codeberg.org/term7/Going-Dark/src/branch/main/Pi%20Configuration%20Files/ssh/sshd_config
+```
 
 This overwrites your current standard SSH configuration file. IMPORTANT: If you use a different standard username than term7, you must update this line: `AllowUsers term7`
 
 To check and edit the file before applying changes, open it in Nano:
-```sudo nano /etc/ssh/sshd_config```
+```
+sudo nano /etc/ssh/sshd_config
+```
 
 Find and replace `term7` with your actual username, then save (CTRL + X, then Y, then Enter).
 
 #### 8. Apply and Test the New SSH Configuration
 
 After making necessary changes, restart the SSH service:
-```sudo systemctl restart ssh```
+```
+sudo systemctl restart ssh
+```
 
 Do NOT log out yet! On your Mac, open a new terminal window and test SSH access:
-```ssh term7@192.168.1.123 -p 6666```
+```
+ssh term7@192.168.1.123 -p 6666
+```
 
 If the connection works fine, your new hardened SSH configuration is successfully applied!
 
@@ -407,8 +425,12 @@ If the connection works fine, your new hardened SSH configuration is successfull
 
 If something goes wrong and you get locked out, restore your backup. Access your Raspberry Pi locally (use keyboard & monitor). Then type the following commands:
 
-```sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config```
-```sudo systemctl restart ssh```
+```
+sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
+```
+```
+sudo systemctl restart ssh
+```
 
 This will restore your previous working SSH configuration.
 
