@@ -587,15 +587,17 @@ To check if the MAC address is changing dynamically, run:
 sudo nmcli device show | grep GENERAL.HWADDR
 ```
 
-Then reboot your Raspberry Pi to confirm that the MAC address changes:
+Now, reboot your Raspberry Pi:
 ```
 sudo reboot now
 ```
+
+After the system restarts, run the following command again:
 ```
 sudo nmcli device show | grep GENERAL.HWADDR
 ```
 
- If the MAC address is different after reboot, the setup is working correctly.
+If the MAC address differs from the previous output, the randomization setup is working correctly.
 
 * * *
 
