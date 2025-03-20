@@ -1,7 +1,7 @@
 # Going Dark: USB Privacy Gadget based on a Raspberry Pi
 *A portable RaspberryPi USB Ethernet Gadget that safeguards your Privacy*
 
-Are you aware of the growing concerns among European law enforcement about people [going dark](https://home-affairs.ec.europa.eu/networks/high-level-group-hlg-access-data-effective-law-enforcement_en)? The so-called High Level Group (HLG) is actively working to undermine end-to-end encryption, pushing for backdoor access to encrypted messaging apps, cloud storage, and email services. EDRi has dissected the critical flaws in this approach: [(https://edri.org/?s=going+dark](https://edri.org/?s=going+dark).
+Are you aware of the growing concerns among European law enforcement about people [going dark](https://home-affairs.ec.europa.eu/networks/high-level-group-hlg-access-data-effective-law-enforcement_en)? The so-called High Level Group (HLG) is actively working to undermine end-to-end encryption, pushing for backdoor access to encrypted messaging apps, cloud storage, and email services. EDRi has dissected the critical flaws in this approach: [https://edri.org/?s=going+dark](https://edri.org/?s=going+dark)
 
 If you haven’t gone dark yet, now is the time!
 
@@ -34,7 +34,7 @@ This repository is both a guide and a step-by-step tutorial for configuring a Ra
 
 We first came up with the idea for this Raspberry Pi Ethernet Gadget five years ago, when Apple publicly released macOS Big Sur in the fall of 2020. During the transition, we noticed that our installation of Little Snitch—a host-based firewall—had partially stopped working. More specifically, all Apple processes were no longer being filtered. Strange.
 
-As we investigated the issue online, we came across a blog post by security researcher Jeffrey Paul, titled ([Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)). His findings shed light on the problem, and we highly recommend reading this article before setting up your own Raspberry Pi Privacy Gadget.
+As we investigated the issue online, we came across a blog post by security researcher Jeffrey Paul, titled [Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates). His findings shed light on the problem, and we highly recommend reading this article before setting up your own Raspberry Pi Privacy Gadget.
 
 In short: modern macOS versions have a built-in capability to bypass internal firewalls and VPNs. Additionally, every Apple computer continuously connects to both Apple’s servers and third parties (such as Fastly) to transmit hashes of apps being used—every time they are launched.<br>
 Apple claims this feature exists solely to prevent malicious or blacklisted apps from running if an online certificate check fails. While this may be true, it also means Apple can always determine when you’re online, where you are, how long you use specific software (e.g., VMWare Fusion), and even when you launch privacy-focused tools like the Tor Browser.<br>
@@ -44,7 +44,7 @@ Over time, this data collection builds a highly detailed profile of your digital
 
 We see this as a deeply concerning development: yet another step toward surveillance capitalism that undermines the privacy of all Apple users.
 
-To be fair, Apple has faced significant criticism for these practices. As a result, some of these intrusions, such as the ContentFilterExclusionList, which allowed native Apple apps to bypass local firewalls and VPNs—have since been revoked: ([A Wall without a Hole](https://blog.obdev.at/a-wall-without-a-hole/)).
+To be fair, Apple has faced significant criticism for these practices. As a result, some of these intrusions, such as the ContentFilterExclusionList, which allowed native Apple apps to bypass local firewalls and VPNs — have since been revoked: [A Wall without a Hole](https://blog.obdev.at/a-wall-without-a-hole/).
 
 According to Apple, [privacy](https://www.apple.com/privacy/) is a fundamental human right:
 
@@ -55,7 +55,7 @@ Yet, claiming to deeply care about user privacy while participating in programs 
 Who’s to say something like the ContentFilterExclusionList won’t quietly return in a future update?
 We believe Apple cannot be trusted with our data. That’s why we built the Raspberry Pi Ethernet Gadget—a portable external network filtering device designed to make data harvesting as difficult as possible.
 
-As Jeffrey Paul rightly points out: Your computer is not yours.
+As Jeffrey Paul rightly points out: Your computer is not yours.<br>
 But it should be!
 
 * * *
@@ -103,26 +103,26 @@ Objective Development:<br/>
 
 ## 02 FEATURES
 
-GOING DARK: This Raspberry Pi Privacy Gadget acts as a portable router, giving you complete control over all network traffic—including native Apple processes. By following our guide, your Mac’s Wi-Fi will be completely disabled. Instead, it will connect to the Raspberry Pi via USB-C, while the Raspberry Pi manages the internet connection.
+<strong>GOING DARK: This Raspberry Pi Privacy Gadget acts as a portable router, giving you complete control over all network traffic—including native Apple processes. By following our guide, your Mac’s Wi-Fi will be completely disabled. Instead, it will connect to the Raspberry Pi via USB-C, while the Raspberry Pi manages the internet connection.</strong>
 
-1) MODE 1: Network-Wide Filtering with AdGuardHome
+<strong>1) MODE 1: Network-Wide Filtering with AdGuardHome</strong>
 
  In this mode, your Ethernet Gadget filters all traffic through AdGuardHome, a self-hosted DNS sinkhole designed to block ads, trackers, and malicious domains across your entire network. To further enhance privacy, we configure Unbound as the upstream DNS resolver, ensuring that your queries are resolved privately without relying on third-party DNS providers. Additionally, we install extensive blocklists, including our own Ultimate Apple Blocklist, which blocks all domains owned by Apple. WARNING: Enabling this blocklist will break Apple services and software. Proceed with caution.
 
-2) MODE 2: Encrypted VPN Tunnel with WireGuard (Optional Setup)
+<strong>2) MODE 2: Encrypted VPN Tunnel with WireGuard (Optional Setup)</strong>
 
 In this mode, you can use your Raspberry Pi as a WireGuard client, allowing it to establish a secure, encrypted VPN tunnel. You can connect to your home router (RECOMMENDED - if WireGuard is installed and configured) or to any other WireGuard server of your choice (NOT RECOMMENDED). Even with the VPN enabled, AdGuardHome will continue filtering ads and trackers before forwarding DNS requests through the encrypted tunnel. This ensures both privacy and security while maintaining full network-wide ad blocking.
 
-3) MODE 3: Tor Transparent Proxy
+<strong>3) MODE 3: Tor Transparent Proxy</strong>
 
 In this mode, all your internet traffic is routed through a Tor Transparent Proxy, providing anonymity by passing your connections through the Tor network. Even in this setup, AdGuardHome continues filtering ads and trackers before traffic enters the Tor network, enhancing privacy and reducing unnecessary connections. Important Note: This is not necessarily the recommended approach for anonymity. If your goal is to browse the web privately, it is strongly advised to use the Tor Browser instead, as it provides additional protections that a transparent proxy cannot.
 
-4) Wireless Hotspot Support
+<strong>4) Wireless Hotspot Support</strong>
 
 In addition to connecting your Mac via USB, your Raspberry Pi Privacy Gadget can also function as a wireless hotspot, allowing other devices—such as smartphones—to connect and use MODE 1, MODE 2, or MODE 3 for enhanced privacy and security. Important Note: If you want to connect the Raspberry Pi to a Wi-Fi network while running a hotspot, you’ll need an additional Wi-Fi adapter.<br>
 For this tutorial, we use the [ALFA AWUS036ACM](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136), which works out of the box and provides stable dual-band Wi-Fi connectivity.
 
-5) Hardened Security
+<strong>5) Hardened Security</strong>
 
 To ensure maximum security, we implement multiple layers of protection:
 
@@ -131,7 +131,7 @@ To ensure maximum security, we implement multiple layers of protection:
 - User Access Control – We establish separate admin and standard user accounts, following best security practices to limit privileges and reduce risks.
 - Automated Security Updates – Unattended upgrades ensure that critical software remains up to date, minimizing vulnerabilities and enhancing system resilience.
 
-6) Randomized Device Identity:
+<strong>6) Randomized Device Identity</strong>
 
 Whenever you connect to a public Wi-Fi network, only your Raspberry Pi Ethernet Gadget’s identity will be logged — not your Mac’s. This prevents network operators from tracking your actual device.
 
@@ -142,17 +142,17 @@ To further enhance privacy:
 
 These measures ensure that your digital footprint remains as anonymous as possible when connecting to public networks.
 
-7) Privacy Respecting NTP Server:
+<strong>7) Privacy Respecting NTP Server</strong>
 
 To maintain accurate system time without compromising privacy, we configure the Raspberry Pi Ethernet Gadget to use privacy-respecting NTP servers from [ntppool.org](https://www.ntppool.org/en/use.html).
 
-Key Features:<
+Key Features:
 - Privacy-Focused Time Synchronization – Ensures system time is updated via trusted NTP servers while avoiding centralized, privacy-invasive time sources.
 - Extended Offline Support – Configured to handle longer periods of downtime, allowing the device to reconnect to the internet even after being switched off for an extended period.
 - Local Time Server for Connected Devices – Clients using the Raspberry Pi Ethernet Gadget can sync their system time directly from the Pi’s built-in NTP server.
 - Optional: For even more reliability, we recommend installing a hardware clock (RTC module) to prevent synchronization issues.
 
-8) Local Web Interface:
+<strong>8) Local Web Interface</strong>
 
 To simplify management, we set up a local web interface that allows you to:
 
@@ -168,7 +168,7 @@ This intuitive interface provides seamless control over your Raspberry Pi Ethern
 
 #### HARDWARE:
 
-For this setup, we use a Raspberry Pi 4B (8GB). To ensure stable performance, it's essential to use a high-quality USB-C cable that supports fast data transfer. Additionally, we use the [ALFA AWUS036ACM WiFi adapter](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136). If you choose a different external WiFi adapter, ensure it is compatible with Raspberry Pi OS and update the interface name in this tutorial accordingly! A reliable microSD card is crucial for smooth operation. Avoid cheap, low-quality brands. We highly recommend SanDisk A1-rated cards, as they offer excellent performance. High-endurance microSD cards are also a great option—they are fast enough and provide outstanding durability based on our experience. A 32GB card is more than sufficient for this setup.
+For this setup, we use a Raspberry Pi 4B (8GB). To ensure stable performance, it's essential to use a high-quality USB-C cable that supports fast data transfer. Additionally, we use the [ALFA AWUS036ACM](https://www.alfa.com.tw/products/awus036acm_1?_pos=1&_ss=r&variant=40320133464136). If you choose a different external WiFi adapter, ensure it is compatible with Raspberry Pi OS and update the interface name in this tutorial accordingly! A reliable microSD card is crucial for smooth operation. Avoid cheap, low-quality brands. We highly recommend SanDisk A1-rated cards, as they offer excellent performance. High-endurance microSD cards are also a great option—they are fast enough and provide outstanding durability based on our experience. A 32GB card is more than sufficient for this setup.
 
 #### OPTIONAL:
 
@@ -176,16 +176,16 @@ An active cooling system to prevent overheating, especially during hot summer da
 
 #### INSTALL RASPBERRY Pi OS (Headless Setup)
 
-1. Download and Install the [Raspberry Pi Imager](https://downloads.raspberrypi.org/imager/imager_latest.dmg) 
-- Get the official Raspberry Pi Imager and install Raspberry Pi OS Lite (64-bit), based on Debian Bookworm.
-2. Enable SSH and Configure Network
+<strong>1. Download and Install the Raspberry Pi Imager</strong>
+- Get the official [Raspberry Pi Imager](https://downloads.raspberrypi.org/imager/imager_latest.dmg)  and install Raspberry Pi OS Lite (64-bit), based on Debian Bookworm.
+<strong>2. Enable SSH and Configure Network</strong>
 - We recommend a headless setup, meaning you won't need an external monitor, mouse, or keyboard. Instead, you can complete the entire setup from your computer.
 - The advantage of a headless setup is that it skips the Welcome Wizard and allows you to remotely access the Raspberry Pi immediately after the first boot.
 - To achieve this, make sure to set up the username, password, and network configuration through the OS customization settings in Raspberry Pi Imager. For this tutorial we use <strong>Username: term7</strong> as username. If you choose a different username, make sure to replace it accordingly whenever it appears in this tutorial.
-3. More Information
 - If you're unfamiliar with setting up a Raspberry Pi for the first time, follow our detailed headless installation guide: [Headless Raspberry Pi OS Setup Guide](https://term7.info/intro-raspberry-pi/#PI-IMAGER)
-4. Update Your System
+<strong>3. Update Your System</strong>
 - After installation, update your Raspberry Pi OS as described in the tutorial linked above. There’s no need to follow additional steps from that guide.<br>
+<strong>4. Additional Tweaks</strong>
 However, if you're interested, you might want to check out: [Z-Ram Tweaks](https://term7.info/intro-raspberry-pi/#Z-RAM): These optimizations can improve system performance, especially on low-memory setups.<br>
 [MOTD Tweaks](https://term7.info/intro-raspberry-pi/#MOTD): Customizing the Message of the Day (MOTD) can enhance your login experience with useful system info. Both tweaks are optional but can be beneficial.<br>
 Skip the sections on user access management, SSH hardening, and firewall setup. These will be fully covered in this tutorial!
@@ -195,17 +195,17 @@ Skip the sections on user access management, SSH hardening, and firewall setup. 
 To configure your Raspberry Pi, open the Raspberry Pi Configuration Tool by running:<br>
 `sudo raspi-config`
 
-1. Expand Filesystem
+<strong>1. Expand Filesystem</strong>
 
 - Navigate to 6. Advanced Options → A1 Expand Filesystem.
 - This ensures that the full storage capacity of your SD card is available.
 
-2. Enable Predictable Network Interface Names
+<strong>2. Enable Predictable Network Interface Names</strong>
 
 - Go to 6. Advanced Options → A2 Network Interface Names.
 - Enable predictable network interface names. This is crucial for this tutorial!
 
-We are working with the built-in WiFi (wlan0) and an external WiFi adapter (wlx00c0caae6319), which is the predictable interface name for the ALFA AWUS036ACM. By enabling predictable network interface names, we can reliably distinguish between the built-in and external WiFi adapters. Without this setting, the external WiFi card might occasionally be assigned wlan0 instead of the built-in WiFi, which could cause issues with our firewall and routing configurations.
+We are working with the built-in WiFi (*wlan0*) and an external WiFi adapter (*wlx00c0caae6319*), which is the predictable interface name for the ALFA AWUS036ACM. By enabling predictable network interface names, we can reliably distinguish between the built-in and external WiFi adapters. Without this setting, the external WiFi card might occasionally be assigned wlan0 instead of the built-in WiFi, which could cause issues with our firewall and routing configurations.
 
 * * *
 
@@ -218,7 +218,7 @@ By enforcing the principle of least privilege (PoLP), we enhance security and mi
 #### 1. CREATE NEW ADMIN USER:
 
 To create a dedicated admin account, run the following command:<br>
-`sudo adduser admin`
+```sudo adduser admin```
 
 The only required detail is a strong password. We highly recommend using a password manager such as KeePassXC to store and manage your credentials securely.
 
@@ -234,7 +234,7 @@ Once the admin user is created, add it to all essential groups to ensure it has 
 
 To enhance security, remove sudo privileges from term7 and transfer them to admin, while ensuring that sudo now requires a password:
 
-`sudo sed -i 's/term7/admin/g' /etc/sudoers.d/010_pi-nopasswd`
+`sudo sed -i 's/term7/admin/g' /etc/sudoers.d/010_pi-nopasswd`<br>
 `sudo sed -i 's/NOPASSWD: //g' /etc/sudoers.d/010_pi-nopasswd`
 
 To enhance security, we will remove our standard user (term7 in this example) from the sudo group, ensuring it no longer has administrative privileges. First, log in as the new admin user:<br>
@@ -248,7 +248,8 @@ Now, execute the following command to remove term7 from the sudo group (replace 
 Although term7 no longer has full sudo access, we want to allow it to reboot and shut down the Raspberry Pi without switching to admin. Run the following command to create a new sudo policy file:<br>
 `echo "term7 ALL = NOPASSWD: /usr/sbin/reboot, /usr/sbin/shutdown" | sudo tee /etc/sudoers.d/common_users > /dev/null`
 
-This grants term7 password-free access to the reboot and shutdown commands. If you want to allow additional commands without requiring sudo, simply edit the file: `/etc/sudoers.d/common_users`
+This grants term7 password-free access to the reboot and shutdown commands.
+If you want to allow additional commands without requiring sudo, simply edit the file: `/etc/sudoers.d/common_users`
 
 * * *
 
