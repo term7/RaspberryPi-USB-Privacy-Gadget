@@ -1328,7 +1328,8 @@ Prepare the Script Storage Location:<br>
 Now, create the script that translates *NetworkManager’s* lease file into a format that is compatible with *Unbound*:
 
 ```
-echo '#!/bin/bash
+sudo tee /home/admin/script/DNS/update-unbound-leases.sh > /dev/null << 'EOF'
+#!/bin/bash
 
 # Loop through each interface (wlan0 and usb0)
 for iface in wlan0 usb0; do
@@ -1365,7 +1366,8 @@ for iface in wlan0 usb0; do
 done
 
 # Reload Unbound to apply the updated zone files
-systemctl reload unbound' | sudo tee /home/admin/script/DNS/update-unbound-leases.sh > /dev/null
+systemctl reload unbound
+EOF
 ```
 
 Make this script executable:
