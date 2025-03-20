@@ -426,7 +426,7 @@ ssh term7@192.168.1.123 -p 6666
 Don't forget to replace `192.168.1.123` with your actual Raspberry Pi IP!
 
 If the connection works fine, your new hardened SSH configuration is successfully applied!<br>
-Since you are still logged in in your first terminal window you can retrace your steps to find out what went wrong.
+Since you are still logged in on your original terminal window, you can troubleshoot any issues if something doesn't work.
 
 #### 9. Recover from an Issue (If Needed)
 
