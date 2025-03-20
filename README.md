@@ -445,7 +445,7 @@ This will restore your previous working SSH configuration.
 
 ## 06 UNATTENDED UPGRADES
 
-Keeping your Raspberry Pi up-to-date is crucial for security and stability. Instead of manually updating, we set up unattended upgrades to automatically install security and system updates. Since our Raspberry Pi is only powered on when we work on our Mac, we need to ensure updates run after every reboot. Additionally, because we will install AdGuardHome (which requires time to apply filter lists), we introduce a 2-minute delay before the update process starts.
+Keeping your Raspberry Pi up-to-date is crucial for security and stability. Instead of manually updating, we set up unattended upgrades to automatically install security and system updates. Since our Raspberry Pi is only powered on when we work on our Mac, we need to ensure updates run after every reboot. Additionally, because we will install *AdGuardHome* (which requires time to apply filter lists), we introduce a 2-minute delay before the update process starts.
 
 #### 1. Install Required Packages:
 
@@ -466,7 +466,7 @@ sudo sed -i '/"origin=Debian,codename=${distro_codename}-security,label=Debian-S
 
 #### 3. Ensure Updates Run After Every Reboot:
 
-Create a systemd timer that waits 5 minutes after boot before running updates:
+Create a systemd timer that waits 2 minutes after boot before running updates:
 
 ```
 echo '[Unit]
@@ -480,7 +480,7 @@ Unit=unattended-upgrades.service
 WantedBy=multi-user.target' | sudo tee /etc/systemd/system/unattended-upgrades.timer > /dev/null
 ```
 
-This prevents updates from running too early while AdGuardHome is still initializing.<br>
+This prevents updates from running too early while *AdGuardHome* is still initializing.<br>
 Now, create the systemd service that will execute unattended upgrades:
 
 ```
@@ -505,6 +505,7 @@ sudo systemctl daemon-reload
 ```
 ```
 sudo systemctl enable unattended-upgrades.timer
+```
 ```
 sudo systemctl start unattended-upgrades.timer
 ```
