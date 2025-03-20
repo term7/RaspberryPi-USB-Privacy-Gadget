@@ -1088,11 +1088,11 @@ We will configure *NetworkManager* and its built-in *Dnsmasq* to manage both DHC
 #### Unbound:
 *Unbound* is a validating (DNSSEC) and recursive DNS server that caches queries to improve efficiency. Later, we will configure *AdGuardHome* to use *Unbound* as its sole upstream DNS server. The primary concern with traditional DNS resolvers is trust. When using a third-party DNS provider, we must trust that they are not recording, analyzing, or selling our DNS query data. By deploying *Unbound*, we eliminate this dependency, gaining the following advantages:
 
-Privacy: *Unbound* performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
+**PRIVACY:** *Unbound* performs full recursive resolution, meaning it starts the DNS lookup process at the root name servers and follows the hierarchy until it reaches the authoritative name server responsible for the requested domain. This eliminates reliance on a centralized DNS middleman that could log or analyze our queries.
 
-Speed: *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
+**SPEED:** *AdGuardHome* already includes a built-in DNS cache, but combining it with *Unbound’s* advanced caching features—such as aggressive-nsec, prefetch, and serve-expired—further reduces query response times and enhances overall performance.
 
-The Drawback: Lack of Encryption:
+**DRAWBACK: Lack of Encryption**
 
 One major downside of avoiding a DNS middleman is the lack of encryption. Queries to root name servers and authoritative DNS servers are sent in plain text over UDP/TCP on port 53, making them susceptible to interception and analysis.<br>
 To mitigate this risk, one option is to encrypt DNS queries using DNS-over-TLS (DoT). However, in the setup described here, we will not use this option because root name servers do not (yet) support DoT or DoH (DNS-over-HTTPS).<br>
@@ -1105,7 +1105,7 @@ Before installing *AdGuardHome*, make sure the build directory exists and naviga
 [ -d ~/build ] || mkdir ~/build && cd ~/build
 ```
 
-Run the following command to download and extract the latest AdGuardHome release:
+Run the following command to download and extract the latest *AdGuardHome* release:
 ```
 curl -sSL https://github.com/AdguardTeam/AdGuardHome/releases/latest/download/AdGuardHome_linux_arm64.tar.gz | tar -xz
 ```
@@ -1137,8 +1137,8 @@ This ensures that *NetworkManager* uses *Dnsmasq* for DHCP and DNS.
 
 *NetworkManager* uses two different configuration folders for Dnsmasq:
 
-- Standard Interfaces (`/etc/NetworkManager/dnsmasq.d/`) → Used for lo (localhost).
-- Shared Interfaces (`/etc/NetworkManager/dnsmasq-shared.d/`) → Used for shared networks like *wlan0* and *usb0*.
+- *Standard Interfaces* (`/etc/NetworkManager/dnsmasq.d/`) → Used for lo (localhost).
+- *Shared Interfaces* (`/etc/NetworkManager/dnsmasq-shared.d/`) → Used for shared networks like *wlan0* and *usb0*.
 
 We need to configure both.
 
@@ -1261,10 +1261,10 @@ sudo apt install -y unbound unbound-anchor
 Our *Unbound* configuration is designed for a privacy-focused, high-performance recursive DNS resolver with DNSSEC validation, enhanced caching, and security hardening. Download our pre-configured *Unbound* configuration file from our repository:<br>
 
 ```
-curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf"
+sudo curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/unbound/unbound-dnssec.conf"
 ```
 
-Privacy & Security Features:
+**Privacy & Security Features:**
 
 - Eliminates reliance on external DNS providers by performing full recursive resolution (queries start at root servers).
 - Prevents DNS leaks by blocking queries for local/private IPs.
@@ -1274,7 +1274,7 @@ Privacy & Security Features:
 - Blocks metadata requests to obscure server details.
 - Implements rate limiting to prevent abuse.
 
-Performance Enhancements:
+**Performance Enhancements:**
 
 - Aggressive caching with long TTLs.
 - Prefetching enabled to speed up repeated queries.
