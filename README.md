@@ -764,32 +764,32 @@ sudo nmcli connection modify usb0-static ethernet.cloned-mac-address permanent
 
 #### 4. Enable IPv4 Forwarding
 
-To allow internet sharing from Raspberry Pi's Wi-Fi to the connected computer, enable IPv4 forwarding. Modify `/etc/sysctl.conf` to enable IPv4 forwarding:<br>
+To allow internet sharing from Raspberry Pi's Wi-Fi to the connected computer, enable IPv4 forwarding. Modify `/etc/sysctl.conf`:<br>
 ```
 sudo sed -i 's/^#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
 ```
 
-This allows forwarding network packets for sharing internet via *usb0*.
+This allows packet forwarding, enabling the Raspberry Pi to share its internet connection via *usb0*.
 
 #### 5. Apply Changes and Reboot
 
-All changes take effect after the next reboot:<br>
+For all changes to take effect, reboot your Raspberry Pi:<br>
 ```
 sudo reboot now
 ```
 
 #### 6. Verify Internet Access via Raspberry Pi USB-C Ethernet Gadget
 
-After reboot, you should be able to connect to the Raspberry Pi via USB and access the internet.
+After reboot, your Raspberry Pi should act as an *USB-C Ethernet Gadget* over USB.
 
- Connect via SSH using *usb0*:<br>
+Connect to the Raspberry Pi using the static IP address assigned to *usb0*:
 ```
 ssh term7@192.168.77.1 -p 6666
 ```
 
 Verify the connection on your computer: Go to **System Settings** → **Network** and look for **RNDIS/Ethernet Gadget**. You should see a green dot with the status: **Connected**.
 
-Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi. Switch off your Mac's Wi-Fi to test if it works.
+Since you connected your Raspberry Pi to Wi-Fi earlier as part of [03 - PREREQUISITES](#03-prerequisites), your computer should now access the internet via the Raspberry Pi. Turn off Wi-Fi on your Mac and check if you still have an internet connection.
 
 * * *
 
