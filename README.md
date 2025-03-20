@@ -1618,7 +1618,7 @@ sudo systemctl stop AdGuardHome
 
 Fetch the pre-configured setup from the repository:
 ```
-sudo curl -L -o /home/admin/build/AdGuardHome/AdGuardHome.yaml "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/adguardhome/AdGuardHome.yaml"
+sudo curl -L -o /home/admin/build/AdGuardHome/AdGuardHome.yaml "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/adguard-home/AdGuardHome.yaml"
 ```
 
 Restrict file permissions:
@@ -1627,11 +1627,18 @@ sudo chmod 600 ~/build/AdGuardHome/AdGuardHome.yaml
 ```
 #### 3. Change the Default Password
 
-Since this is a public repository, the default password is set to *"default"*. You must change it:
+Since this is a public repository, the default password is set to *"default"*. You must change it!
+
+To create a salted password, we need an additional software package:
+```
+sudo apt install -y whois
+```
+Then use this command to change the default password:
 
 ```
-cd ~/build/AdGuardHome && ./AdGuardHome -s reset-password
+sudo sed -i "s/^    password: default/    password: \"$(mkpasswd -m bcrypt YOUR-NEW-PASSWORD)\"/" ~/build/AdGuardHome/AdGuardHome.yaml
 ```
+Change YOUR-NEW-PASSWORD to a safe password of your choice!
 
 #### 4. Restart AdGuardHome
 
