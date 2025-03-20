@@ -564,7 +564,7 @@ sudo sed -i '/::/d' /etc/hosts
 
 ## 08 RANDOM MAC ADDRESS
 
-By default, modern Raspberry Pi OS uses NetworkManager to handle network interfaces, DHCP, and Wi-Fi settings. To enhance privacy and prevent tracking, we will enable MAC address randomization using NetworkManager’s built-in functionality.
+By default, modern Raspberry Pi OS uses *NetworkManager* to handle network interfaces, DHCP, and Wi-Fi settings. To enhance privacy and prevent tracking, we will configure *NetworkManager’s* built-in MAC address randomization.
 
 #### 1. Enable MAC Address Randomization:
 
@@ -582,13 +582,17 @@ connection.stable-id=${CONNECTION}/${BOOT}' | sudo tee ~00-randomize.conf > /dev
 
 #### 2. Apply Changes:
 
-Restart NetworkManager to apply the new configuration:<br>
-`sudo systemctl restart NetworkManager`
+Restart NetworkManager to apply the new configuration:
+```
+sudo systemctl restart NetworkManager
+```
 
 #### 3. Verify MAC Address Randomization:
 
-To check if the MAC address is changing dynamically, run:<br>
-`sudo nmcli device show | grep GENERAL.HWADDR`
+To check if the MAC address is changing dynamically, run:
+```
+sudo nmcli device show | grep GENERAL.HWADDR
+```
 
 Run this command before and after a reboot to confirm that the MAC address changes. If the MAC address is different after each reboot, the setup is working correctly.
 
