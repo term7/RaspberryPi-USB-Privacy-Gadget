@@ -543,7 +543,7 @@ Permanently disable IPv6 by modifying `/etc/sysctl.conf`:
 echo -e "\n# Disable IPv6:\nnet.ipv6.conf.all.disable_ipv6 = 1\nnet.ipv6.conf.default.disable_ipv6 = 1\nnet.ipv6.conf.lo.disable_ipv6 = 1" | sudo tee -a /etc/sysctl.conf > /dev/null`
 ```
 
-Modify boot parameters in /boot/firmware/cmdline.txt to prevent IPv6 from loading at boot:
+Modify boot parameters in `/boot/firmware/cmdline.txt` to prevent IPv6 from loading at boot:
 ```
 sudo sed -i 's/$/ ipv6.disable=1/' /boot/firmware/cmdline.txt
 ```
