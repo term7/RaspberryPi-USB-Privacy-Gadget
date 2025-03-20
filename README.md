@@ -618,9 +618,9 @@ First we create the folders where we want to store our scripts and our dictionar
 [ -d ~/script ] || mkdir ~/script && [ -d ~/script/randhost ] || mkdir ~/script/randhost
 ```
 
-Download our UK English dictionary:
+Download and unzip our *UK English dictionary*:
 ```
-curl -L -o ~/tools/dict/ukenglish.zip https://codeberg.org/term7/Going-Dark/raw/branch/main/misc/Dictionary/ukenglish.zip
+curl -L https://codeberg.org/term7/Going-Dark/raw/branch/main/misc/Dictionary/ukenglish.zip -o ~/tools/dict/ukenglish.zip && unzip -o ~/tools/dict/ukenglish.zip -d ~/tools/dict/ && rm ~/tools/dict/ukenglish.zip
 ```
 
 #### 2. Create the Script to Randomize the Hostname
