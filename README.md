@@ -931,7 +931,15 @@ By default, the Raspberry Pi synchronizes time using the Debian NTP pool servers
 
 For more details, visit: [NTP Pool Project](https://www.ntppool.org/en/use.html)
 
-#### 1. Download & Apply NTP Configuration:
+#### 1. Install NTP:
+
+First, install the NTP package. This will automatically remove *systemd-timesyncd*, which is the default time synchronization service on the Raspberry Pi:
+
+```
+sudo apt install -y ntp
+```
+
+#### 2. Download & Apply NTP Configuration:
 
 To simplify the setup, download our pre-configured NTP configuration file from our repository:
 ```
@@ -944,7 +952,7 @@ This configuration:<br>
 - Prevents major time synchronization issues after long offline periods.
 
 
-#### 2. Potential Issues:
+#### 3. Potential Issues:
 
 If the Raspberry Pi remains offline for an extended period, its internal clock may drift significantly. Our current settings prevent NTP from rejecting its own local clock after long downtimes. Without these settings, a large time discrepancy could cause the Raspberry Pi to become unable to connect to the internet.<br>
 If the Raspberry Pi loses internet access, it will continue serving time to local clients based on the last known good sync. However, over time, clock drift errors may accumulate, potentially affecting internet connectivity and secure connections (e.g., TLS/SSL certificates may become invalid due to incorrect system time). To mitigate this issue, we strongly recommend installing a Real-Time Clock (RTC) module, that keeps track of time even when the device is powered off.
@@ -993,7 +1001,7 @@ sudo systemsetup -getnetworktimeserver
 
 However, this command only returns the first server in the list!
 
-#### 3. Optional - Install an RTC Module for Reliable Offline Timekeeping:
+#### 4. Optional - Install an RTC Module for Reliable Offline Timekeeping:
 
 In this guide, we will set up the [RV3028 RTC Module](https://shop.pimoroni.com/products/rv3028-real-time-clock-rtc-breakout?variant=27926940549203). If you use a different RTC module, follow the respective installation instructions. Make sure you are connected to your Raspberry Pi via SSH and logged into your *admin* account.
 
