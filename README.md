@@ -1243,7 +1243,7 @@ dhcp-option=tag:wlan0,12' | sudo tee /etc/NetworkManager/dnsmasq-shared.d/01_usb
 
 IMPORTANT: These changes will take effect only after restarting *NetworkManager*. However, since you are connected via SSH, restarting *NetworkManager* would break your connection. The only way to apply these changes without losing access is a full system reboot.
 
-**⚠ Do NOT reboot your Raspberry Pi at this stage!
+**⚠ Do NOT reboot your Raspberry Pi at this stage!**
 
 *AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity or lock you out. Continue with the remaining setup steps before restarting.**
 
@@ -1593,14 +1593,7 @@ If the test is successful, restart *NGINX*:
 sudo systemctl restart nginx
 ```
 
-#### 4. Restart Raspberry Pi
-
-To apply all changes and ensure that *NGINX*, *NetworkManager*, *Dnsmasq*, *AdGuardHome*, and *Unbound* restart with the correct configurations, reboot your Raspberry Pi:
-```
-sudo reboot now
-```
-
-**⚠️ IMPORTANT: At this stage, the necessary services are running, but the firewall is not yet configured. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall.**
+**⚠️ IMPORTANT: At this stage, the necessary services, exept are configured, but the firewall is not yet set up. Without proper firewall rules, routing will not function as expected, and your setup may not work correctly. The next section will guide you through setting up the firewall. Complete this section first before rebooting your Raspberry Pi.**
 
 * * *
 
@@ -1683,7 +1676,7 @@ sudo reboot now
 
 This repository provides a pre-configured *AdGuardHome* setup, which we highly recommend using. It is specifically tailored to prevent common conflicts, such as port overlaps with *NGINX* for HTTPS. Additionally, it ensures seamless integration with our setup by:
 
-- Avoiding port overlaps with NGINX for HTTPS.
+- Avoiding port overlaps with *NGINX* for HTTPS.
 - Assigning correct DNS ports for compatibility.
 - Pre-configuring the necessary SSL certificate paths from the previous section.
 - Using *Unbound* as the sole upstream resolver for enhanced privacy and security.
