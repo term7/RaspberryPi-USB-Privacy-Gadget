@@ -1784,13 +1784,13 @@ This repository provides a pre-configured *AdGuardHome* setup, which we highly r
 Additionally, this configuration includes:
 
 - Predefined fallback DNS servers for encrypted queries (DNS-over-HTTPS), we think they are likely trustworthy:
-    - https://doh.mullvad.net/dns-query
-    - https://dns.digitale-gesellschaft.ch/dns-query
-    - https://anycast.uncensoreddns.org/dns-query
-    - https://unicast.uncensoreddns.org/dns-query
-    - https://doh.libredns.gr/dns-query
-    - https://odvr.nic.cz/dns-query
-    - https://doh.ffmuc.net/dns-query
+    - `https://doh.mullvad.net/dns-query`
+    - `https://dns.digitale-gesellschaft.ch/dns-query`
+    - `https://anycast.uncensoreddns.org/dns-query`
+    - `https://unicast.uncensoreddns.org/dns-query`
+    - `https://doh.libredns.gr/dns-query`
+    - `https://odvr.nic.cz/dns-query`
+    - `https://doh.ffmuc.net/dns-query`
 - Optimized caching settings for improved performance.
 - Comprehensive logging and debugging options.
 - Multiple DNS filters to block ads, trackers, and malicious domains.
