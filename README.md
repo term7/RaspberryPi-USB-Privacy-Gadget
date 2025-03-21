@@ -1962,17 +1962,18 @@ Number of entries: 93 / 22 Feb 2025
 
 #### Optional Blocklist
 
-This blocklist is disabled by default and is intended for advanced users only. It is a highly aggressive list that blocks all known Apple domains, as well as third-party services used by Apple.
+This blocklist is disabled by default and intended for advanced users who want to fully restrict Apple’s online services. It is an aggressive list that blocks all known Apple domains, along with many third-party services used by Apple infrastructure.
 
-This list will completely break Apple services, such as iCloud, Apple TV+, Apple Music, Apple Arcade, Apple Maps, Apple News+, Apple Pay, App Store, iMessage, FaceTime, FindMy, etc.
+**⚠️ Warning: Enabling this list will completely break most Apple services, including (but not limited to): iCloud, Apple TV+, Apple Music, Apple Arcade, Apple Maps, Apple News+, Apple Pay, App Store, iMessage, FaceTime, FindMy, etc.**
 
-We are currently working to identify and allow only the domains required for critical system and security updates.
+Despite the broad blocking, we actively maintain a minimal allowlist of essential domains required for critical macOS/iOS software and security updates.
 
 
 10.<br>
 Term7: Break Apple Blocklist<br>
-Description: BREAKS APPLE SOFTWARE - Ultimate Apple Blocklist<br>
-Number of entries: 32 / 15 Mar 2025
+Description: Ultimate Apple Blocklist - WARNING: Breaks Apple Services<br>
+Comment: Allows critical Software and Security Updates<br>
+Number of entries: 37 / 21 Mar 2025
 
 [https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt](https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt)
 
