@@ -153,8 +153,7 @@ filters:
     id: 1739995786
 whitelist_filters: []
 user_rules:
-  - '! Allow Tor'
-  - '!'
+  - '! Allow Tor Check'
   - '@@||check.torproject.org^$important'
 dhcp:
   enabled: false

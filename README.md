@@ -1795,7 +1795,7 @@ Additionally, this configuration includes:
 - Comprehensive logging and debugging options.
 - Multiple DNS filters to block ads, trackers, and malicious domains.
 
-By using this setup, you can avoid potential issues and ensure a smooth, hassle-free deployment.
+By using this setup, you can avoid potential issues and ensure a smooth, hassle-free deployment. Unless you know exactly what you are doing, we recommend you don't change our *Encryption Settings* and don't use *AdGuardHome's* built-in DHCP server. We have set up *NetworkManager* and *Dnsmasq* to handle DHCP.
 
 #### 1. Stop AdGuardHome
 
@@ -1858,4 +1858,121 @@ Your *AdGuardHome* installation is now fully configured and running!
 
 ## 20 DNS BLOCKLISTS
 
-In this section we want to briefly talk about DNS blocklists and allowlists.
+In this section, we’ll briefly cover DNS blocklists and allowlists — two essential tools for controlling DNS traffic in *AdGuardHome*.
+
+#### Disallowed Domains
+
+*AdGuardHome*  supports a list of Disallowed Domains, which are domains that will be explicitly blocked. By default, only `version.bind` is included, but we’ve expanded this list to cover domains commonly used for DNS diagnostics, debugging, or network testing—not regular web browsing or app usage. Blocking these domains helps to enhance privacy by preventing IP and server info leakage, reduce unnecessary DNS queries and avoids exposing internal DNS details:
+
+- `version.bind`
+- `id.server`
+- `hostname.bind`
+- `devices.resolving.planetlab.google.com`
+- `whoami.ultradns.net`
+- `whoami.akamai.net`
+- `debug.opendns.com`
+- `resolver.dnscrypt.info`
+- `edns-client-subnet.test-ipv6.com`
+- `test.dnssec-or-not.net`
+- `porttest.dns-oarc.net`
+
+#### Custom Filtering Rules
+
+n this section, we explicitly allow the domain `check.torproject.org`:
+
+```
+! Allow Tor Check
+!
+@@||check.torproject.org^$important
+```
+
+This domain is used later in our [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy) setup to verify Tor routing. Since it is blocked by one of our pre-configured blocklists, we whitelist it here to ensure it functions correctly. Feel free to add your own custom allow or block rules in this section, depending on your specific use case.
+
+#### Pre-cnofigured Blocklists
+
+Our default blocklists are sourced from this excellent GitHub repository maintained by Gerd Hagezi:
+[https://github.com/hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists)
+
+The following lists are enabled by default in our configuration:
+
+1.<br>
+**Hagezi: Threat Intelligence Feeds**<br>
+*Description: Increases security significantly! Blocks Malware, Cryptojacking, Spam, Scam and Phishing.*<br>
+Number of entries: 962584 / 21 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/tif.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/tif.txt)
+
+2.<br>
+**Hagezi: Multi ULTIMATE**<br>
+*Description: Ultimate Sweeper - Strictly cleans the Internet and protects your privacy! Blocks Ads, Affiliate, Tracking, Metrics, Telemetry, Phishing, Malware, Scam, Free Hoster, Fake, Crytojacking and other "Crap".*<br>
+Number of entries: 334037 / 21 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/ultimate.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/ultimate.txt)
+
+3.<br>
+Hagezi: Gambling DNS Blocklist<br>
+Description: Blocks gambling content.<br>
+Number of entries: 704324 / 21 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/gambling.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/gambling.txt)
+
+4.<br>
+Hagezi: Fake DNS Blocklist<br>
+Description: Protects against internet scams, traps & fakes! Blocks fake stores, -streaming, rip-offs, cost traps and co..<br>
+Number of entries: 10744 / 20 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/fake.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/fake.txt)
+
+5.<br>
+Hagezi: Pop-Up Ads DNS Blocklist<br>
+Description: Blocks annoying and malicious pop-up ads.<br>
+Number of entries: 100339 / 20 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/popupads.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/popupads.txt)
+
+6.<br>
+Hagezi: DoH/VPN/TOR/Proxy Bypass<br>
+Description: Prevent methods to bypass your DNS, blocks encrypted DNS, VPN, TOR, Proxies.<br>
+Number of entries: 3888 / 20 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/doh-vpn-proxy-bypass.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/doh-vpn-proxy-bypass.txt)
+
+7.<br>
+Hagezi: Amazon Tracker DNS Blocklist<br>
+Description: Blocks Amazon native broadband tracker that track your activity.<br>
+Number of entries: 334 / 08 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.amazon.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.amazon.txt)
+
+8.<br>
+Hagezi: Windows/Office Tracker DNS Blocklist<br>
+Description: Blocks Windows/Office native broadband tracker that track your activity.<br>
+Number of entries: 357 / 14 Mar 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.winoffice.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.winoffice.txt)
+
+9.<br>
+Hagezi: Apple Tracker DNS Blocklist<br>
+Description: Blocks Apple native broadband tracker that track your activity.<br>
+Number of entries: 93 / 22 Feb 2025
+
+[https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.apple.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/native.apple.txt)
+
+
+
+#### Optional Blocklist
+
+This blocklist is disabled by default and is intended for advanced users only. It is a highly aggressive list that blocks all known Apple domains, as well as third-party services used by Apple.
+
+This list will completely break Apple services, such as iCloud, Apple TV+, Apple Music, Apple Arcade, Apple Maps, Apple News+, Apple Pay, App Store, iMessage, FaceTime, FindMy, etc.
+
+We are currently working to identify and allow only the domains required for critical system and security updates, to offer a more selective blocking option in the future.
+
+
+10.<br>
+Term7: Break Apple Blocklist<br>
+Description: BREAKS APPLE SOFTWARE - Ultimate Apple Blocklist<br>
+Number of entries: 32 / 15 Mar 2025
+
+[https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt](https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt)
+
