@@ -1970,7 +1970,7 @@ Despite the broad blocking, we actively maintain a minimal allowlist of essentia
 
 
 10.<br>
-Term7: Break Apple Blocklist<br>
+**Term7: Ultimate Apple Blocklist**<br>
 Description: Ultimate Apple Blocklist - WARNING: Breaks Apple Services<br>
 Comment: Allows critical Software and Security Updates<br>
 Number of entries: 37 / 21 Mar 2025
