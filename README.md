@@ -2052,7 +2052,7 @@ When *WireGuard* is active, we want to adjust our firewall so that traffic is ro
 
 First, create the necessary directory structure for firewall configs:
 ```
-[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/nftables ] || mkdir ~/script/nftables
+[ -d ~/script ] || mkdir ~/script && [ -d ~/script/nftables ] || mkdir ~/script/nftables
 ```
 
 Make a backup of the default *nftables* configuration:
