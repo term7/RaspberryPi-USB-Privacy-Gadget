@@ -1966,7 +1966,7 @@ This blocklist is disabled by default and is intended for advanced users only. I
 
 This list will completely break Apple services, such as iCloud, Apple TV+, Apple Music, Apple Arcade, Apple Maps, Apple News+, Apple Pay, App Store, iMessage, FaceTime, FindMy, etc.
 
-We are currently working to identify and allow only the domains required for critical system and security updates, to offer a more selective blocking option in the future.
+We are currently working to identify and allow only the domains required for critical system and security updates.
 
 
 10.<br>
