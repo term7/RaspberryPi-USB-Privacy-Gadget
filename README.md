@@ -1856,6 +1856,11 @@ Now, test your setup:
 
 Your *AdGuardHome* installation is now fully configured and running!
 
+#### 6. Test DNSSEC Validation
+
+To test if DNSSEC validation is working, visit this website:<br>
+[https://wander.science/projects/dns/dnssec-resolver-test/](https://wander.science/projects/dns/dnssec-resolver-test/)
+
 * * *
 
 ## 20 DNS BLOCKLISTS
@@ -2073,7 +2078,7 @@ sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/script/n
 
 ### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script
 
-We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects.
+We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects. When the VPN is active, *Unbound* switches into a 'VPN mode': instead of performing recursive DNS resolution using root servers, it now forwards all DNS queries through the encrypted *WireGuard* tunnel. These forwarded queries are then resolved on the other end of the tunnel. In our case, that’s our home router, which is configured to use DNS-over-HTTPS (DoH) for secure and private DNS resolution. Despite switching to a forwarding setup, *Unbound* will still enforce DNSSEC validation, ensuring that DNS responses are authenticated and have not been tampered with.
 
 Create the script:
 
@@ -2138,3 +2143,14 @@ To stop *WireGuard VPN*:
 ```
 sudo nmcli con down term7.wireguard
 ```
+
+#### 6. Test DNSSEC Validation & DNS Leaks
+
+To verify that DNSSEC validation is still functioning correctly, visit:<br>
+[https://wander.science/projects/dns/dnssec-resolver-test/](https://wander.science/projects/dns/dnssec-resolver-test/)
+
+To check for DNS leaks, use:<br>
+[https://dnsleaktest.com](https://dnsleaktest.com)
+
+The only visible IP address should be that of your VPN provider or the DNS server configured on your home router or VPS.
+If you see your local ISP's DNS servers, the VPN tunnel or *Unbound* forwarding may not be working as intended.
