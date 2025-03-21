@@ -2106,7 +2106,6 @@ case "$1" in
 
                 sudo systemctl restart unbound
                 ;;
-
             down)
                 # Restore default nftables rules
                 /usr/sbin/nft -f "$DEFAULT_RULES"
