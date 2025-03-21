@@ -854,6 +854,8 @@ sudo nmcli con down Wi-Fi
 sudo nmcli con modify Wi-Fi ifname wlx00c0caae6319
 ```
 
+**⚠️ Warning: Use the actual predictable interface name of your own Wi-Fi adapter!**
+
 Start the external Wi-Fi connection:
 ```
 sudo nmcli con up Wi-Fi
@@ -1966,7 +1968,7 @@ This blocklist is disabled by default and intended for advanced users who want t
 
 **⚠️ Warning: Enabling this list will completely break most Apple services, including (but not limited to): iCloud, Apple TV+, Apple Music, Apple Arcade, Apple Maps, Apple News+, Apple Pay, App Store, iMessage, FaceTime, FindMy, etc.**
 
-Despite the broad blocking, we actively maintain a minimal allowlist of essential domains required for critical macOS/iOS software and security updates.
+Despite the broad blocking, we actively maintain a minimal allowlist of essential domains required for critical macOS software and security updates.
 
 
 10.<br>
@@ -1977,3 +1979,158 @@ Number of entries: 37 / 21 Mar 2025
 
 [https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt](https://codeberg.org/term7/Break-Apple-Blocklist/raw/branch/main/Break-Apple-Blocklist.txt)
 
+* * *
+
+## 21 WIREGUARD VPN
+
+In this section, we’ll configure a Raspberry Pi as a *WireGuard client* that can be activated whenever you need it. This setup works seamlessly with *AdGuardHome*, which will continue to filter ads and block malicious domains before DNS queries are forwarded through the *WireGuard VPN* tunnel.
+
+In our personal setup, we’ve installed a *WireGuard* server on our home router (running OpenWRT). When we travel, whether staying in a hotel, at an airport, or working from a café abroad, our Raspberry Pi tunnels all network traffic through a secure, encrypted *WireGuard* connection back to our home router.<br>
+This means our internet traffic is shielded from local networks and snoopers. We can securely access our home network and services from anywhere in the world and devices connected to the Pi will appear to access the internet from our home IP address.
+
+**Note: A full walkthrough of setting up a WireGuard server on your home router is beyond the scope of this tutorial.**
+
+For this tutorial, we’ll assume:
+
+- You already have access to a *WireGuard Server*.
+- You have a *WireGuard Client Configuration File* ready to import.
+
+This server can be:
+
+- A self-hosted *WireGuard* instance running on your home router
+- A self-hosted *WireGuard* instance on a *Virtual Private Server* (VPS) 
+- Or a trusted VPN provider that supports *WireGuard*
+
+If you don’t run your own server, both [Mullvad](https://mullvad.net/en) and [ProtonVPN](https://protonvpn.com/) are strong privacy-focused options. They offer support for *WireGuard* and allow you to download config files that work without their apps.
+
+1. [ProtonVPN](https://protonvpn.com/) → Swiss-based, supports WireGuard and allows client profile generation (paid subscription required).
+2. [Mullvad](https://mullvad.net/en) → Swedish-based, offers app-free WireGuard configuration downloads with no email required.
+
+**Note: Both claim strict no-logs policies, but like all VPN providers, this trust cannot be independently verified. If you’re using a commercial VPN, you ultimately have to trust the provider.**
+
+### 1. Copy your WireGuard Configuration to your Raspberry Pi
+
+In this tutorial, we’ll use a *WireGuard* configuration file named `term7.wireguard.conf`. Replace this filename with your own wherever it appears.
+
+Since we have disabled root login, we’ll need to copy the configuration file to your non-root user account on the Raspberry Pi.On your Mac, open a terminal and run:
+
+```
+scp -P 6666 ~/Desktop/wireguard-export/term7.wireguard.conf term7@192.168.77.1:/home/term7/
+```
+
+Now, log into your Raspberry Pi using your admin user account and prepare the directory to store the config file:
+```
+[ -d ~/tools ] || mkdir ~/tools && [ -d ~/tools/wireguard-export ] || mkdir ~/tools/wireguard-export
+```
+
+Move the configuration file to its new location:
+```
+sudo mv /home/term7/term7.wireguard.conf ~/tools/wireguard-export/term7.wireguard.conf
+```
+
+#### 2. Import the WireGuard Configuration with NetworkManager
+
+NetworkManager has built-in support for *WireGuard*. We use it to import our configuration::
+
+```
+sudo nmcli connection import type wireguard file ~/tools/wireguard-export/term7.wireguard.conf
+```
+
+Disable auto-connect for this VPN profile (we’ll activate it manually):
+```
+sudo nmcli con modify term7.wireguard connection.autoconnect no
+```
+
+### 3. Setup WireGuard Firewall
+
+When *WireGuard* is active, we want to adjust our firewall so that traffic is routed through the VPN (`term7.wireguard`) instead of the default Ethernet or Wi-Fi interface.
+
+First, create the necessary directory structure for firewall configs:
+```
+[ -d ~/script ] || mkdir ~/script && cd ~/script && [ -d ~/script/nftables ] || mkdir ~/script/nftables
+```
+
+Make a backup of the default *nftables* configuration:
+```
+sudo cp /etc/nftables.conf ~/script/nftables/nftables.conf
+```
+
+Copy the default rules as a base for the WireGuard-specific configuration:
+```
+sudo cp ~/script/nftables/nftables.conf ~/script/nftables/wireguard.conf
+```
+
+Update the interface definition in the new config to route traffic via the WireGuard interface:
+```
+sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/home/admin~/script/nftables/wireguard.conf
+
+```
+
+### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script
+
+We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects.
+
+Create the script:
+
+```
+sudo tee /etc/NetworkManager/dispatcher.d/wireguard-handler > /dev/null << 'EOF'
+#!/bin/bash
+
+# Define Interfaces
+WG_INTERFACE="term7.wireguard"
+
+# Define Config Files
+WG_RULES="/home/admin/script/nftables/wireguard.conf"
+DEFAULT_RULES="/etc/nftables.conf"
+UNBOUND_CONFIG="/etc/unbound/unbound.conf.d/local-zones.conf"
+
+# Define WireGuard DNS Config
+WG_DNS_CONFIG="# Upstream DNS via WireGuard\nforward-zone:\n    name: \".\"\n    forward-addr: 10.13.0.1"
+
+case "$1" in
+    $WG_INTERFACE)
+        case "$2" in
+            up)
+                # Apply WireGuard firewall rules
+                /usr/sbin/nft -f "$WG_RULES"
+
+                # Append WireGuard DNS to Unbound if not already present
+                if ! grep -Fxq "$WG_DNS_CONFIG" "$UNBOUND_CONFIG"; then
+                    echo -e "\n$WG_DNS_CONFIG" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+                fi
+
+                sudo systemctl restart unbound
+                ;;
+
+            down)
+                # Restore default nftables rules
+                /usr/sbin/nft -f "$DEFAULT_RULES"
+
+                # Remove WireGuard DNS Config
+                sed -i '/fallback-enabled: yes/,$d' "$UNBOUND_CONFIG"
+                echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+
+                sudo systemctl restart unbound
+                ;;
+        esac
+        ;;
+esac
+EOF
+```
+
+Make script executable:
+```
+sudo chmod +x /etc/NetworkManager/dispatcher.d/wireguard-handler
+```
+
+### 5. Test the WireGuard Connection:
+
+To start *WireGuard VPN*:
+```
+sudo nmcli con up term7.wireguard
+```
+
+To stop *WireGuard VPN*:
+```
+sudo nmcli con down term7.wireguard
+```
