@@ -2036,6 +2036,11 @@ NetworkManager has built-in support for *WireGuard*. We use it to import our con
 sudo nmcli connection import type wireguard file ~/tools/wireguard-export/term7.wireguard.conf
 ```
 
+Once imported, it's a good idea to bring the connection down immediately (in case it auto-connected):
+```
+sudo nmcli con down term7.wireguard
+```
+
 Disable auto-connect for this VPN profile (we’ll activate it manually):
 ```
 sudo nmcli con modify term7.wireguard connection.autoconnect no
