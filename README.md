@@ -39,8 +39,8 @@ We first came up with the idea for this Raspberry Pi Ethernet Gadget five years 
 
 As we investigated the issue online, we came across a blog post by security researcher Jeffrey Paul, titled [Your Computer Isn't Yours](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates). His findings shed light on the problem, and we highly recommend reading this article before setting up your own Raspberry Pi Privacy Gadget.
 
-In short: modern macOS versions have a built-in capability to bypass internal firewalls and VPNs. Additionally, every Apple computer continuously connects to both Apple’s servers and third parties (such as Fastly) to transmit hashes of apps being used—every time they are launched.<br>
-Apple claims this feature exists solely to prevent malicious or blacklisted apps from running if an online certificate check fails. While this may be true, it also means Apple can always determine when you’re online, where you are, how long you use specific software (e.g., VMWare Fusion), and even when you launch privacy-focused tools like the Tor Browser.<br>
+In short: modern versions of MacOS have a built-in capability to bypass internal firewalls and VPNs. Additionally, every Apple computer continuously connects to both Apple’s servers and third parties (such as Fastly) to transmit hashes of apps being used—every time they are launched:<br>
+This is meant to be a security feature to detect malicious software. It exists to prevent malicious or blacklisted apps from running if an online certificate check fails. While this may be true, it also means Apple can always determine when you are online, where you are, how long you use specific software like VMWare Fusion), or when you use the Tor Browser instead of Safari.<br>
 Over time, this data collection builds a highly detailed profile of your digital habits, physical movements, and activity patterns. Worse, this information can potentially be correlated with other big data sources from corporations like Google, Microsoft, and Facebook. As Jeffrey Paul aptly points out:
 
 *Since October of 2012, Apple is a partner in the US military intelligence community’s PRISM spying program, which grants the US federal police and military unfettered access to this data without a warrant, any time they ask for it.*
@@ -53,7 +53,7 @@ According to Apple, [privacy](https://www.apple.com/privacy/) is a fundamental h
 
 *Privacy is a fundamental human right. At Apple, it’s also one of our core values. Your devices are important to so many parts of your life. What you share from those experiences, and who you share it with, should be up to you. We design Apple products to protect your privacy and give you control over your information. It’s not always easy. But that’s the kind of innovation we believe in.*
 
-Yet, claiming to deeply care about user privacy while participating in programs like [PRISM](https://en.wikipedia.org/wiki/PRISM_(surveillance_program)#Extent_of_the_program), exposes a double-standard that should not be tolerated.
+Yet, claiming to deeply care about user privacy while officially supporting the [CLOUD Act](https://en.wikipedia.org/wiki/CLOUD_Act) and participating in programs like [PRISM](https://en.wikipedia.org/wiki/PRISM_(surveillance_program)#Extent_of_the_program), exposes a double-standard that should not be tolerated.
 
 Who’s to say something like the ContentFilterExclusionList won’t quietly return in a future update?
 We believe Apple cannot be trusted with our data. That’s why we built the Raspberry Pi Ethernet Gadget—a portable external network filtering device designed to make data harvesting as difficult as possible.
@@ -63,9 +63,9 @@ But it should be!
 
 * * *
 
-On February 21, 2025, Apple disabled its Advanced Data Protection (ADP) feature for UK customers, likely in response to a secretive UK government directive issued under the Investigatory Powers Act of 2016. ​Already on 7 February 2025, the [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/) reported on a leaked document that anticipated Apple's move.
+On February 21, 2025, Apple disabled its Advanced Data Protection (ADP) feature for UK customers, likely in response to a secretive UK government directive, konwn as a Technical Capability Notice, issued under the Investigatory Powers Act of 2016. ​Already on 7 February 2025, the [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/) reported on a leaked document that anticipated Apple's move. In compliance, Apple ceased offering ADP to new UK users and announced plans to disable it for existing users. This move likely is an attampt to protect Apple customers worldwide, since British surveillance authorities demand worldwide access to encrypted Apple backups.
 
-This directive, known as a Technical Capability Notice, compelled Apple to provide backdoor access to encrypted iCloud data, effectively undermining the end-to-end encryption that ADP offers. In compliance, Apple ceased offering this feature to new UK users and announced plans to disable it for existing users. 
+This kind of surveillance order, even [Google](https://www.heise.de/en/news/Even-Google-cannot-deny-the-British-surveillance-order-10318847.html) can neither confirm nor deny, indicating that it received a similar Technical Capability Notice.
 
 *"The UK Government has given themselves the power to serve companies anywhere in the world notices that order them to undermine the security of their users, products, or services in secret. The company can’t tell anyone, they can’t even publicly say they’ve received one. They can’t say if they disagree, they can’t let users know they’ve been affected, and they can’t question the power in open court because the secret order is, well, secret. The notice affects millions of people, who aren’t allowed to find out it exists.”*
 
@@ -86,6 +86,9 @@ Privacy International:<br>
 The Washington Post:<br>
 [https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/)
 
+Heise Online:<br>
+[https://www.heise.de/en/news/Even-Google-cannot-deny-the-British-surveillance-order-10318847.html](https://www.heise.de/en/news/Even-Google-cannot-deny-the-British-surveillance-order-10318847.html)
+
 Jeffrey Paul:<br/>
 [https://sneak.berlin/20201112/your-computer-isnt-yours/#updates](https://sneak.berlin/20201112/your-computer-isnt-yours/#updates)
 
@@ -93,9 +96,10 @@ Apple:<br/>
 [https://www.apple.com/privacy/](https://www.apple.com/privacy/)<br/>
 [https://www.apple.com/legal/transparency/](https://www.apple.com/legal/transparency/)
 
-PRISM:<br/>
+PRISM & CLOUD Act:<br/>
 [https://en.wikipedia.org/wiki/PRISM_(surveillance_program)](https://en.wikipedia.org/wiki/PRISM_(surveillance_program))<br/>
-[https://www.reuters.com/article/us-apple-fbi-icloud-exclusive/exclusive-apple-dropped-plan-for-encrypting-backups-after-fbi-complained-sources-idUSKBN1ZK1CT](https://www.reuters.com/article/us-apple-fbi-icloud-exclusive/exclusive-apple-dropped-plan-for-encrypting-backups-after-fbi-complained-sources-idUSKBN1ZK1CT)
+[https://www.reuters.com/article/us-apple-fbi-icloud-exclusive/exclusive-apple-dropped-plan-for-encrypting-backups-after-fbi-complained-sources-idUSKBN1ZK1CT](https://www.reuters.com/article/us-apple-fbi-icloud-exclusive/exclusive-apple-dropped-plan-for-encrypting-backups-after-fbi-complained-sources-idUSKBN1ZK1CT)<br>
+[https://en.wikipedia.org/wiki/CLOUD_Act](https://en.wikipedia.org/wiki/CLOUD_Act)
 
 Objective Development:<br/>
 [https://blog.obdev.at/a-wall-without-a-hole/](https://blog.obdev.at/a-wall-without-a-hole/)<br/>
@@ -1779,7 +1783,14 @@ This repository provides a pre-configured *AdGuardHome* setup, which we highly r
 
 Additionally, this configuration includes:
 
-- Predefined fallback DNS servers for encrypted queries.
+- Predefined fallback DNS servers for encrypted queries (DNS-over-HTTPS), we think they are likely trustworthy:
+    - https://doh.mullvad.net/dns-query
+    - https://dns.digitale-gesellschaft.ch/dns-query
+    - https://anycast.uncensoreddns.org/dns-query
+    - https://unicast.uncensoreddns.org/dns-query
+    - https://doh.libredns.gr/dns-query
+    - https://odvr.nic.cz/dns-query
+    - https://doh.ffmuc.net/dns-query
 - Optimized caching settings for improved performance.
 - Comprehensive logging and debugging options.
 - Multiple DNS filters to block ads, trackers, and malicious domains.
@@ -1837,6 +1848,7 @@ Now, test your setup:
 
 1. Disable Wi-Fi on your Mac.<br>
 2️. Open your browser and navigate to: [https://adguard.home](https://adguard.home)
+3. Log in as *term7* and YOUR-NEW-PASSWORD.
 
 **CONGRATULATIONS**
 
@@ -1846,4 +1858,4 @@ Your *AdGuardHome* installation is now fully configured and running!
 
 ## 20 DNS BLOCKLISTS
 
-... work in progress ...
+In this section we want to briefly talk about DNS blocklists and allowlists.
