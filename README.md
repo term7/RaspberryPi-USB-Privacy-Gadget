@@ -1847,7 +1847,7 @@ sudo systemctl start AdGuardHome
 Now, test your setup:
 
 1. Disable Wi-Fi on your Mac.
-2️. Open your browser and navigate to: [https://adguard.home](https://adguard.home)
+2. Open your browser and navigate to [https://adguard.home](https://adguard.home).
 3. Log in as *term7* and YOUR-NEW-PASSWORD.
 
 **CONGRATULATIONS**
