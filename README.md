@@ -2067,7 +2067,7 @@ sudo cp ~/script/nftables/nftables.conf ~/script/nftables/wireguard.conf
 
 Update the interface definition in the new config to route traffic via the WireGuard interface:
 ```
-sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/home/admin~/script/nftables/wireguard.conf
+sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/script/nftables/wireguard.conf
 
 ```
 
