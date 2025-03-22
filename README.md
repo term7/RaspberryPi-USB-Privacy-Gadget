@@ -2340,7 +2340,7 @@ Make the script executable:
 sudo chmod +x /etc/NetworkManager/dispatcher.d/torproxy-handler
 ```
 
-#### 6. Start/Stop the WireGuard Connection:
+#### 6. Start/Stop Tor Transparent Proxy:
 
 To start *Tor Transparent Proxy*:
 ```
