@@ -2288,7 +2288,7 @@ UNBOUND_MAIN_CONFIG="/etc/unbound/unbound.conf.d/unbound-dnssec.conf"
 UNBOUND_CONFIG="/etc/unbound/unbound.conf.d/local-zones.conf"
 
 # Define TorProxy  DNS Config
-TOR_DNS_CONFIG="# Upstream DNS via WireGuard\nforward-zone:\n    name: \".\"\n    forward-addr: 10.192.0.1@9053"
+TOR_DNS_CONFIG="# Upstream DNS via Tor\nforward-zone:\n    name: \".\"\n    forward-addr: 10.192.0.1@9053"
 
 case "$1" in
     $TOR_INTERFACE)
