@@ -2418,8 +2418,7 @@ sudo nmcli con down torproxy
 
 We are currently taking a break...
 
-... but soon we’ll begin work on a local web-based control interface, which you’ll be able to access from your browser at:<br>
-[https://going.dark](https://going.dark)
+... but soon we’ll begin work on a local web-based control interface, which you’ll be able to access from your browser at: [https://going.dark](https://going.dark)
 
 The web interface will allow you to:
 
