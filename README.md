@@ -2132,7 +2132,7 @@ Make script executable:
 sudo chmod +x /etc/NetworkManager/dispatcher.d/wireguard-handler
 ```
 
-#### 5. Test the WireGuard Connection:
+#### 5. Start/Stop the WireGuard Connection:
 
 To start *WireGuard VPN*:
 ```
@@ -2154,6 +2154,8 @@ To check for DNS leaks, use:<br>
 
 The only visible IP address should be that of your VPN provider or the DNS server configured on your home router or VPS.
 If you see your local ISP's DNS servers, the VPN tunnel or *Unbound* forwarding may not be working as intended.
+
+* * *
 
 ## 22 TOR TRANSPARENT PROXY
 
@@ -2197,7 +2199,10 @@ DNSPort 10.192.0.1:9053
 EOF
 ```
 
-Disable autostart at boot, since we will control the *Tor service* manually:
+Stop the *Tor service* and disable autostart at boot, since we will control the *Tor service* manually:
+```
+sudo systemctl stop tor@default
+```
 ```
 sudo systemctl disable tor@default
 ```
@@ -2335,7 +2340,19 @@ Make the script executable:
 sudo chmod +x /etc/NetworkManager/dispatcher.d/torproxy-handler
 ```
 
-#### 6. Test Tor Transparent Proxy
+#### 6. Start/Stop the WireGuard Connection:
+
+To start *Tor Transparent Proxy*:
+```
+sudo nmcli con up torproxy
+```
+
+To stop *Tor Transparent Proxy*:
+```
+sudo nmcli con down torproxy
+```
+
+#### 7. Test Tor Transparent Proxy
 
 To verify that your Raspberry Pi is correctly routing traffic through the *Tor network*, run the following command on the Pi:
 ```

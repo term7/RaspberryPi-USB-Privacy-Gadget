@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Define Interfaces
+TOR_INTERFACE="torproxy"
+
+# Define Config Files
+TOR_RULES="/home/admin/script/nftables/torproxy.conf"
+DEFAULT_RULES="/etc/nftables.conf"
+UNBOUND_MAIN_CONFIG="/etc/unbound/unbound.conf.d/unbound-dnssec.conf"
+UNBOUND_CONFIG="/etc/unbound/unbound.conf.d/local-zones.conf"
+
+# Define TorProxy  DNS Config
+TOR_DNS_CONFIG="# Upstream DNS via WireGuard\nforward-zone:\n    name: \".\"\n    forward-addr: 10.192.0.1@9053"
+
+case "$1" in
+    $TOR_INTERFACE)
+        case "$2" in
+            up)
+                # Apply Tor firewall rules
+                /usr/sbin/nft -f "$TOR_RULES"
+
+                # Start Tor service
+                sudo systemctl start tor@default
+
+                # Edit Unbound main configuration
+                sed -i 's/do-not-query-localhost: yes/do-not-query-localhost: no/' "$UNBOUND_MAIN_CONFIG"
+                sed -i 's/val-permissive-mode: no/val-permissive-mode: yes/' "$UNBOUND_MAIN_CONFIG"
+
+                # Append TorProxy DNS to Unbound if not already present
+                if ! grep -Fxq "$TOR_DNS_CONFIG" "$UNBOUND_CONFIG"; then
+                    echo -e "\n$TOR_DNS_CONFIG" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+                fi
+
+                sudo systemctl restart unbound
+                ;;
+
+            down)
+                # Restore default nftables rules
+                /usr/sbin/nft -f "$DEFAULT_RULES"
+
+                # Stop Tor service
+                sudo systemctl stop tor@default
+
+                # Restore Unbound main configuration
+                sed -i 's/do-not-query-localhost: no/do-not-query-localhost: yes/' "$UNBOUND_MAIN_CONFIG"
+                sed -i 's/val-permissive-mode: yes/val-permissive-mode: no/' "$UNBOUND_MAIN_CONFIG"
+
+                # Remove TorProxy DNS Config
+                sed -i '/fallback-enabled: yes/,$d' "$UNBOUND_CONFIG"
+                echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+
+                sudo systemctl restart unbound
+                ;;
+        esac
+        ;;
+esac
