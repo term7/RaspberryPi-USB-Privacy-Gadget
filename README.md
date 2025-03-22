@@ -1890,7 +1890,7 @@ n this section, we explicitly allow the domain `check.torproject.org`:
 ```
 ! Allow Tor Check
 !
-@@||check.torproject.org^$important
+@@||torproject.org^$important
 ```
 
 This domain is used later in our [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy) setup to verify Tor routing. Since it is blocked by one of our pre-configured blocklists, we whitelist it here to ensure it functions correctly. Feel free to add your own custom allow or block rules in this section, depending on your specific use case.
@@ -2017,7 +2017,7 @@ If you don’t run your own server, both [Mullvad](https://mullvad.net/en) and [
 
 In this tutorial, we’ll use a *WireGuard* configuration file named `term7.wireguard.conf`. Replace this filename with your own wherever it appears.
 
-Since we have disabled root login, we’ll need to copy the configuration file to your non-root user account on the Raspberry Pi.On your Mac, open a terminal and run:
+Since we have disabled root login, we’ll need to copy the configuration file to your non-root user account on the Raspberry Pi. On your Mac, open a terminal and run:
 
 ```
 scp -P 6666 ~/Desktop/wireguard-export/term7.wireguard.conf term7@192.168.77.1:/home/term7/
@@ -2051,7 +2051,7 @@ Disable auto-connect for this VPN profile (we’ll activate it manually):
 sudo nmcli con modify term7.wireguard connection.autoconnect no
 ```
 
-### 3. Setup WireGuard Firewall
+#### 3. Setup WireGuard Firewall
 
 When *WireGuard* is active, we want to adjust our firewall so that traffic is routed through the VPN (`term7.wireguard`) instead of the default Ethernet or Wi-Fi interface.
 
@@ -2076,7 +2076,7 @@ sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/script/n
 
 ```
 
-### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script
+#### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script
 
 We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects. When the VPN is active, *Unbound* switches into a 'VPN mode': instead of performing recursive DNS resolution using root servers, it now forwards all DNS queries through the encrypted *WireGuard* tunnel. These forwarded queries are then resolved on the other end of the tunnel. In our case, that’s our home router, which is configured to use DNS-over-HTTPS (DoH) for secure and private DNS resolution. Despite switching to a forwarding setup, *Unbound* will still enforce DNSSEC validation, ensuring that DNS responses are authenticated and have not been tampered with.
 
@@ -2132,7 +2132,7 @@ Make script executable:
 sudo chmod +x /etc/NetworkManager/dispatcher.d/wireguard-handler
 ```
 
-### 5. Test the WireGuard Connection:
+#### 5. Test the WireGuard Connection:
 
 To start *WireGuard VPN*:
 ```
@@ -2154,3 +2154,201 @@ To check for DNS leaks, use:<br>
 
 The only visible IP address should be that of your VPN provider or the DNS server configured on your home router or VPS.
 If you see your local ISP's DNS servers, the VPN tunnel or *Unbound* forwarding may not be working as intended.
+
+## 22 TOR TRANSPARENT PROXY
+
+Finally, we’ll install *Tor* and configure our Raspberry Pi to function as a *Tor Transparent Proxy*. This setup can be manually activated or deactivated as needed. When enabled, all traffic from connected devices will continue to be filtered by *AdGuardHome* before being securely routed through the *Tor network*.
+
+**⚠️ WARNING: A *Tor Transparent Proxy* is not the recommended method for using the *Tor network*. If your goal is simply to browse the internet anonymously, we strongly recommend using the *[Tor Browser](https://www.torproject.org/download/)* instead! The *Tor Browser* is specifically engineered for privacy and anonymity. It standardizes browser behavior to minimize fingerprinting and includes built-in protections against tracking, script-based surveillance, and DNS leaks. In contrast, a transparent proxy only redirects network traffic through the *Tor network*. It does not prevent applications or browsers from leaking identifying information. Using a regular browser over a *Tor Transparent Proxy* will almost certainly still expose a unique fingerprint, undermining the core benefits of using *Tor* in the first place.**
+
+That said, a well-configured *Tor Transparent Proxy* can be a powerful companion for anonymizing general traffic, securing non-browser applications, and creating a privacy-focused environment. When properly set up with strict firewall rules, DNS leak protection, and controlled network access, it allows you to create a reliable, plug-and-play “privacy hotspot” — ideal for travel, shared networks, or securing headless devices. That’s exactly what we’ll achieve in this tutorial.
+
+#### 1. Install Tor
+
+To install the `tor` package, run:
+```
+sudo apt install -y tor
+```
+
+#### 2. Configure Tor Transparent Proxy
+
+Start by backing up the default *Tor configuration*:
+```
+sudo cp /etc/tor/torrc /etc/tor/torrc.bak
+```
+
+Then, enable basic logging and set *Tor* to run as a background service:
+```
+sudo sed -i 's|^#Log notice file /var/log/tor/notices.log|Log notice file /var/log/tor/notices.log|; s|^#RunAsDaemon 1|RunAsDaemon 1|' /etc/tor/torrc
+```
+
+Append the following configuration to the `torrc` file:
+```
+sudo tee -a /etc/tor/torrc > /dev/null <<EOF
+
+# Tor Transparent Proxy
+VirtualAddrNetworkIPv4 10.192.0.0/12
+AutomapHostsSuffixes .onion,.exit
+AutomapHostsOnResolve 1
+
+# Bind Transparent Proxy & DNSPort to localhost
+TransPort 10.192.0.1:9040
+DNSPort 10.192.0.1:9053
+EOF
+```
+
+Disable autostart at boot, since we will control the *Tor service* manually:
+```
+sudo systemctl disable tor@default
+```
+
+#### 3. Create NetworkManager Dummy Interface
+
+As with the *WireGuard* setup, we will use a dedicated *NetworkManager* interface to activate and deactivate the *Tor Transparent Proxy*. Create and configure a dummy interface named `torproxy`:
+```
+sudo nmcli con add type dummy ifname torproxy con-name torproxy ipv4.method manual ipv4.addresses 10.192.0.1/32
+```
+```
+sudo nmcli con modify torproxy ipv4.ignore-auto-routes yes
+```
+```
+sudo nmcli con modify torproxy ipv4.never-default yes
+```
+```
+sudo nmcli con modify torproxy ipv4.dns 10.192.0.1
+```
+```
+sudo nmcli con modify torproxy autoconnect no
+```
+
+Once created, it's a good idea to bring the connection down immediately (in case it auto-connected):
+```
+sudo nmcli con down torproxy
+```
+
+#### 4. Tor Firewall
+
+The *Tor* firewall configuration is more advanced than the one used with *WireGuard*, as it requires explicit redirection of traffic and additional protections. We’ll use a preconfigured ruleset you can download from our repository.
+
+First, ensure the directory structure for firewall configs exists:
+```
+[ -d ~/script ] || mkdir ~/script && [ -d ~/script/nftables ] || mkdir ~/script/nftables
+```
+
+Then download the Tor firewall config:
+```
+sudo curl -L -o /home/admin/script/nftables/torproxy.conf "https://codeberg.org/term7/Going-Dark/raw/branch/main/Pi%20Configuration%20Files/nftables/torproxy.conf"
+```
+
+This firewall implements all the protections outlined in [18 FIREWALL](#18-firewall), and additionally:
+
+- Redirects all TCP traffic (except SSH on port 6666) to Tor’s TransPort (9040).
+- Applies redirection in both the prerouting (for external client traffic) and output (for local traffic) chains, ensuring all TCP connections are forced through Tor.
+- Blocks all incoming ICMP echo requests (pings) from the internet to improve stealth.
+- Drops all fragmented IP packets, which can be used in evasion or scanning attacks.
+
+It further enhances privacy by blocking ICMP echo-requests from the internet entirely. Additionally, it drops any fragmented IP packets, which can be used for scanning or evasion.
+
+**Tor-Specific Traffic Management**
+
+To prevent routing loops or service disruption, the firewall explicitly allows traffic generated by the *Tor process* itself to bypass redirection. This ensures that *Tor* can establish circuits without interference from the firewall.
+
+The forward chain in this firewall setup is tightly restricted. It only allows forwarding of traffic that has been routed through *Tor*, and blocks all other inter-interface forwarding to maintain strong isolation.
+
+**Special DNS Handling**
+
+The firewall does **not** send DNS traffic directly to *Tor’s DNS port* (9053). Instead, it continues to redirect DNS queries to *AdGuardHome* (port 5357), which in turn forwards them to *Unbound*. We will configure *Unbound* to forward all DNS queries to *Tor's DNSPort* (9053), maintaining DNS filtering while ensuring full anonymization over *Tor*.
+
+#### 5. Dynamically Apply Firewall Rules Using a Dispatcher Script
+
+Again, we’ll use a *NetworkManager* dispatcher script to automatically switch the firewall and *Unbound* DNS configuration when the torproxy interface connects or disconnects. Additionally, the script will dynamically start and stop the *Tor service* as needed.
+
+When *Tor* is active, *Unbound* switches into a 'Tor mode': instead of performing recursive DNS resolution using root servers, it forwards all DNS queries through the *Tor Transparent Proxy*. These queries are then resolved by a *Tor Exit Node*.
+
+However, because *Tor’s* built-in DNS resolver does not return DNSSEC-related records (such as `DNSKEY` or `RRSIG`), *Unbound* cannot validate DNSSEC in this configuration, even if it is set to enforce it. To prevent this from breaking DNS resolution and internet access, our dispatcher script temporarily enables permissive DNSSEC mode and allows querying localhost (*Tor’s DNSPort*) when the proxy is active. When the interface is deactivated, our original secure settings are restored.
+
+Create the dispatcher script:
+
+```
+sudo tee /etc/NetworkManager/dispatcher.d/torproxy-handler > /dev/null << 'EOF'
+#!/bin/bash
+
+# Define Interfaces
+TOR_INTERFACE="torproxy"
+
+# Define Config Files
+TOR_RULES="/home/admin/script/nftables/torproxy.conf"
+DEFAULT_RULES="/etc/nftables.conf"
+UNBOUND_MAIN_CONFIG="/etc/unbound/unbound.conf.d/unbound-dnssec.conf"
+UNBOUND_CONFIG="/etc/unbound/unbound.conf.d/local-zones.conf"
+
+# Define TorProxy  DNS Config
+TOR_DNS_CONFIG="# Upstream DNS via WireGuard\nforward-zone:\n    name: \".\"\n    forward-addr: 10.192.0.1@9053"
+
+case "$1" in
+    $TOR_INTERFACE)
+        case "$2" in
+            up)
+                # Apply Tor firewall rules
+                /usr/sbin/nft -f "$TOR_RULES"
+
+                # Start Tor service
+                sudo systemctl start tor@default
+
+                # Edit Unbound main configuration
+                sed -i 's/do-not-query-localhost: yes/do-not-query-localhost: no/' "$UNBOUND_MAIN_CONFIG"
+                sed -i 's/val-permissive-mode: no/val-permissive-mode: yes/' "$UNBOUND_MAIN_CONFIG"
+
+                # Append TorProxy DNS to Unbound if not already present
+                if ! grep -Fxq "$TOR_DNS_CONFIG" "$UNBOUND_CONFIG"; then
+                    echo -e "\n$TOR_DNS_CONFIG" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+                fi
+
+                sudo systemctl restart unbound
+                ;;
+
+            down)
+                # Restore default nftables rules
+                /usr/sbin/nft -f "$DEFAULT_RULES"
+
+                # Stop Tor service
+                sudo systemctl stop tor@default
+
+                # Restore Unbound main configuration
+                sed -i 's/do-not-query-localhost: no/do-not-query-localhost: yes/' "$UNBOUND_MAIN_CONFIG"
+                sed -i 's/val-permissive-mode: yes/val-permissive-mode: no/' "$UNBOUND_MAIN_CONFIG"
+
+                # Remove TorProxy DNS Config
+                sed -i '/fallback-enabled: yes/,$d' "$UNBOUND_CONFIG"
+                echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
+
+                sudo systemctl restart unbound
+                ;;
+        esac
+        ;;
+esac
+EOF
+```
+
+Make the script executable:
+```
+sudo chmod +x /etc/NetworkManager/dispatcher.d/torproxy-handler
+```
+
+#### 6. Test Tor Transparent Proxy
+
+To verify that your Raspberry Pi is correctly routing traffic through the *Tor network*, run the following command on the Pi:
+```
+curl https://check.torproject.org/api/ip
+```
+You should receive a JSON response showing the IP address of a *Tor exit node*, confirming that outbound traffic is being anonymized.
+
+To confirm that a connected client device—such as your Mac—is also being routed through *Tor*, open a browser and visit:<br>
+[https://check.torproject.org](https://check.torproject.org)
+
+If everything is working correctly, the page will display a message confirming that your traffic is coming from the *Tor network*.
+
+To check for potential DNS leaks, visit:<br>
+[https://dnsleaktest.com](https://dnsleaktest.com)
+
+If you see your home IP address, or the IP of a DNS resolver you've configured manually on your device or router, this indicates a DNS leak. In that case, your *Tor Transparent Proxy* is not properly isolating DNS traffic, and your configuration may need to be revised to ensure DNS requests are also routed through *Tor*.

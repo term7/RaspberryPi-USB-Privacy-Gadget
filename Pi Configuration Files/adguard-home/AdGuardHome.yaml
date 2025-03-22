@@ -154,7 +154,7 @@ filters:
 whitelist_filters: []
 user_rules:
   - '! Allow Tor Check'
-  - '@@||check.torproject.org^$important'
+  - '@@||torproject.org^$important'
 dhcp:
   enabled: false
   interface_name: ""
