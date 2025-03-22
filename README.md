@@ -2369,3 +2369,64 @@ To check for potential DNS leaks, visit:<br>
 [https://dnsleaktest.com](https://dnsleaktest.com)
 
 If you see your home IP address, or the IP of a DNS resolver you've configured manually on your device or router, this indicates a DNS leak. In that case, your *Tor Transparent Proxy* is not properly isolating DNS traffic, and your configuration may need to be revised to ensure DNS requests are also routed through *Tor*.
+
+* * *
+
+## 23 LOCAL WEB CONTROL INTERFACE
+
+At this point, your Raspberry Pi should be fully functional and operating as intended. For now, switching between different modes still requires logging in via SSH and using the command line from your `admin` account.
+
+#### 1. Control the Hotspot
+
+Start the hotspot:
+```
+sudo nmcli con up Hotspot
+```
+
+Stop the hotspot:
+```
+sudo nmcli con down Hotspot
+```
+
+#### 2. Toggle WireGuard VPN
+
+Enable *WireGuard*:
+```
+sudo nmcli con up term7.wireguard
+```
+
+Disable *WireGuard*:
+```
+sudo nmcli con down term7.wireguard
+```
+
+#### 3. Toggle Tor Transparent Proxy
+
+Enable *Tor Transparent Proxy*:
+```
+sudo nmcli con up torproxy
+```
+
+Disable *Tor Transparent Proxy*:
+```
+sudo nmcli con down torproxy
+```
+
+**⚠️ Important: Never run *WireGuard* and *Tor* at the same time. Always disconnect one before activating the other — running both simultaneously will cause conflicts and break routing.**
+
+#### WHAT COMES NEXT
+
+We are currently taking a break...
+
+... but soon we’ll begin work on a local web-based control interface, which you’ll be able to access from your browser at:<br>
+[https://going.dark](https://going.dark)
+
+The web interface will allow you to:
+
+- Connect the Raspberry Pi to a new Wi-Fi network
+- Safely power off the device
+- Start or stop the hotspot
+- Switch between *VPN mode* and *Tor mode*
+- Clear *AdGuardHome* queries and statistics
+
+In the meantime, we encourage you to thoroughly test our setup. If you encounter bugs, misconfigurations, unclear instructions — or have suggestions for improvements — please let us know. Your feedback helps make this project better.
