@@ -2317,12 +2317,12 @@ This is how a connected device would connect to the internet via our *Tor Transp
 +---------------------+       +-------------------------------+                 +----------------------+
                                        ^                                            ^       ^
                                        |                                            |       |
-                                   DNS |                                            |       | TCP / Onion Encryption
+                                   DNS |                                            |       |
                                        |                                            |       |
                                        V                                            |       |
                     +------------------------------+             encrypted DNS      |       |
                     |                              | <------------------------------/       |
-                    |   AdGuardHome --> Unbound    |                                        | 
+                    |   AdGuardHome --> Unbound    |                                        | TCP / Onion Encryption 
                     |  DNS Filtering + Forwarding  |                                        |
                     |                              |                 DNS / Onion Encryption |
                     |  10.192.0.1 / DNS Port 9053  |                                        |
