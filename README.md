@@ -1302,7 +1302,63 @@ This means that if we choose to avoid third-party DNS resolvers, we must also fo
 
 Eventually this is how the chain of DNS requests will work:
 
-*Dnsmasq*: port 53 → *AdGuardHome*: port 5357 → *Unbound*: port 7353
+*Dnsmasq*: port 53 → *AdGuardHome*: port 5357 → *Unbound*: port 7353:
+
+```
++----------------------+        +----------------------+        +-------------------+
+|     User Device      |  DNS   |  NetworkManager DNS  |  DNS   |    AdGuardHome    |
+| (Any App or Browser) | -----> |     dnsmasq: 53      | -----> |  Filtering: 5357  |
++----------------------+        +----------------------+        +-------------------+
+                                                                      |
+                                                                      | DNS
+                                                                      v
+                                                       +----------------------------+
+                                                       |         Unbound            |
+                                                       |  Recursive Resolver: 7353  |
+                                                       |  - DNSSEC Validation       |
+                                                       |  - Root-to-Auth Resolution |
+                                                       |  - Caching Enabled         |
+                                                       +----------------------------+
+```
+
+This is a diagram of how *Unbound* handles DNS requests - in this example, a client wants to visit *term7.info*:
+
+```
+   +-------------------+                     +------------------------+
+   |                   |                     |                        |
+   |  Client: Browser  | ------------------->|   https://term7.info   |
+   |                   |                     |                        |
+   +-------------------+                     +------------------------+
+             ^
+            ||
+term7.info? || IP: 89.147.108.191
+            ||
+            v
+   +------------------+                                        +------------+ 
+   |   AdGuardHome    |                          /------------>|    Root    |
+   |  Filter + Cache  |                         //------------ |   Server   |
+   +------------------+                .info?  //              +------------+ 
+             ^                                //
+            ||                               //
+term7.info? || IP: 89.147.108.191           // .info!
+            ||                             //
+            v                             //
+   +-------------------+  ---------------//  	  
+   |      Unbound      | <---------------/    term7.info?      +--------------------------+ 
+   |                   |  ------------------------------------>|        TLD Server        |
+   | Recursive Caching | <------------------------------------ | Top Level Domain:  .info |
+   |  Resolver DNSSEC  |  ---------------\    term7.info!      +--------------------------+
+   +-------------------+ <---------------\\
+                                          \\
+                                           \\
+                                            \\ term7.info -> IP? 
+                                             \\
+                          IP: 89.147.108.191  \\
+                                               \\              +-------------------------------+
+                                                \\------------>|   Authoritative Name Server   |
+                                                 \------------ |           term7.info          |
+                                                               +-------------------------------+
+```
 
 #### 1. Install Unbound:
 
@@ -2050,6 +2106,30 @@ In this section, we’ll configure a Raspberry Pi as a *WireGuard client* that c
 In our personal setup, we’ve installed a *WireGuard* server on our home router (running OpenWRT). When we travel, whether staying in a hotel, at an airport, or working from a café abroad, our Raspberry Pi tunnels all network traffic through a secure, encrypted *WireGuard* connection back to our home router.<br>
 This means our internet traffic is shielded from local networks and snoopers. We can securely access our home network and services from anywhere in the world and devices connected to the Pi will appear to access the internet from our home IP address.
 
+This is how a connected device would connect to the internet through our *WireGuard VPN*:
+
+```
++---------------------+       +-------------------------------+                 +-----------------------+
+|                     |       |          Raspberry Pi         |                 |                       |
+|                     |       |                               |                 |                       |
+|   Laptop / Phone    |  TCP  |        WIREGUARD CLIENT       |  encrypted TCP  |   WIREGUARD SERVER    |
+|       NO VPN        | <---> |           10.13.0.1           | <-------------> |    --> Home Router    | 
+|                     |  DNS  |                               |  encrypted DNS  |                       |
+|                     |       |            Firewall           |                 |                       |
++---------------------+       +-------------------------------+                 +-----------------------+
+                                              ^                                             ^
+                                              |                                             |
+                                          DNS |                                         TCP | DNS
+                                              |                                             |
+                                              v                                             v
+                              +-------------------------------+                      +--------------+
+                              |                               |                      |              |
+                              |    AdGuardHome --> Unbound    |                      |   INTERNET   |
+                              |   DNS Filtering + Forwarding  |                      |              |
+                              |                               |                      +--------------+
+                              +-------------------------------+
+```
+
 **Note: A full walkthrough of setting up a WireGuard server on your home router is beyond the scope of this tutorial.**
 
 For this tutorial, we’ll assume:
@@ -2221,6 +2301,66 @@ Finally, we’ll install *Tor* and configure our Raspberry Pi to function as a *
 **⚠️ WARNING: A *Tor Transparent Proxy* is not the recommended method for using the *Tor network*. If your goal is simply to browse the internet anonymously, we strongly recommend using the *[Tor Browser](https://www.torproject.org/download/)* instead! The *Tor Browser* is specifically engineered for privacy and anonymity. It standardizes browser behavior to minimize fingerprinting and includes built-in protections against tracking, script-based surveillance, and DNS leaks. In contrast, a transparent proxy only redirects network traffic through the *Tor network*. It does not prevent applications or browsers from leaking identifying information. Using a regular browser over a *Tor Transparent Proxy* will almost certainly still expose a unique fingerprint, undermining the core benefits of using *Tor* in the first place. That said, you can combine a *Tor Transparent Proxy* (to anonymize all system traffic) with the *Tor Browser* (for safe, anonymous browsing) to benefit from both system-wide routing and hardened browser protections.**
 
 That said, a well-configured *Tor Transparent Proxy* can be a powerful companion for anonymizing general traffic, securing non-browser applications, and creating a privacy-focused environment. When properly set up with strict firewall rules, DNS leak protection, and controlled network access, it allows you to create a reliable, plug-and-play “privacy hotspot” — ideal for travel, shared networks, or securing headless devices. That’s exactly what we’ll achieve in this tutorial.
+
+This is how a connected device would connect to the internet via our *Tor Transparent Proxy*:
+
+```
++---------------------+       +-------------------------------+                 +----------------------+
+|                     |       |          Raspberry Pi         |                 |                      |
+|                     |       |                               |                 |    TOR ENTRY NODE    |
+|   Laptop / Phone    |  TCP  |     TOR TRANSPARENT PROXY     |  encrypted TCP  |                      |
+| (No Tor Installed)  | <---> |  10.192.0.1 / TransPort 9040  | <-------------> |  KNOWS your real IP  |
+|                     |  DNS  |                               |                 | NOT your destination |
+|                     |       |            Firewall           |                 |                      |
++---------------------+       +-------------------------------+                 +----------------------+
+                                       ^                                            ^       ^
+                                       |                                            |       |
+                                   DNS |                                            |       | TCP / Onion Encryption
+                                       |                                            |       |
+                                       V                                            |       |
+                    +------------------------------+             encrypted DNS      |       |
+                    |                              | <------------------------------/       |
+                    |   AdGuardHome --> Unbound    |                                        | 
+                    |  DNS Filtering + Forwarding  |                                        |
+                    |                              |                 DNS / Onion Encryption |
+                    |    --> Tor DNS Port 9053     |                                        |
+                    |                              |                                        v
+                    +------------------------------+                            +----------------------+
+                                                                                |                      |
+                                                                                |    TOR RELAY NODE    |
+                                                                                |                      |
+                                                                                |     NEITHER knows    | 
+                                                                                |        your IP       | 
+                                                                                | NOR your destination |
+                                                                                |                      |
+                                                                                +----------------------+
+                                                                                            ^
+                                                                                            |
+                                                                                            | TCP / Onion Encryption
+                                                                                            |
+                                                                     DNS / Onion Encryption |
+                                                                                            |
+                                                                                            v
+                                                                                +----------------------+
+                                                                                |                      |
+                                                                                |     TOR EXIT NODE    |
+                                                                                |                      |
+                                                                                |  CANNOT know your IP | 
+                                                                                |       but KNOWS      |
+                                                                                |   your destination   |
+                                                                                |                      |
+                                                                                +----------------------+
+                                                                                            ^
+                                                                                            |
+                                                                                        DNS | TCP
+                                                                                            |
+                                                                                            v
+                                                                                    +--------------+
+                                                                                    |              |
+                                                                                    |   INTERNET   |
+                                                                                    |              |
+                                                                                    +--------------+
+```
 
 #### 1. Install Tor:
 

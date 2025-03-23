@@ -1,0 +1,55 @@
++---------------------+       +-------------------------------+                 +----------------------+
+|                     |       |          Raspberry Pi         |                 |                      |
+|                     |       |                               |                 |    TOR ENTRY NODE    |
+|   Laptop / Phone    |  TCP  |     TOR TRANSPARENT PROXY     |  encrypted TCP  |                      |
+| (No Tor Installed)  | <---> |  10.192.0.1 / TransPort 9040  | <-------------> |  KNOWS your real IP  |
+|                     |  DNS  |                               |                 | NOT your destination |
+|                     |       |            Firewall           |                 |                      |
++---------------------+       +-------------------------------+                 +----------------------+
+                                       ^                                            ^       ^
+                                       |                                            |       |
+                                   DNS |                                            |       | TCP / Onion Encryption
+                                       |                                            |       |
+                                       V                                            |       |
+                    +------------------------------+             encrypted DNS      |       |
+                    |                              | <------------------------------/       |
+                    |   AdGuardHome --> Unbound    |                                        | 
+                    |  DNS Filtering + Forwarding  |                                        |
+                    |                              |                 DNS / Onion Encryption |
+                    |    --> Tor DNS Port 9053     |                                        |
+                    |                              |                                        v
+                    +------------------------------+                            +----------------------+
+                                                                                |                      |
+                                                                                |    TOR RELAY NODE    |
+                                                                                |                      |
+                                                                                |     NEITHER knows    | 
+                                                                                |        your IP       | 
+                                                                                | NOR your destination |
+                                                                                |                      |
+                                                                                +----------------------+
+                                                                                            ^
+                                                                                            |
+                                                                                            | TCP / Onion Encryption
+                                                                                            |
+                                                                     DNS / Onion Encryption |
+                                                                                            |
+                                                                                            v
+                                                                                +----------------------+
+                                                                                |                      |
+                                                                                |     TOR EXIT NODE    |
+                                                                                |                      |
+                                                                                |  CANNOT know your IP | 
+                                                                                |       but KNOWS      |
+                                                                                |   your destination   |
+                                                                                |                      |
+                                                                                +----------------------+
+                                                                                            ^
+                                                                                            |
+                                                                                        DNS | TCP
+                                                                                            |
+                                                                                            v
+                                                                                    +--------------+
+                                                                                    |              |
+                                                                                    |   INTERNET   |
+                                                                                    |              |
+                                                                                    +--------------+

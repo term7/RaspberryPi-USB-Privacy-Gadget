@@ -1,0 +1,14 @@
++----------------------+        +----------------------+        +-------------------+
+|     User Device      |  DNS   |  NetworkManager DNS  |  DNS   |    AdGuardHome    |
+| (Any App or Browser) | -----> |     dnsmasq: 53      | -----> |  Filtering: 5357  |
++----------------------+        +----------------------+        +-------------------+
+                                                                      |
+                                                                      | DNS
+                                                                      v
+                                                       +----------------------------+
+                                                       |         Unbound            |
+                                                       |  Recursive Resolver: 7353  |
+                                                       |  - DNSSEC Validation       |
+                                                       |  - Root-to-Auth Resolution |
+                                                       |  - Caching Enabled         |
+                                                       +----------------------------+
