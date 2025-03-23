@@ -2238,7 +2238,21 @@ sudo cp /etc/tor/torrc /etc/tor/torrc.bak
 
 Then, enable basic logging and set *Tor* to run as a background service:
 ```
-sudo sed -i 's|^#Log notice file /var/log/tor/notices.log|Log notice file /var/log/tor/notices.log|; s|^#RunAsDaemon 1|RunAsDaemon 1|' /etc/tor/torrc
+sudo sed -i 's|^#Log notice file /var/log/tor/notices.log|Log notice file /var/log/tor/notices.log|; s|^#RunAsDaemon 1|RunAsDaemon 1|; s|^#DataDirectory /var/lib/tor|DataDirectory /var/lib/tor|' /etc/tor/torrc
+```
+
+Tighten Logging and File Permissions:
+```
+chown -R debian-tor:debian-tor /var/lib/tor
+```
+```
+chmod 700 /var/lib/tor
+```
+```
+sudo chown -R debian-tor:debian-tor /var/log/tor
+```
+```
+sudo chmod -R 700 /var/log/tor
 ```
 
 Append the following configuration to the `torrc` file:
