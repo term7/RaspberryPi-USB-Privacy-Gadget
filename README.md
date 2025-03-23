@@ -2110,7 +2110,7 @@ This is how a connected device would connect to the internet through our *WireGu
 
 ```
 +---------------------+       +-------------------------------+                 +-----------------------+
-|                     |       |          Raspberry Pi         |                 |                       |
+|                     |       |          RASPBERRY PI         |                 |                       |
 |                     |       |                               |                 |                       |
 |   Laptop / Phone    |  TCP  |        WIREGUARD CLIENT       |  encrypted TCP  |   WIREGUARD SERVER    |
 |       NO VPN        | <---> |           10.13.0.1           | <-------------> |    --> Home Router    | 
@@ -2306,7 +2306,7 @@ This is how a connected device would connect to the internet via our *Tor Transp
 
 ```
 +---------------------+       +-------------------------------+                 +----------------------+
-|                     |       |          Raspberry Pi         |                 |                      |
+|                     |       |          RASPBERRY PI         |                 |                      |
 |                     |       |                               |                 |    TOR ENTRY NODE    |
 |   Laptop / Phone    |  TCP  |     TOR TRANSPARENT PROXY     |  encrypted TCP  |                      |
 | (No Tor Installed)  | <---> |  10.192.0.1 / TransPort 9040  | <-------------> |  KNOWS your real IP  |
@@ -2323,7 +2323,8 @@ This is how a connected device would connect to the internet via our *Tor Transp
                     |   AdGuardHome --> Unbound    |                                        | 
                     |  DNS Filtering + Forwarding  |                                        |
                     |                              |                 DNS / Onion Encryption |
-                    |    --> Tor DNS Port 9053     |                                        |
+                    |  10.192.0.1 / DNS Port 9053  |                                        |
+                    |     TOR TRANSPARENT PROXY    |                                        |
                     |                              |                                        v
                     +------------------------------+                            +----------------------+
                                                                                 |                      |

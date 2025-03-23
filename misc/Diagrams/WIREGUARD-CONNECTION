@@ -1,5 +1,5 @@
 +---------------------+       +-------------------------------+                 +-----------------------+
-|                     |       |          Raspberry Pi         |                 |                       |
+|                     |       |          RASPBERRY PI         |                 |                       |
 |                     |       |                               |                 |                       |
 |   Laptop / Phone    |  TCP  |        WIREGUARD CLIENT       |  encrypted TCP  |   WIREGUARD SERVER    |
 |       NO VPN        | <---> |           10.13.0.1           | <-------------> |    --> Home Router    | 
