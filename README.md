@@ -1456,7 +1456,7 @@ sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
 sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
 ```
 
-#### 5. IX: Automatically Restore Unbound Configuration on Reboot:
+#### 5. FIX: Automatically Restore Unbound Configuration on Reboot:
 
 Later in this guide, we’ll configure both a [WIREGUARD VPN](#21-wireguard-vpn) and a [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy). Each of these modes requires dynamic modifications to your *Unbound* DNS configuration.
 
