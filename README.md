@@ -1523,7 +1523,8 @@ To prevent this, we’ll create a simple script and systemd service that automat
 Create a new script that resets Unbound to its default DNSSEC-secure configuration:
 
 ```
-echo '#!/bin/bash
+sudo tee /home/admin/script/DNS/restore-unbound-config.sh << 'EOF'
+#!/bin/bash
 
 # Config Files
 UNBOUND_MAIN_CONFIG="/etc/unbound/unbound.conf.d/unbound-dnssec.conf"
@@ -1535,7 +1536,8 @@ sed -i 's/val-permissive-mode: yes/val-permissive-mode: no/' "$UNBOUND_MAIN_CONF
 
 # Remove TorProxy or WireGuard DNS Config and add fallback setting
 sed -i '/fallback-enabled: yes/,$d' "$UNBOUND_CONFIG"
-echo "        fallback-enabled: yes" >> "$UNBOUND_CONFIG"' | sudo tee /home/admin/script/DNS/restore-unbound-config.sh > /dev/null
+echo "        fallback-enabled: yes" >> "$UNBOUND_CONFIG"
+EOF
 ```
 
 Make the script executable:
