@@ -1456,6 +1456,63 @@ sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
 sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
 ```
 
+#### 5. IX: Automatically Restore Unbound Configuration on Reboot:
+
+Later in this guide, we’ll configure both a [WIREGUARD VPN](#21-wireguard-vpn) and a [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy). Each of these modes requires dynamic modifications to your *Unbound* DNS configuration.
+
+However, in rare cases — for example, if your Raspberry Pi crashes or you forget to shut down *WireGuard* or *Tor* properly — the system may reboot with an incorrect *Unbound* configuration. This can lead to a loss of internet connectivity on startup.
+
+To prevent this, we’ll create a simple script and systemd service that automatically restores the default *Unbound* settings each time your Raspberry Pi boots.
+
+Create a new script that resets Unbound to its default DNSSEC-secure configuration:
+
+```
+echo '#!/bin/bash
+
+# Config Files
+UNBOUND_MAIN_CONFIG="/etc/unbound/unbound.conf.d/unbound-dnssec.conf"
+UNBOUND_CONFIG="/etc/unbound/unbound.conf.d/local-zones.conf"
+
+# Restore Unbound main configuration
+sed -i 's/do-not-query-localhost: no/do-not-query-localhost: yes/' "$UNBOUND_MAIN_CONFIG"
+sed -i 's/val-permissive-mode: yes/val-permissive-mode: no/' "$UNBOUND_MAIN_CONFIG"
+
+# Remove TorProxy or WireGuard DNS Config and add fallback setting
+sed -i '/fallback-enabled: yes/,$d' "$UNBOUND_CONFIG"
+echo "        fallback-enabled: yes" >> "$UNBOUND_CONFIG"' | sudo tee /home/admin/script/DNS/restore-unbound-config.sh > /dev/null
+```
+
+Make the script executable:
+```
+sudo chmod +x ~/script/DNS/restore-unbound-config.sh
+```
+
+Now, create a new service unit to run the script before *Unbound* starts:
+
+```
+echo '[Unit]
+Description=Restore Unbound configuration before Unbound starts
+After=network.target
+Before=unbound.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/script/DNS/restore-unbound-config.sh
+
+[Install]
+WantedBy=multi-user.target' | sudo tee /etc/systemd/system/restore-unbound-config.service > /dev/null
+```
+
+Reload `systemd` and enable the service so that it runs on every boot:
+```
+sudo systemctl daemon-reload
+```
+```
+sudo systemctl enable restore-unbound-config.service
+```
+
+From now on, your Raspberry Pi will automatically restore the correct *Unbound* configuration on startup — ensuring internet connectivity, even if the system previously shut down unexpectedly or with the wrong network mode active.
+
 * * *
 
 ## 15 PREPARE ADGUARDHOME 
@@ -1665,14 +1722,14 @@ server {
 }' | sudo tee /etc/nginx/sites-available/nginx-adguard > /dev/null
 ```
 
-#### 3. Enable the NGINX Configuration
+#### 3. Enable the NGINX Configuration:
 
 To activate the newly created NGINX configuration:
 ```
 sudo ln -s /etc/nginx/sites-available/nginx-adguard /etc/nginx/sites-enabled/
 ```
 
-#### 4. Validate and Restart NGINX
+#### 4. Validate and Restart NGINX:
 
 Before restarting NGINX, test the configuration for syntax errors:
 ```
@@ -1684,7 +1741,7 @@ If the test is successful, restart *NGINX*:
 sudo systemctl restart nginx
 ```
 
-#### 5. Ensure Local Hostname Resolution
+#### 5. Ensure Local Hostname Resolution:
 
 To allow local resolution of adguard.home, update the /etc/hosts file:
 ```
@@ -1799,14 +1856,14 @@ Additionally, this configuration includes:
 
 By using this setup, you can avoid potential issues and ensure a smooth, hassle-free deployment. Unless you know exactly what you are doing, we recommend you don't change our *Encryption Settings* and don't use *AdGuardHome's* built-in DHCP server. We have set up *NetworkManager* and *Dnsmasq* to handle DHCP.
 
-#### 1. Stop AdGuardHome
+#### 1. Stop AdGuardHome:
 
 Before applying the new configuration, stop the AdGuardHome service:
 ```
 sudo systemctl stop AdGuardHome
 ```
 
-#### 2. Download the Configuration File
+#### 2. Download the Configuration File:
 
 Fetch the pre-configured setup from the repository:
 ```
@@ -1817,7 +1874,7 @@ Restrict file permissions to enhance security:
 ```
 sudo chmod 600 ~/build/AdGuardHome/AdGuardHome.yaml
 ```
-#### 3. Change the Default Password
+#### 3. Change the Default Password:
 
 Since this is a public repository, the default password is set to *"default"*. You must change it!
 
@@ -1837,14 +1894,14 @@ sudo sed -i "s/^    password: default/    password: \"$(mkpasswd -m bcrypt "$PAS
 ```
 **⚠ Replace YOUR-NEW-PASSWORD with a strong password of your choice. Consider using a password manager to generate a secure password.**
 
-#### 4. Restart AdGuardHome
+#### 4. Restart AdGuardHome:
 
 Once the password has been updated, restart the service:
 ```
 sudo systemctl start AdGuardHome
 ```
 
-#### 5. Log into AdGuardHome's Web Interface
+#### 5. Log into AdGuardHome's Web Interface:
 
 Now, test your setup:
 
@@ -1856,7 +1913,7 @@ Now, test your setup:
 
 Your *AdGuardHome* installation is now fully configured and running!
 
-#### 6. Test DNSSEC Validation
+#### 6. Test DNSSEC Validation:
 
 To test if DNSSEC validation is working, visit this website:<br>
 [https://wander.science/projects/dns/dnssec-resolver-test/](https://wander.science/projects/dns/dnssec-resolver-test/)
@@ -2013,7 +2070,7 @@ If you don’t run your own server, both [Mullvad](https://mullvad.net/en) and [
 
 **Note: Both claim strict no-logs policies, but like all VPN providers, this trust cannot be independently verified. If you’re using a commercial VPN, you ultimately have to trust the provider.**
 
-### 1. Copy your WireGuard Configuration to your Raspberry Pi
+### 1. Copy your WireGuard Configuration to your Raspberry Pi:
 
 In this tutorial, we’ll use a *WireGuard* configuration file named `term7.wireguard.conf`. Replace this filename with your own wherever it appears.
 
@@ -2033,7 +2090,7 @@ Move the configuration file to its new location:
 sudo mv /home/term7/term7.wireguard.conf ~/tools/wireguard-export/term7.wireguard.conf
 ```
 
-#### 2. Import the WireGuard Configuration with NetworkManager
+#### 2. Import the WireGuard Configuration with NetworkManager:
 
 NetworkManager has built-in support for *WireGuard*. We use it to import our configuration::
 
@@ -2051,7 +2108,7 @@ Disable auto-connect for this VPN profile (we’ll activate it manually):
 sudo nmcli con modify term7.wireguard connection.autoconnect no
 ```
 
-#### 3. Setup WireGuard Firewall
+#### 3. Setup WireGuard Firewall:
 
 When *WireGuard* is active, we want to adjust our firewall so that traffic is routed through the VPN (`term7.wireguard`) instead of the default Ethernet or Wi-Fi interface.
 
@@ -2076,7 +2133,7 @@ sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/script/n
 
 ```
 
-#### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script
+#### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script:
 
 We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects. When the VPN is active, *Unbound* switches into a 'VPN mode': instead of performing recursive DNS resolution using root servers, it now forwards all DNS queries through the encrypted *WireGuard* tunnel. These forwarded queries are then resolved on the other end of the tunnel. In our case, that’s our home router, which is configured to use DNS-over-HTTPS (DoH) for secure and private DNS resolution. Despite switching to a forwarding setup, *Unbound* will still enforce DNSSEC validation, ensuring that DNS responses are authenticated and have not been tampered with.
 
@@ -2144,7 +2201,7 @@ To stop *WireGuard VPN*:
 sudo nmcli con down term7.wireguard
 ```
 
-#### 6. Test DNSSEC Validation & DNS Leaks
+#### 6. Test DNSSEC Validation & DNS Leaks:
 
 To verify that DNSSEC validation is still functioning correctly, visit:<br>
 [https://wander.science/projects/dns/dnssec-resolver-test/](https://wander.science/projects/dns/dnssec-resolver-test/)
@@ -2165,14 +2222,14 @@ Finally, we’ll install *Tor* and configure our Raspberry Pi to function as a *
 
 That said, a well-configured *Tor Transparent Proxy* can be a powerful companion for anonymizing general traffic, securing non-browser applications, and creating a privacy-focused environment. When properly set up with strict firewall rules, DNS leak protection, and controlled network access, it allows you to create a reliable, plug-and-play “privacy hotspot” — ideal for travel, shared networks, or securing headless devices. That’s exactly what we’ll achieve in this tutorial.
 
-#### 1. Install Tor
+#### 1. Install Tor:
 
 To install the `tor` package, run:
 ```
 sudo apt install -y tor
 ```
 
-#### 2. Configure Tor Transparent Proxy
+#### 2. Configure Tor Transparent Proxy:
 
 Start by backing up the default *Tor configuration*:
 ```
@@ -2207,7 +2264,7 @@ sudo systemctl stop tor@default
 sudo systemctl disable tor@default
 ```
 
-#### 3. Create NetworkManager Dummy Interface
+#### 3. Create NetworkManager Dummy Interface:
 
 As with the *WireGuard* setup, we will use a dedicated *NetworkManager* interface to activate and deactivate the *Tor Transparent Proxy*. Create and configure a dummy interface named `torproxy`:
 ```
@@ -2231,7 +2288,7 @@ Once created, it's a good idea to bring the connection down immediately (in case
 sudo nmcli con down torproxy
 ```
 
-#### 4. Tor Firewall
+#### 4. Tor Firewall:
 
 The *Tor* firewall configuration is more advanced than the one used with *WireGuard*, as it requires explicit redirection of traffic and additional protections. We’ll use a preconfigured ruleset you can download from our repository.
 
@@ -2264,7 +2321,7 @@ The forward chain in this firewall setup is tightly restricted. It only allows f
 
 The firewall does **not** send DNS traffic directly to *Tor’s DNS port* (9053). Instead, it continues to redirect DNS queries to *AdGuardHome* (port 5357), which in turn forwards them to *Unbound*. We will configure *Unbound* to forward all DNS queries to *Tor's DNSPort* (9053), maintaining DNS filtering while ensuring full anonymization over *Tor*.
 
-#### 5. Dynamically Apply Firewall Rules Using a Dispatcher Script
+#### 5. Dynamically Apply Firewall Rules Using a Dispatcher Script:
 
 Again, we’ll use a *NetworkManager* dispatcher script to automatically switch the firewall and *Unbound* DNS configuration when the torproxy interface connects or disconnects. Additionally, the script will dynamically start and stop the *Tor service* as needed.
 
@@ -2352,7 +2409,7 @@ To stop *Tor Transparent Proxy*:
 sudo nmcli con down torproxy
 ```
 
-#### 7. Test Tor Transparent Proxy
+#### 7. Test Tor Transparent Proxy:
 
 To verify that your Raspberry Pi is correctly routing traffic through the *Tor network*, run the following command on the Pi:
 ```
@@ -2376,7 +2433,7 @@ If you see your home IP address, or the IP of a DNS resolver you've configured m
 
 At this point, your Raspberry Pi should be fully functional and operating as intended. For now, switching between different modes still requires logging in via SSH and using the command line from your `admin` account.
 
-#### 1. Control the Hotspot
+#### 1. Control the Hotspot:
 
 Start the hotspot:
 ```
@@ -2388,7 +2445,7 @@ Stop the hotspot:
 sudo nmcli con down Hotspot
 ```
 
-#### 2. Toggle WireGuard VPN
+#### 2. Toggle WireGuard VPN:
 
 Enable *WireGuard*:
 ```
@@ -2400,7 +2457,7 @@ Disable *WireGuard*:
 sudo nmcli con down term7.wireguard
 ```
 
-#### 3. Toggle Tor Transparent Proxy
+#### 3. Toggle Tor Transparent Proxy:
 
 Enable *Tor Transparent Proxy*:
 ```
@@ -2414,7 +2471,7 @@ sudo nmcli con down torproxy
 
 **⚠️ Important: Never run *WireGuard* and *Tor* at the same time. Always disconnect one before activating the other — running both simultaneously will cause conflicts and break routing.**
 
-#### WHAT COMES NEXT
+#### WHAT COMES NEXT:
 
 We are currently taking a break...
 

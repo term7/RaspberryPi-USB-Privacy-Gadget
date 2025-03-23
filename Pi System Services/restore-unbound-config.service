@@ -1,0 +1,11 @@
+[Unit]
+Description=Restore Unbound configuration before Unbound starts
+After=network.target
+Before=unbound.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/admin/script/DNS/restore-unbound-config.sh
+
+[Install]
+WantedBy=multi-user.target
