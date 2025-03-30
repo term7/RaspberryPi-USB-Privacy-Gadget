@@ -1887,7 +1887,7 @@ sudo reboot now
 
 #### 9. Install fail2ban
 
-*Fail2ban* monitors logs for patterns (like failed logins) and reacts by banning offending IPs using firewall rules. In our setup we have configured SSH to use port 6666. Since we use `inet global` in our *nftables* we must configure *fail2ban* to create its own chain within that table:
+*Fail2ban* monitors log files for suspicious activity (such as failed SSH login attempts) and responds by blocking the offending IPs using firewall rules. In our setup, SSH is configured to listen on port 6666. Since our *nftables* configuration uses the inet `global` table, we need to create a dedicated *Fail2ban Set* and *Chain* inside that table.
 
 ```
 sudo sed -i '/table inet global {/a\
@@ -1904,7 +1904,7 @@ sudo sed -i '/table inet global {/a\
     }' /etc/nftables.conf
 ```
 
-And in the `inbound` chain:
+Next, hook the new `f2b-sshd` chain into your existing `inbound` chain:
 
 ```
 sudo sed -i '/^[[:space:]]*chain inbound {$/{
@@ -1916,12 +1916,12 @@ sudo sed -i '/^[[:space:]]*chain inbound {$/{
 }' /etc/nftables.conf
 ```
 
-Next, install *fail2ban*:
+Install *fail2ban*:
 ```
 sudo apt install -y fail2ban
 ```
 
-Then we need to create a custom *fail2ban* action file:
+Create a custom *Fail2ban Actio*n for *nftables*:
 
 ```
 echo '[Definition]
@@ -1936,7 +1936,7 @@ actionban = /usr/sbin/nft add element inet global f2b-sshd \{ <ip> timeout <bant
 actionunban = /usr/sbin/nft delete element inet global f2b-sshd \{ <ip> \}' | sudo tee /etc/fail2ban/action.d/nftables-ssh.conf > /dev/null
 ```
 
-Next, we need to configure *fail2ban* to monitor SSH on port 6666 using *systemd journal*, which is our Raspberry Pi's default logging mecahnism:
+Next, we need to configure *fail2ban* to monitor SSH on port 6666 using *systemd journal*, which is our Raspberry Pi's default logging mechanism:
 
 ```
 echo '[sshd]
@@ -1950,7 +1950,7 @@ bantime  = 165600
 action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]' | sudo tee /etc/fail2ban/jail.local > /dev/null
 ```
 
-This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via nftables to drop its packets.
+This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via *nftables* to drop its packets.
 
 Reload your firewall:
 ```
@@ -2337,7 +2337,7 @@ case "$1" in
                 fi
 
                 sudo systemctl restart unbound
-                sudo systemctl restart fai2ban
+                sudo systemctl restart fail2ban
                 ;;
             down)
                 # Restore default nftables rules
@@ -2348,7 +2348,7 @@ case "$1" in
                 echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
 
                 sudo systemctl restart unbound
-                sudo systemctl restart fai2ban
+                sudo systemctl restart fail2ban
                 ;;
         esac
         ;;
@@ -2600,7 +2600,7 @@ case "$1" in
                 fi
 
                 sudo systemctl restart unbound
-                sudo systemctl restart fai2ban
+                sudo systemctl restart fail2ban
                 ;;
 
             down)
@@ -2619,7 +2619,7 @@ case "$1" in
                 echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
 
                 sudo systemctl restart unbound
-                sudo systemctl restart fai2ban
+                sudo systemctl restart fail2ban
                 ;;
         esac
         ;;
