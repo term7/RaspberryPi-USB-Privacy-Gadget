@@ -1892,19 +1892,28 @@ sudo reboot now
 ```
 sudo sed -i '/table inet global {/a\
 \
+    # Create the Fail2ban set\
+    set f2b-sshd {\
+        type ipv4_addr\
+        flags timeout\
+    }\
+\
+    # Create the Fail2ban chain that drops packets from IPs in the set\
     chain f2b-sshd {\
-        # Fail2ban will manage its rules dynamically.\
+        ip saddr @f2b-sshd drop\
     }' /etc/nftables.conf
 ```
 
 And:
 
 ```
-sudo sed -i '/chain inbound_private {/a\
-        # Check for banned IPs via Fail2ban\
-        jump f2b-sshd\
+sudo sed -i '/^[[:space:]]*chain inbound {$/{
+  n
+  s/\(policy drop;\)/\1\
 \
-' /etc/nftables.conf
+        # Check for banned IPs via Fail2ban\
+        jump f2b-sshd/
+}' /etc/nftables.conf
 ```
 
 Next, install *fail2ban*:
@@ -1916,20 +1925,15 @@ Then we need to create a custom *fail2ban* action file:
 
 ```
 echo '[Definition]
-# When the jail starts, create a set and chain in the "inet global" table
-actionstart = nft add set inet global f2b-<name> { type ipv4_addr\; flags timeout\; } && \
-              nft add chain inet global f2b-<name> { type filter hook input priority 0\; policy accept\; } && \
-              nft add rule inet global f2b-<name> ip saddr @f2b-<name> drop
 
-# When banning an IP, add it to the set with a timeout value provided by Fail2ban
-actionban = nft add element inet global f2b-<name> { <ip> timeout <time> }
+actionstart =
+actionstop =
 
-# When unbanning an IP, remove it from the set
-actionunban = nft delete element inet global f2b-<name> { <ip> }
+# When banning an IP, add it to the set with the given bantime.
+actionban = /usr/sbin/nft add element inet global f2b-sshd \{ <ip> timeout <bantime>s \}
 
-# When the jail stops, remove the chain and set
-actionstop = nft delete chain inet global f2b-<name> && nft delete set inet global f2b-<name>
-' | sudo tee /etc/fail2ban/action.d/nftables-ssh.conf > /dev/null
+# When unbanning an IP, remove it from the set.
+actionunban = /usr/sbin/nft delete element inet global f2b-sshd \{ <ip> \}' | sudo tee /etc/fail2ban/action.d/nftables-ssh.conf > /dev/null
 ```
 
 Next, we need to configure *fail2ban* to monitor SSH on port 6666 using *systemd journal*, which is our Raspberry Pi's default logging mecahnism:
