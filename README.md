@@ -1893,7 +1893,7 @@ sudo reboot now
 sudo sed -i '/table inet global {/a\
 \
     chain f2b-sshd {\
-        policy accept;\
+        # Fail2ban will manage its rules dynamically.
     }' /etc/nftables.conf
 ```
 
