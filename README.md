@@ -1892,8 +1892,9 @@ sudo reboot now
 ```
 sudo sed -i '/chain inbound_private {/a\
         # Check for banned IPs via Fail2ban\
-        jump f2b-sshd' /etc/nftables.conf
-
+        jump f2b-sshd\
+\
+' /etc/nftables.conf
 ```
 
 Next, install *fail2ban*:
