@@ -1904,7 +1904,7 @@ sudo sed -i '/table inet global {/a\
     }' /etc/nftables.conf
 ```
 
-And:
+And in the `inbound` chain:
 
 ```
 sudo sed -i '/^[[:space:]]*chain inbound {$/{
@@ -1944,10 +1944,10 @@ enabled  = true
 port     = 6666
 filter   = sshd
 backend  = systemd
+findtime = 600
 maxretry = 2
 bantime  = 165600
-action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]
-' | sudo tee /etc/fail2ban/jail.local > /dev/null
+action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]' | sudo tee /etc/fail2ban/jail.local > /dev/null
 ```
 
 This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via nftables to drop its packets.
@@ -2305,7 +2305,7 @@ sudo sed -i '/DEV_WORLD = {/c\define DEV_WORLD = { term7.wireguard }' ~/script/n
 
 #### 4. Dynamically Apply Firewall Rules Using a Dispatcher Script:
 
-We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects. When the VPN is active, *Unbound* switches into a 'VPN mode': instead of performing recursive DNS resolution using root servers, it now forwards all DNS queries through the encrypted *WireGuard* tunnel. These forwarded queries are then resolved on the other end of the tunnel. In our case, that’s our home router, which is configured to use DNS-over-HTTPS (DoH) for secure and private DNS resolution. Despite switching to a forwarding setup, *Unbound* will still enforce DNSSEC validation, ensuring that DNS responses are authenticated and have not been tampered with.
+We’ll use a *NetworkManager* dispatcher script to automatically switch firewall and default *Unbound* DNS configurations when *WireGuard* connects or disconnects. When the VPN is active, *Unbound* switches into a 'VPN mode': instead of performing recursive DNS resolution using root servers, it now forwards all DNS queries through the encrypted *WireGuard* tunnel. These forwarded queries are then resolved on the other end of the tunnel. In our case, that’s our home router, which is configured to use DNS-over-HTTPS (DoH) for secure and private DNS resolution. Despite switching to a forwarding setup, *Unbound* will still enforce DNSSEC validation, ensuring that DNS responses are authenticated and have not been tampered with. Additionally, the script restarts *fail2ban* to reinstate previously banned IPs.
 
 Create the script:
 
@@ -2337,6 +2337,7 @@ case "$1" in
                 fi
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fai2ban
                 ;;
             down)
                 # Restore default nftables rules
@@ -2347,6 +2348,7 @@ case "$1" in
                 echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fai2ban
                 ;;
         esac
         ;;
@@ -2558,7 +2560,7 @@ Again, we’ll use a *NetworkManager* dispatcher script to automatically switch 
 
 When *Tor* is active, *Unbound* switches into a 'Tor mode': instead of performing recursive DNS resolution using root servers, it forwards all DNS queries through the *Tor Transparent Proxy*. These queries are then resolved by a *Tor Exit Node*.
 
-However, because *Tor’s* built-in DNS resolver does not return DNSSEC-related records (such as `DNSKEY` or `RRSIG`), *Unbound* cannot validate DNSSEC in this configuration, even if it is set to enforce it. To prevent this from breaking DNS resolution and internet access, our dispatcher script temporarily enables permissive DNSSEC mode and allows querying localhost (*Tor’s DNSPort*) when the proxy is active. When the interface is deactivated, our original secure settings are restored.
+However, because *Tor’s* built-in DNS resolver does not return DNSSEC-related records (such as `DNSKEY` or `RRSIG`), *Unbound* cannot validate DNSSEC in this configuration, even if it is set to enforce it. To prevent this from breaking DNS resolution and internet access, our dispatcher script temporarily enables permissive DNSSEC mode and allows querying localhost (*Tor’s DNSPort*) when the proxy is active. When the interface is deactivated, our original secure settings are restored. Additionally, the script restarts *fail2ban* to reinstate previously banned IPs.
 
 Create the dispatcher script:
 
@@ -2598,6 +2600,7 @@ case "$1" in
                 fi
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fai2ban
                 ;;
 
             down)
@@ -2616,6 +2619,7 @@ case "$1" in
                 echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fai2ban
                 ;;
         esac
         ;;

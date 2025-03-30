@@ -1,0 +1,9 @@
+[sshd]
+enabled  = true
+port     = 6666
+filter   = sshd
+backend  = systemd
+findtime = 600
+maxretry = 2
+bantime  = 165600
+action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]

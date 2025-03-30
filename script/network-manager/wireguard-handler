@@ -24,6 +24,7 @@ case "$1" in
                 fi
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fail2ban
                 ;;
             down)
                 # Restore default nftables rules
@@ -34,6 +35,7 @@ case "$1" in
                 echo "        fallback-enabled: yes" | sudo tee -a "$UNBOUND_CONFIG" > /dev/null
 
                 sudo systemctl restart unbound
+                sudo systemctl restart fail2ban
                 ;;
         esac
         ;;
