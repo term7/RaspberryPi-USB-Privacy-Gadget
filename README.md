@@ -1885,6 +1885,73 @@ Reboot to apply all changes:
 sudo reboot now
 ```
 
+#### 9. Install fail2ban
+
+*Fail2ban* monitors logs for patterns (like failed logins) and reacts by banning offending IPs using firewall rules. In our setup we have configured SSH to use port 6666. Since we use `inet global` in our *nftables* we must configure *fail2ban* to create its own chain within that table:
+
+```
+sudo sed -i '/chain inbound_private {/a\
+    # Check for banned IPs via Fail2ban\
+    jump f2b-sshd' /etc/nftables.conf
+```
+
+Next, we need to create a custom *fail2ban* action file:
+
+```
+echo '[Definition]
+# When the jail starts, create a set and chain in the "inet global" table
+actionstart = nft add set inet global f2b-<name> { type ipv4_addr\; flags timeout\; } && \
+              nft add chain inet global f2b-<name> { type filter hook input priority 0\; policy accept\; } && \
+              nft add rule inet global f2b-<name> ip saddr @f2b-<name> drop
+
+# When banning an IP, add it to the set with a timeout value provided by Fail2ban
+actionban = nft add element inet global f2b-<name> { <ip> timeout <time> }
+
+# When unbanning an IP, remove it from the set
+actionunban = nft delete element inet global f2b-<name> { <ip> }
+
+# When the jail stops, remove the chain and set
+actionstop = nft delete chain inet global f2b-<name> && nft delete set inet global f2b-<name>
+' | sudo tee /etc/fail2ban/action.d/nftables-ssh.conf > /dev/null
+```
+
+Next, we need to configure *fail2ban* to monitor SSH on port 6666 using *systemd journal*, which is our Raspberry Pi's default logging mecahnism:
+
+```
+echo '[sshd]
+enabled  = true
+port     = 6666
+filter   = sshd
+backend  = systemd
+maxretry = 2
+bantime  = 165600
+action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]
+' | sudo tee /etc/fail2ban/jail.local > /dev/null
+```
+
+This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via nftables to drop its packets.
+
+Reload your firewall:
+```
+sudo nft -f /path/to/your/nftables.conf
+```
+
+Restart *fail2ban*:
+```
+sudo systemctl restart fail2ban
+```
+
+Check Fail2ban Status:
+```
+sudo fail2ban-client status sshd
+```
+
+Use the following command to list the banned IPs in the *fail2ban* set:
+```
+sudo nft list set inet global f2b-sshd
+```
+
+
 * * *
 
 ## 19 CONFIGURE ADGUARDHOME
