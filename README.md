@@ -1895,7 +1895,12 @@ sudo sed -i '/chain inbound_private {/a\
     jump f2b-sshd' /etc/nftables.conf
 ```
 
-Next, we need to create a custom *fail2ban* action file:
+Next, install *fail2ban*:
+```
+sudo apt install -y fail2ban
+```
+
+Then we need to create a custom *fail2ban* action file:
 
 ```
 echo '[Definition]
