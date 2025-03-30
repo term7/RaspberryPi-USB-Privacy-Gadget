@@ -1890,6 +1890,16 @@ sudo reboot now
 *Fail2ban* monitors logs for patterns (like failed logins) and reacts by banning offending IPs using firewall rules. In our setup we have configured SSH to use port 6666. Since we use `inet global` in our *nftables* we must configure *fail2ban* to create its own chain within that table:
 
 ```
+sudo sed -i '/table inet global {/a\
+\
+    chain f2b-sshd {\
+        policy accept;\
+    }' /etc/nftables.conf
+```
+
+And:
+
+```
 sudo sed -i '/chain inbound_private {/a\
         # Check for banned IPs via Fail2ban\
         jump f2b-sshd\
@@ -1940,7 +1950,7 @@ This configuration monitors SSH on port 6666, and if an IP fails to authenticate
 
 Reload your firewall:
 ```
-sudo nft -f /path/to/your/nftables.conf
+sudo nft -f /etc/nftables.conf
 ```
 
 Restart *fail2ban*:
