@@ -6,4 +6,5 @@ backend  = systemd
 findtime = 600
 maxretry = 2
 bantime  = 165600
+ignoreip = 192.168.77.77
 action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]

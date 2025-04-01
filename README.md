@@ -1921,7 +1921,7 @@ Install *fail2ban*:
 sudo apt install -y fail2ban
 ```
 
-Create a custom *Fail2ban Actio*n for *nftables*:
+Create a custom *Fail2ban Action* for *nftables*:
 
 ```
 echo '[Definition]
@@ -1947,10 +1947,11 @@ backend  = systemd
 findtime = 600
 maxretry = 2
 bantime  = 165600
+ignoreip = 192.168.77.77
 action   = nftables-ssh[name=sshd, port=6666, protocol=tcp]' | sudo tee /etc/fail2ban/jail.local > /dev/null
 ```
 
-This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via *nftables* to drop its packets.
+This configuration monitors SSH on port 6666, and if an IP fails to authenticate twice, it will be banned for 46 hours by adding a rule via *nftables* to drop its packets. The only IP exempt from this policy is `192.168.77.77`, which belongs to our WORKSTATION connected via the `usb0` interface.
 
 Reload your firewall:
 ```
