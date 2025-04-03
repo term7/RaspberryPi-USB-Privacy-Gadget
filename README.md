@@ -1240,7 +1240,7 @@ sudo scutil --set ComputerName WORKSTATION
 dscacheutil -flushcache
 ```
 
-#### 4. FIX: Clear USB0 Leases at Shutdown
+#### 4. FIX: Clear USB0 Leases
 
 When MAC address randomization is enabled, *Dnsmasq* may assign a different IP address upon reboot because it sees a new MAC address. To ensure that *AdGuardHome* consistently recognizes WORKSTATION with the correct static IP, we need to clear the `/var/lib/NetworkManager/dnsmasq-usb0.leases` file every time the Raspberry Pi shuts down.
 
@@ -1260,16 +1260,16 @@ Create a systemd service that runs this script at shutdown:
 
 ```
 echo '[Unit]
-Description=Clear dnsmasq lease file at shutdown
-DefaultDependencies=no
-Before=shutdown.target reboot.target halt.target
+Description=Clear dnsmasq leases
+Wants=network-pre.target
+After=network-pre.target
 
 [Service]
 Type=oneshot
 ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
 
 [Install]
-WantedBy=halt.target reboot.target shutdown.target' | sudo tee /etc/systemd/system/clear-dnsmasq-leases.service > /dev/null
+WantedBy=multi-user.target' | sudo tee /etc/systemd/system/clear-dnsmasq-leases.service > /dev/null
 ```
 
 Reload systemd and enable the service so it runs at every shutdown:
@@ -1391,7 +1391,7 @@ sudo curl -L -o /etc/unbound/unbound.conf.d/unbound-dnssec.conf "https://codeber
 - Optimized threading & memory usage
 - Minimizes DNS response sizes to reduce network overhead.
 
-#### 2. Unbound Local Configuration:
+#### 3. Unbound Local Configuration:
 
 Next, we will create a second configuration file to define local zones and enable reverse lookups for *wlan0* and *usb0*, allowing local hostname resolution within our network:
 
@@ -1429,7 +1429,7 @@ This configuration is particularly useful for the following reasons:
 *AdGuardHome* will be able to log client hostnames (if provided by the client). This allows us to see which client is connecting to which domain in the query log.<br>
 Later in this guide, we will configure an *Nginx Reverse Proxy* to serve the *AdGuardHome* web interface. Having local hostname resolution ensures that the web interface can be accessed reliably via a local domain name instead of an IP address.
 
-#### 3. Translate Dnsmasq DHCP-leases into Unbound Zone File:
+#### 4. Translate Dnsmasq DHCP-leases into Unbound Zone File:
 
 This setup does not work out of the box due to two key issues: *Dnsmasq* generates a zone file that is incompatible with *Unbound’s* syntax. To resolve this, we need a script that translates the lease file into a format that *Unbound* can read.<br>
 Furthermore *Dnsmasq* needs to trigger this script whenever a new client connects. This ensures automatic updates to *Unbound’s* zone file, keeping hostname resolution accurate.
@@ -1501,7 +1501,7 @@ echo "# Script to reconfigure Unbound zonefile for PTR requests" | sudo tee -a /
 echo "dhcp-script=/home/admin/script/DNS/update-unbound-leases.sh" | sudo tee -a /etc/NetworkManager/dnsmasq-shared.d/00_dnsmasq-shared_adguard.conf > /dev/null
 ```
 
-#### 4. Enforcing Local DNS and Updating Hosts:
+#### 5. Enforcing Local DNS and Updating Hosts:
 
 To ensure all DNS queries are routed through *AdGuardHome* and *Unbound*, we need to configure *NetworkManager* to use our local resolver:
 
@@ -1512,7 +1512,7 @@ sudo nmcli con modify Wi-Fi ipv4.dns 127.0.0.1
 sudo nmcli con modify Ethernet ipv4.dns 127.0.0.1
 ```
 
-#### 5. FIX: Automatically Restore Unbound Configuration on Reboot:
+#### 6. FIX: Automatically Restore Unbound Configuration on Reboot:
 
 Later in this guide, we’ll configure both a [WIREGUARD VPN](#21-wireguard-vpn) and a [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy). Each of these modes requires dynamic modifications to your *Unbound* DNS configuration.
 
@@ -1549,13 +1549,14 @@ Now, create a new service unit to run the script before *Unbound* starts:
 
 ```
 echo '[Unit]
-Description=Restore Unbound configuration before Unbound starts
+Description=Clear dnsmasq lease file
+DefaultDependencies=no
 After=network.target
 Before=unbound.service
 
 [Service]
 Type=oneshot
-ExecStart=/home/admin/script/DNS/restore-unbound-config.sh
+ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
 
 [Install]
 WantedBy=multi-user.target' | sudo tee /etc/systemd/system/restore-unbound-config.service > /dev/null
