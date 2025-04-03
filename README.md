@@ -1242,7 +1242,7 @@ dscacheutil -flushcache
 
 #### 4. FIX: Clear USB0 Leases
 
-When MAC address randomization is enabled, *Dnsmasq* may assign a different IP address upon reboot because it sees a new MAC address. To ensure that *AdGuardHome* consistently recognizes WORKSTATION with the correct static IP, we need to clear the `/var/lib/NetworkManager/dnsmasq-usb0.leases` file every time the Raspberry Pi shuts down.
+When MAC address randomization is enabled, *Dnsmasq* may assign a different IP address upon reboot because it sees a new MAC address. To ensure that *AdGuardHome* consistently recognizes WORKSTATION with the correct static IP, we need to clear the `/var/lib/NetworkManager/dnsmasq-usb0.leases` file before *NetworkManager* is started at boot time.
 
 Logged into your Raspberry Pi as *admin*, create the Cleanup Script:
 
@@ -1280,7 +1280,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable clear-dnsmasq-leases.service
 ```
 
-Now, each time the Raspberry Pi shuts down, the lease file will be emptied, ensuring that *Dnsmasq* reliably assigns the static IP to WORKSTATION.
+Now, each time the Raspberry Pi boots up, the lease file will be emptied before *NetworkManager* is started, ensuring that *Dnsmasq* reliably assigns the static IP to WORKSTATION.
 
 * * *
 
