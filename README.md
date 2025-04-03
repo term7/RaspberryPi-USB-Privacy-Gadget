@@ -1549,14 +1549,13 @@ Now, create a new service unit to run the script before *Unbound* starts:
 
 ```
 echo '[Unit]
-Description=Clear dnsmasq lease file
-DefaultDependencies=no
+Description=Restore Unbound configuration before Unbound starts
 After=network.target
 Before=unbound.service
 
 [Service]
 Type=oneshot
-ExecStart=/home/admin/script/DNS/clear-usb0-leases.sh
+ExecStart=/home/admin/script/DNS/restore-unbound-config.sh
 
 [Install]
 WantedBy=multi-user.target' | sudo tee /etc/systemd/system/restore-unbound-config.service > /dev/null

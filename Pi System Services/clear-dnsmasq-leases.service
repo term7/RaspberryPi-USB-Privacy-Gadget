@@ -1,8 +1,8 @@
 [Unit]
 Description=Clear dnsmasq lease file
 DefaultDependencies=no
-After=network.target
-Before=unbound.service
+Wants=network-pre.target
+After=network-pre.target
 
 [Service]
 Type=oneshot
