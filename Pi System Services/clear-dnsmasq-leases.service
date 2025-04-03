@@ -1,8 +1,7 @@
 [Unit]
-Description=Clear dnsmasq lease file
-DefaultDependencies=no
-Wants=network-pre.target
-After=network-pre.target
+Description=Clear dnsmasq leases for usb0
+After=local-fs.target
+Before=NetworkManager.service
 
 [Service]
 Type=oneshot

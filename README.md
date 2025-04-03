@@ -1260,9 +1260,9 @@ Create a systemd service that runs this script at shutdown:
 
 ```
 echo '[Unit]
-Description=Clear dnsmasq leases
-Wants=network-pre.target
-After=network-pre.target
+Description=Clear dnsmasq leases for usb0
+After=local-fs.target
+Before=NetworkManager.service
 
 [Service]
 Type=oneshot
