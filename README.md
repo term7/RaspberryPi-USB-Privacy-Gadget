@@ -471,6 +471,17 @@ sudo sed -i '/"origin=Debian,codename=${distro_codename}-security,label=Debian-S
         "origin=Raspberry Pi Foundation,codename=${distro_codename},label=Raspberry Pi Foundation";' /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
+Also allow automatic upgrades of packages that come from the Debian repository:
+```
+sudo sed -i 's|^//\s*\("origin=Debian,codename=\${distro_codename}-updates"\);|\1;|' /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
+Automatically remove unused dependencies: 
+
+```
+sudo sed -i 's|^//\s*Unattended-Upgrade::Remove-Unused-Dependencies\s*"false";|Unattended-Upgrade::Remove-Unused-Dependencies "true";|' /etc/apt/apt.conf.d/50unattended-upgrades
+```
+
 #### 3. Ensure Updates Run After Every Reboot:
 
 Create a systemd timer that waits 2 minutes after boot before running updates:
