@@ -1267,7 +1267,7 @@ Make the script executable:
 sudo chmod +x ~/script/DNS/clear-usb0-leases.sh
 ```
 
-Create a systemd service that runs this script at shutdown:
+Create a systemd service that runs this script before *NetworkManager* is started:
 
 ```
 echo '[Unit]
