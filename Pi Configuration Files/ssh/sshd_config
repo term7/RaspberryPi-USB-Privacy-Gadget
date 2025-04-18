@@ -34,7 +34,7 @@ LogLevel VERBOSE
 #LoginGraceTime 2m
 PermitRootLogin no
 AllowUsers term7
-#StrictModes yes
+StrictModes yes
 MaxAuthTries 2
 MaxSessions 2
 
@@ -90,7 +90,7 @@ UsePAM yes
 #AllowAgentForwarding yes
 #AllowTcpForwarding yes
 #GatewayPorts no
-X11Forwarding yes
+X11Forwarding no
 #X11DisplayOffset 10
 #X11UseLocalhost yes
 #PermitTTY yes
@@ -101,7 +101,7 @@ PrintMotd no
 #Compression delayed
 ClientAliveInterval 300
 ClientAliveCountMax 2
-#UseDNS no
+UseDNS no
 #PidFile /var/run/sshd.pid
 #MaxStartups 10:30:100
 #PermitTunnel no
