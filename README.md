@@ -1633,9 +1633,16 @@ Navigate to the *Certificate Authority (CA)* configuration folder:
 cd ~/tools/CA
 ```
 
-Create a self-signed *Certificate Authority (CA)* key and certificate (valid for 100 years):
+Create a self-signed *Certificate Authority (CA)* key and certificate (valid 10 years, Apple-compliant):
 ```
-openssl req -x509 -new -nodes -keyout term7-CA.key -out term7-CA.pem -days 36500 -subj "/CN=term7-CA"
+openssl req -x509 -new -nodes \
+  -newkey rsa:2048 \
+  -keyout term7-CA.key \
+  -out term7-CA.pem \
+  -days 3650 \
+  -subj "/CN=term7-CA" \
+  -addext "basicConstraints=critical,CA:true,pathlen:0" \
+  -addext "keyUsage=critical,keyCertSign,cRLSign"
 ```
 
 #### 3. Generate SSL Certificates for adguard.home:
@@ -1660,6 +1667,7 @@ CN = adguard.home
 
 [ v3_req ]
 subjectAltName = @alt_names
+keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 
 [ alt_names ]
@@ -1723,6 +1731,59 @@ This ensures the certificate is recognized as a Root Certificate Authority, allo
 If you ever want to delete this certificate, run:
 ```
 sudo security delete-certificate -c "term7-CA" /Library/Keychains/System.keychain
+```
+
+#### 7. Automatically Renew Certificate on your Raspberry Pi
+
+Create renew script (it will only run if the certificate expires within 30 days):
+
+```
+sudo tee /home/admin/tools/CA/SSL/renew-cert.sh > /dev/null << 'EOF'
+#!/bin/bash
+
+set -e
+
+CA_DIR="/home/admin/tools/CA"
+SSL_DIR="$CA_DIR/SSL"
+CA_CERT="$CA_DIR/term7-CA.pem"
+CA_KEY="$CA_DIR/term7-CA.key"
+CNF_FILE="$SSL_DIR/openssl-san.cnf"
+DOMAIN="adguard.home"
+DAYS=825
+
+cd "$SSL_DIR"
+
+# Only renew if cert expires within 30 days
+openssl x509 -checkend $((30 * 86400)) -noout -in "$DOMAIN.crt" && exit 0
+
+# Generate new CSR
+openssl req -new -key "$DOMAIN.key" -out "$DOMAIN.csr" -config "$CNF_FILE"
+
+# Sign the new certificate
+openssl x509 -req \
+  -in "$DOMAIN.csr" \
+  -CA "$CA_CERT" -CAkey "$CA_KEY" -CAcreateserial \
+  -out "$DOMAIN.crt" \
+  -days "$DAYS" \
+  -extensions v3_req -extfile "$CNF_FILE"
+
+# Create full-chain
+cat "$DOMAIN.crt" "$CA_CERT" > "$DOMAIN-fullchain.crt"
+
+# Restart AdGuard Home and nginx
+sudo systemctl restart AdGuardHome
+sudo systemctl restart nginx
+EOF
+```
+
+Make the script executable:
+```
+sudo chmod +x /home/admin/tools/CA/SSL/renew-cert.sh
+```
+
+Finally create a cronjob that runs the script at every reboot:
+```
+( sudo crontab -l 2>/dev/null | grep -v 'renew-cert.sh' ; echo '@reboot /home/admin/tools/CA/SSL/renew-cert.sh >> /home/admin/tools/CA/SSL/renewal.log 2>&1' ) | sudo crontab -
 ```
 
 * * *
