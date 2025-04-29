@@ -734,7 +734,7 @@ To configure your Raspberry Pi as a *USB-C Ethernet Gadget*, we need to:
 
 To enable ethernet gadget mode, we need to enable the DWC2 USB controller and configure kernel boot parameters. Append the required overlay to `/boot/firmware/config.txt`:
 ```
-sudo sed -i '$a\dtoverlay=dwc2' /boot/firmware/config.txt
+sudo sed -i '$a\dtoverlay=dwc2,dr_mode=peripheral' /boot/firmware/config.txt
 ```
 
 Modify `/boot/firmware/cmdline.txt` to load the required kernel modules:
@@ -752,7 +752,7 @@ sudo cp /usr/lib/udev/rules.d/85-nm-unmanaged.rules /etc/udev/rules.d/85-nm-unma
 
 Then, update the rule to ensure NetworkManager manages *usb0*:
 ```
-sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' -i /etc/udev/rules.d/85-nm-unmanaged.rules
+sudo sed -i '/ENV{DEVTYPE}=="gadget"/s/ENV{NM_UNMANAGED}="1"/ENV{NM_UNMANAGED}="0"/' /etc/udev/rules.d/85-nm-unmanaged.rules
 ```
 
 #### 3. Configure usb0 as a Static Interface in NetworkManager
