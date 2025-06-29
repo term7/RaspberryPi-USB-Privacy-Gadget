@@ -63,7 +63,7 @@ But it should be!
 
 * * *
 
-On February 21, 2025, Apple disabled its Advanced Data Protection (ADP) feature for UK customers, likely in response to a secretive UK government directive, konwn as a Technical Capability Notice, issued under the Investigatory Powers Act of 2016. ​Already on 7 February 2025, the [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/) reported on a leaked document that anticipated Apple's move. In compliance, Apple ceased offering ADP to new UK users and announced plans to disable it for existing users. This move likely is an attampt to protect Apple customers worldwide, since British surveillance authorities demand worldwide access to encrypted Apple backups.
+On February 21, 2025, Apple disabled its Advanced Data Protection (ADP) feature for UK customers, likely in response to a secretive UK government directive, known as a Technical Capability Notice, issued under the Investigatory Powers Act of 2016. ​Already on 7 February 2025, the [Washington Post](https://www.washingtonpost.com/technology/2025/02/07/apple-encryption-backdoor-uk/) reported on a leaked document that anticipated Apple's move. In compliance, Apple ceased offering ADP to new UK users and announced plans to disable it for existing users. This move likely is an attempt to protect Apple customers worldwide, since British surveillance authorities demand worldwide access to encrypted Apple backups.
 
 This kind of surveillance order, even [Google](https://www.heise.de/en/news/Even-Google-cannot-deny-the-British-surveillance-order-10318847.html) can neither confirm nor deny, indicating that it received a similar Technical Capability Notice.
 
@@ -546,7 +546,7 @@ journalctl -u unattended-upgrades --no-pager
 
 While IPv6 offers advantages, using both IPv4 and IPv6 (dual-stack networking) significantly complicates firewall configurations and increases security risks.
 
-#### Why diable IPv6?
+#### Why disable IPv6?
 
 - **Larger Attack Surface** → Both IPv4 and IPv6 require separate firewall rules, increasing complexity and risk of misconfiguration.
 - **Tracking Risks** → IPv6 can embed a device's MAC address in its IP (EUI-64 format), allowing attackers and advertisers to track device movements across networks.
@@ -1234,7 +1234,7 @@ IMPORTANT: These changes will take effect only after restarting *NetworkManager*
 
 *AdGuardHome* and *Unbound* have not yet been configured, and no firewall rules are in place to ensure proper network routing. Rebooting now could disrupt connectivity. Continue with the remaining setup steps before restarting.**
 
-#### 3. WORKSTATION as Hostnam for your Mac:
+#### 3. WORKSTATION as Hostname for your Mac:
 
 To ensure your Mac appears as a distinct client in AdGuardHome, we need to assign it a static IP address (see configuration above). However, because MAC address randomization is enabled on your Mac, its MAC address cannot serve as a reliable identifier. Instead, we will set a fixed hostname — **WORKSTATION** — which will allow us to consistently assign the desired static IP. Open a Terminal on your Mac and run the following commands to configure the hostname:
 
@@ -1714,7 +1714,7 @@ Since we have enforced strict user access control, root login is not allowed. To
 sudo cp ~/tools/CA/term7-CA.pem /home/term7/
 ```
 
-Now, on your Mac, open a new Terminal window and run the following command to securely copy the certificate to your Downloads folder. Once the transfer is complete, we immediately delete it from the Raspberry Pi standart user account:
+Now, on your Mac, open a new Terminal window and run the following command to securely copy the certificate to your Downloads folder. Once the transfer is complete, we immediately delete it from the Raspberry Pi standard user account:
 ```
 scp -P 8519 term7@192.168.77.1:term7-CA.pem ~/Downloads/ && ssh -p 8519 term7@192.168.77.1 "rm term7-CA.pem"
 ```
@@ -2171,7 +2171,7 @@ n this section, we explicitly allow the domain `check.torproject.org`:
 
 This domain is used later in our [TOR TRANSPARENT PROXY](#22-tor-transparent-proxy) setup to verify Tor routing. Since it is blocked by one of our pre-configured blocklists, we whitelist it here to ensure it functions correctly. Feel free to add your own custom allow or block rules in this section, depending on your specific use case.
 
-#### Pre-cnofigured Blocklists
+#### Pre-configured Blocklists
 
 Our default blocklists are sourced from this excellent GitHub repository maintained by Gerd Hagezi:
 [https://github.com/hagezi/dns-blocklists](https://github.com/hagezi/dns-blocklists)
@@ -2187,7 +2187,7 @@ Number of entries: 962584 / 21 Mar 2025
 
 2.<br>
 **Hagezi: Multi ULTIMATE**<br>
-*Description: Ultimate Sweeper - Strictly cleans the Internet and protects your privacy! Blocks Ads, Affiliate, Tracking, Metrics, Telemetry, Phishing, Malware, Scam, Free Hoster, Fake, Crytojacking and other "Crap".*<br>
+*Description: Ultimate Sweeper - Strictly cleans the Internet and protects your privacy! Blocks Ads, Affiliate, Tracking, Metrics, Telemetry, Phishing, Malware, Scam, Free Hoster, Fake, Cryptojacking and other "Crap".*<br>
 Number of entries: 334037 / 21 Mar 2025
 
 [https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/ultimate.txt](https://codeberg.org/hagezi/mirror2/raw/branch/main/dns-blocklists/adblock/ultimate.txt)
